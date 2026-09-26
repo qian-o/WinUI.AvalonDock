@@ -9,12 +9,12 @@
                    TextAlignment="Left" TextTrimming="CharacterEllipsis" />
     </DataTemplate>
     <DataTemplate x:Key="AnchorableHeaderTemplate">
-        <Grid>
+        <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
             <Grid.ColumnDefinitions><ColumnDefinition Width="Auto" /><ColumnDefinition /></Grid.ColumnDefinitions>
-            <Image themes:RetainedIconSource.Source="{Binding IconSource}" Stretch="Uniform" />
+            <Image themes:RetainedIconSource.Source="{Binding IconSource}" Stretch="Uniform" VerticalAlignment="Center" />
             <TextBlock Grid.Column="1" Margin="{Binding IconSource, Converter={StaticResource HeaderIconMargin}}"
                        HorizontalAlignment="Stretch" VerticalAlignment="Center" Text="{Binding Title}"
-                       TextAlignment="Center" TextTrimming="CharacterEllipsis" />
+                       TextAlignment="Left" TextTrimming="CharacterEllipsis" />
         </Grid>
     </DataTemplate>
     <DataTemplate x:Key="DocumentTitleTemplate">

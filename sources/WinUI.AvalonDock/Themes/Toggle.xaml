@@ -44,12 +44,17 @@
         </Setter.Value></Setter>
     </Style>
     <Style TargetType="controls:ToggleAnchorablePaneTitle">
-        <Setter Property="Background" Value="{ThemeResource SubtleFillColorSecondaryBrush}" />
+        <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
         <Setter Property="Template"><Setter.Value>
             <ControlTemplate TargetType="controls:ToggleAnchorablePaneTitle">
                 <Grid Background="{TemplateBinding Background}" MinHeight="32" Padding="8,2,2,2">
                     <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
-                    <ContentPresenter x:Name="PART_Title" VerticalAlignment="Center" />
+                    <ContentPresenter x:Name="PART_Title"
+                                      HorizontalAlignment="Stretch"
+                                      VerticalAlignment="Stretch"
+                                      HorizontalContentAlignment="Stretch"
+                                      VerticalContentAlignment="Center" />
                     <Button x:Name="PART_OptionsButton" Grid.Column="1" Width="25" Height="25" MinWidth="0" MinHeight="0" Padding="0" IsTabStop="False" ToolTipService.ToolTip="Options"><FontIcon Glyph="&#xE712;" FontSize="12" /></Button>
                     <Button x:Name="PART_MinimizeButton" Grid.Column="2" Width="25" Height="25" MinWidth="0" MinHeight="0" Padding="0" IsTabStop="False" ToolTipService.ToolTip="Minimize"
                             Command="{Binding LayoutItem.AutoHideCommand, RelativeSource={RelativeSource TemplatedParent}}"><FontIcon Glyph="&#xE921;" FontSize="12" /></Button>
