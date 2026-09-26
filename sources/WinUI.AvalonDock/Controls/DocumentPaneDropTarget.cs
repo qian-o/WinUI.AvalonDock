@@ -62,14 +62,44 @@ internal class DocumentPaneDropTarget : DropTarget<LayoutDocumentPaneControl>
 
         LayoutDocument? documentActive = floatingWindow.Descendents().OfType<LayoutDocument>().FirstOrDefault();
 
-        LayoutDocumentPaneGroup? paneGroup = targetModel.Parent as LayoutDocumentPaneGroup;
         Orientation requiredOrientation = Type == DropTargetType.DocumentPaneDockBottom || Type == DropTargetType.DocumentPaneDockTop ?
             Microsoft.UI.Xaml.Controls.Orientation.Vertical : Microsoft.UI.Xaml.Controls.Orientation.Horizontal;
         bool allowMixedOrientation = manager.AllowMixedOrientation;
+        bool isInsideDrop = Type == DropTargetType.DocumentPaneDockInside;
+        if (isInsideDrop)
+        {
+            LayoutDocumentPaneGroup layoutDocumentPaneGroup = floatingPanel;
+            int i = tabIndex == -1 ? 0 : tabIndex;
+            foreach (LayoutContent? contentToImport in layoutDocumentPaneGroup.Descendents().OfType<LayoutContent>().ToArray())
+            {
+                if (contentToImport is LayoutDocument or LayoutAnchorable)
+                {
+                    targetModel.Children.Insert(i++, contentToImport);
+                }
+            }
 
-        if (paneGroup == null)
+            if (documentActive != null)
+            {
+                documentActive.IsActive = true;
+            }
+            base.Drop(floatingWindow);
+            return;
+        }
+
+        LayoutDocumentPaneGroup paneGroup;
+        if (targetModel.Parent is LayoutDocumentPaneGroup existingPaneGroup)
+        {
+            paneGroup = existingPaneGroup;
+        }
+        else
         {
             ILayoutPositionableElement targetModelAsPositionableElement = (ILayoutPositionableElement)targetModel;
+            int targetIndex = layoutGroup.IndexOfChild(targetModel);
+            if (targetIndex < 0)
+            {
+                return;
+            }
+
             paneGroup = new LayoutDocumentPaneGroup
             {
                 Orientation = requiredOrientation,
@@ -77,10 +107,11 @@ internal class DocumentPaneDropTarget : DropTarget<LayoutDocumentPaneControl>
                 DockHeight = targetModelAsPositionableElement.DockHeight,
             };
 
+            layoutGroup.ReplaceChild(targetModel, paneGroup);
             paneGroup.Children.Add(targetModel);
-            layoutGroup.InsertChildAt(0, paneGroup);
         }
-        else if (allowMixedOrientation && paneGroup.Orientation != requiredOrientation && Type != DropTargetType.DocumentPaneDockInside)
+
+        if (allowMixedOrientation && paneGroup.Orientation != requiredOrientation)
         {
             ILayoutPositionableElement targetModelAsPositionableElement = (ILayoutPositionableElement)targetModel;
             LayoutDocumentPaneGroup newGroup = new()
@@ -191,26 +222,6 @@ internal class DocumentPaneDropTarget : DropTarget<LayoutDocumentPaneControl>
 
                 break;
 
-            case DropTargetType.DocumentPaneDockInside:
-                {
-                    LayoutDocumentPane paneModel = targetModel;
-                    LayoutDocumentPaneGroup layoutDocumentPaneGroup = floatingPanel;
-
-                    // A LayoutFloatingDocumentWindow can contain multiple instances of both Anchorables or Documents
-                    // and we should drop these back into the DocumentPane if they are available
-                    Type[] allowedDropTypes = new[] { typeof(LayoutDocument), typeof(LayoutAnchorable) };
-
-                    int i = tabIndex == -1 ? 0 : tabIndex;
-                    foreach (LayoutContent? anchorableToImport in
-                        layoutDocumentPaneGroup.Descendents().OfType<LayoutContent>()
-                            .Where(item => allowedDropTypes.Any(dropType => dropType.IsInstanceOfType(item))).ToArray())
-                    {
-                        paneModel.Children.Insert(i, anchorableToImport);
-                        i++;
-                    }
-                }
-
-                break;
         }
 
         if (documentActive != null)

@@ -45,7 +45,7 @@ internal static class NativeLogicalTree
     internal static IEnumerable GetChildren(DependencyObject element) => element switch
     {
         DockingManager manager => Enumerate(manager.LogicalChildrenPublic),
-        Compatibility.HwndHost host => Enumerate(host.GetLogicalChildren()),
+        Compatibility.ChildWindowHost host => Enumerate(host.GetLogicalChildren()),
         // Original panes bind ItemsSource; WPF excludes those data items from its
         // logical children even though the native adapter creates explicit containers.
         LayoutDocumentPaneControl or LayoutAnchorablePaneControl => Array.Empty<object>(),

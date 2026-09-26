@@ -16,7 +16,7 @@ public partial class ToggleDockingManager
     private FrameworkElement? zoneOrigin;
     internal void BeginZoneDrag(LayoutAnchorable tool, FrameworkElement origin, bool waitForLeave = false)
     {
-        if (zoneInput != null || tool.Root?.Manager != this || IsDetached(tool) || !IsLoaded)
+        if (IsDisposed || zoneInput != null || tool.Root?.Manager != this || IsDetached(tool) || !IsLoaded)
         {
             return;
         }
@@ -76,7 +76,7 @@ public partial class ToggleDockingManager
             MoveAnchorableToZone(tool, zone.Value);
         }
     }
-    private bool IsZoneSourceValid() => IsLoaded && zoneSource?.Root?.Manager == this && !IsDetached(zoneSource)
+    private bool IsZoneSourceValid() => !IsDisposed && IsLoaded && zoneSource?.Root?.Manager == this && !IsDetached(zoneSource)
         && !zoneSource.IsHidden && Layout.Descendents().Contains(zoneSource);
     private void OnZoneLayoutUpdated(object? sender, object args)
     {

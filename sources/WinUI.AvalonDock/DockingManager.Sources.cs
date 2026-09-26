@@ -64,6 +64,11 @@ public partial class DockingManager : Core.IDockingManager
 
     protected virtual void OnDockLayoutChanged(Core.IRootDock? oldValue, Core.IRootDock? newValue)
     {
+        if (isDisposed)
+        {
+            return;
+        }
+
         syncBridge?.Detach();
         syncBridge = null;
         if (installedAlignmentStrategy != null && LayoutUpdateStrategy == installedAlignmentStrategy)
@@ -113,17 +118,50 @@ public partial class DockingManager : Core.IDockingManager
 
     protected virtual void OnDocumentsSourceChanged(DependencyPropertyChangedEventArgs e)
     {
+        if (isDisposed)
+        {
+            return;
+        }
+
         DetachDocumentsSource(Layout, e.OldValue as IEnumerable);
         AttachDocumentsSource(Layout, e.NewValue as IEnumerable);
     }
 
     protected virtual void OnAnchorablesSourceChanged(DependencyPropertyChangedEventArgs e)
     {
+        if (isDisposed)
+        {
+            return;
+        }
+
         DetachAnchorablesSource(Layout, e.OldValue as IEnumerable);
         AttachAnchorablesSource(Layout, e.NewValue as IEnumerable);
     }
 
     private bool suspendLayoutItemCreation;
+
+    private void ReleaseSources()
+    {
+        if (DocumentsSource is INotifyCollectionChanged documents)
+        {
+            documents.CollectionChanged -= DocumentsSourceElementsChanged;
+        }
+
+        if (AnchorablesSource is INotifyCollectionChanged anchorables)
+        {
+            anchorables.CollectionChanged -= AnchorablesSourceElementsChanged;
+        }
+
+        // 永久释放只断开同步，不移除已导入的用户布局节点。
+        syncBridge?.Detach();
+        syncBridge = null;
+        if (installedAlignmentStrategy != null && LayoutUpdateStrategy == installedAlignmentStrategy)
+        {
+            LayoutUpdateStrategy = null;
+        }
+
+        installedAlignmentStrategy = null;
+    }
 
     private void AttachDocumentsSource(LayoutRoot? layout, IEnumerable? documentsSource)
     {
@@ -192,7 +230,7 @@ public partial class DockingManager : Core.IDockingManager
             return;
         }
         // When deserializing documents are created automatically by the deserializer
-        if (SuspendDocumentsSourceBinding)
+        if (isDisposed || SuspendDocumentsSourceBinding)
         {
             return;
         }
@@ -345,7 +383,7 @@ public partial class DockingManager : Core.IDockingManager
         }
 
         // When deserializing documents are created automatically by the deserializer
-        if (SuspendAnchorablesSourceBinding)
+        if (isDisposed || SuspendAnchorablesSourceBinding)
         {
             return;
         }

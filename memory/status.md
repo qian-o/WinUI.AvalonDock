@@ -2,6 +2,15 @@
 
 更新于 2026-09-26。以固定的 [AvalonDock v5.0.0](https://github.com/Dirkster99/AvalonDock/tree/408dc2896e2f41f3bb79a15207f160edee8a6792) 普通 Windows 使用流程为基准，要求功能与核心停靠逻辑一致，不追求 WPF API 数量或逐行复制。
 
+## 本轮修复
+
+- 文档浮动窗回停到直接挂在 `LayoutPanel` 下的文档窗格时，使用父布局原位替换；中心导入提前返回，避免左右工具区顺序被固定插入到索引 0 改变。
+- 布局项样式区分消费者样式与管理器样式；`LayoutItemContainerStyle` 和 `StyleSelector` 清空时撤销管理器样式及绑定，消费者直接设置的样式仍可恢复。
+- 浮动工具停入文档区按整个浮动窗格的所有 `LayoutAnchorable.CanDockAsTabbedDocument` 校验，并在回调后再次校验提交条件。
+- Navigator 支持 Escape 取消、Shift+Tab 反向切换，释放 Shift 不会提前确认；XAML 与原生焦点记录互斥，恢复失败时才尝试另一类焦点目标。
+- 新增 `DockingManager.Dispose()` 永久释放入口：解除布局与来源订阅、MVVM/Toggle 状态、覆盖层、自动隐藏计时器、浮动/独立窗口宿主和原生回调，同时保留可序列化布局模型。临时 `Unloaded` 仍只隐藏并在重新加载时恢复。
+- `IPlatformServices`、`IKeyboardInputService`、`IChildWindowHostOwner` 将共享停靠逻辑与平台实现隔开；普通浮动/自动隐藏内容使用无句柄 `ChildWindowHost`，legacy `HwndHost`、HWND、Win32 消息和 DesktopWindowXamlSource 仅保留在 Windows provider。后续 Uno 可替换 provider，不需要修改布局树与 drop 规则。
+
 ## 原版功能逐项核对
 
 | 原版普通功能 | 迁移代码 | 操作证据与状态 |
@@ -25,5 +34,5 @@
 
 - 修正了 MVVM 工具侧边导入顺序、内容引用身份判断、工具 `CanMove` 回调、浮动事件重复发送、拆分工具取消操作的状态顺序、多显示器浮动边界和运行时自动隐藏延时；删除无调用的重复屏幕定位方法。保留原有版权声明。
 - 依据 [Zenith.NET](https://github.com/qian-o/Zenith.NET) 的现有源码，统一 224 个手写 C# 文件的四空格、LF、文件作用域命名空间、控制流大括号、导入顺序、字段命名、显式局部类型及可推断类型的 `new()`；按实际生命周期标注并处理可空值。手写源码中的 `#nullable disable` 已清零；仅原样保留上游自动生成的 `Resources.Designer.cs` 中 1 处。`.editorconfig` 固定风格规则，`IDE0003`、`IDE0008`、`IDE0011`、`IDE0090`、`IDE0161`、`IDE1006` 检查通过。
-- 完整解决方案 Debug `--no-restore` 构建通过：0 警告、0 错误；手写 C# 的空白格式和上述风格规则检查通过。示例可正常启动并显示主窗，再正常关闭。可空性改动的正常调用路径已做代码复核，未发现可证实的回归；本次没有逐项重做界面操作，其他功能的操作证据见上表。
+- 完整解决方案 Debug `--no-restore /p:BuildInParallel=false` 构建通过：0 警告、0 错误；`dotnet format whitespace --verify-no-changes` 通过；共享层原生边界扫描未发现 `DllImport`、`Win32Interop`、`HandleRef`、`nint`、原生消息或线程键盘状态引用。示例启动后窗口标题为“WinUI.AvalonDock 示例”、进程响应，关闭请求在 10 秒内优雅退出，窗口 `Closed` 释放两个管理器。实际鼠标拖动、Light/Dark 呈现、XML 恢复、Replace/Reset、最大化/还原及跨 DPI 仍沿用前次操作证据，本轮未逐项重复。
 - 产品直接引用官方 Core；示例按需引用官方 MVVM 与 XML 序列化包。Windows 平台服务仍隔离输入、窗口、覆盖层、焦点、窗口顺序和坐标转换；共享布局与停靠逻辑未引入 HWND 或原生消息。仓库未提交、推送或发布。

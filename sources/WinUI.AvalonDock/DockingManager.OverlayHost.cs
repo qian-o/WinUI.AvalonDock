@@ -32,7 +32,8 @@ public partial class DockingManager : IOverlayWindowHost
         result.ActiveContent = draggedContent ?? model.Root?.ActiveContent;
         result.CanCommit = source => ReferenceEquals(source, model) && source.Root?.Manager == this && target.Area.IsLoaded
             && target.Model.Root?.Manager == this && !ReferenceEquals(target.Model.FindParent<LayoutFloatingWindow>(), source)
-            && contents.Length > 0 && contents.SequenceEqual(source.Descendents().OfType<LayoutContent>());
+            && contents.Length > 0 && contents.SequenceEqual(source.Descendents().OfType<LayoutContent>())
+            && (!FloatingDropAreaRules.IsDocumentDropTarget(target.Type) || FloatingDropAreaRules.CanDockAsDocument(source));
         return result;
     }
 

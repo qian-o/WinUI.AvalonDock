@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using AvalonDock.Layout;
+using AvalonDock.Platforms;
 using Microsoft.UI.Input;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -449,7 +450,7 @@ public class TabControlEx : TabView
             return;
         }
 
-        if (e.Key != VirtualKey.Tab || (InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.Control) & CoreVirtualKeyStates.Down) == 0)
+        if (e.Key != VirtualKey.Tab || !PlatformServices.Keyboard.IsKeyDown(VirtualKey.Control))
         {
             return;
         }
@@ -464,7 +465,7 @@ public class TabControlEx : TabView
             return;
         }
 
-        int direction = (InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.Shift) & CoreVirtualKeyStates.Down) != 0 ? -1 : 1;
+        int direction = PlatformServices.Keyboard.IsKeyDown(VirtualKey.Shift) ? -1 : 1;
         int start = pane.SelectedContentIndex;
         for (int offset = 1; offset <= pane.ChildrenCount; offset++)
         {

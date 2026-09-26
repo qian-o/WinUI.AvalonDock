@@ -9,12 +9,15 @@ public abstract partial class LayoutItem
     private readonly Dictionary<DependencyProperty, Binding> styleBindings = [];
     private bool changingStyle;
     private Style? containerStyle;
+    private Style? consumerStyle;
+    private Style? managerStyle;
 
     // Native WinUI cannot apply Binding-valued setters as style values. Keep the
     // inherited CLR/DP entry points while the base element owns a literal-only style.
     public new Style? Style
     {
-        get => containerStyle ?? base.Style; set => ApplyContainerStyle(value);
+        get => containerStyle ?? base.Style;
+        set => SetConsumerStyle(value);
     }
     public new object? GetValue(DependencyProperty dp) => dp == StyleProperty && containerStyle != null ? containerStyle : base.GetValue(dp);
     public new object? ReadLocalValue(DependencyProperty dp) => dp == StyleProperty && containerStyle != null ? containerStyle : base.ReadLocalValue(dp);
@@ -22,7 +25,7 @@ public abstract partial class LayoutItem
     {
         if (dp == StyleProperty)
         {
-            ApplyContainerStyle((Style?)value);
+            SetConsumerStyle((Style?)value);
         }
         else
         {
@@ -36,11 +39,33 @@ public abstract partial class LayoutItem
             base.ClearValue(dp);
             return;
         }
-        ApplyContainerStyle(null);
-        base.ClearValue(dp);
+
+        SetConsumerStyle(null);
     }
 
-    internal void ApplyContainerStyle(Style? style)
+    private void SetConsumerStyle(Style? style)
+    {
+        consumerStyle = style;
+        ApplyStyleCore(managerStyle ?? consumerStyle);
+    }
+
+    internal void ApplyManagerStyle(Style? style)
+    {
+        if (ReferenceEquals(managerStyle, style))
+        {
+            return;
+        }
+
+        if (managerStyle == null && consumerStyle == null && base.Style != null)
+        {
+            consumerStyle = base.Style;
+        }
+
+        managerStyle = style;
+        ApplyStyleCore(managerStyle ?? consumerStyle);
+    }
+
+    private void ApplyStyleCore(Style? style)
     {
         if (ReferenceEquals(containerStyle, style))
         {
@@ -50,10 +75,12 @@ public abstract partial class LayoutItem
         changingStyle = true;
         try
         {
+            Style? previousStyle = containerStyle;
             ReleaseStyleBindings();
+            Setter[] previousSetters = Setters(previousStyle).GroupBy(setter => setter.Property).Select(group => group.Last()).ToArray();
             Setter[] setters = Setters(style).GroupBy(setter => setter.Property).Select(group => group.Last()).ToArray();
             containerStyle = style;
-            foreach (Setter? setter in setters)
+            foreach (Setter? setter in previousSetters)
             {
                 if (modelValues.Remove(setter.Property, out object? value) && Equals(ReadLocalValue(setter.Property), value))
                 {

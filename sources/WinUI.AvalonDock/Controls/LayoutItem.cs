@@ -1104,6 +1104,10 @@ public abstract partial class LayoutItem : FrameworkElement
         }
         LayoutElement = null;
         Model = null;
+        managerStyle = null;
+        consumerStyle = null;
+        containerStyle = null;
+        base.ClearValue(StyleProperty);
     }
 
     /// <summary>

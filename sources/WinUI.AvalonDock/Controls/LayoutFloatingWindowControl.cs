@@ -308,7 +308,6 @@ public abstract partial class LayoutFloatingWindowControl : Window, ILayoutContr
                 break;
         }
     }
-    protected virtual nint FilterMessage(nint hwnd, int msg, nint wParam, nint lParam, ref bool handled) => 0;
 
     internal static DependencyProperty RegisterWindowProperty(string name, Type propertyType, Type ownerType, object? defaultValue,
         Action<LayoutFloatingWindowControl, DependencyPropertyChangedEventArgs>? changed) =>
@@ -404,7 +403,6 @@ public abstract partial class LayoutFloatingWindowControl : Window, ILayoutContr
         AttachHost(PlatformServices.CreateWindowHostService(manager).Attach(this, visual, Title ?? string.Empty, bounds, OwnedByDockingManagerWindow));
     }
     internal void SetDraggingState(bool value) => SetIsDragging(value);
-    internal nint ProcessNativeMessage(nint hwnd, int msg, nint wParam, nint lParam, ref bool handled) => FilterMessage(hwnd, msg, wParam, lParam, ref handled);
     internal void SetModelBindings(bool enabled)
     {
         bindingsEnabled = enabled;

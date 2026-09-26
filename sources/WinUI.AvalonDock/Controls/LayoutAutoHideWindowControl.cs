@@ -18,7 +18,7 @@ using PropertyMetadata = Microsoft.UI.Xaml.PropertyMetadata;
 
 namespace AvalonDock.Controls;
 
-public class LayoutAutoHideWindowControl : HwndHost, ILayoutControl
+public class LayoutAutoHideWindowControl : ChildWindowHost, ILayoutControl
 {
     private readonly ContentPresenter presenter = new();
     private LayoutAnchorable? model;
@@ -83,13 +83,13 @@ public class LayoutAutoHideWindowControl : HwndHost, ILayoutControl
     internal bool IsPointerWithin => grid != null && PlatformServices.Coordinates.IsPointerOver(grid)
         || anchor != null && PlatformServices.Coordinates.IsPointerOver(anchor);
 
-    protected override HandleRef BuildWindowCore(HandleRef hwndParent)
+    protected override void OnHostConnected()
     {
         HostedRoot = presenter;
         AutomationProperties.SetName(presenter, "InternalWindowHost");
-        return PreparedChild;
     }
-    protected override void DestroyWindowCore(HandleRef hwnd) => HostedRoot = null;
+
+    protected override void OnHostDisconnected() => HostedRoot = null;
     protected override bool HasFocusWithinCore() => false;
     protected override System.Collections.IEnumerator LogicalChildren => new UIElement[] { presenter }.GetEnumerator();
     protected override Size MeasureOverride(Size constraint)

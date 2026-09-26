@@ -13,7 +13,7 @@ namespace AvalonDock;
 
 [ContentProperty(Name = nameof(Layout))]
 [TemplatePart(Name = "PART_LayoutHost", Type = typeof(ContentPresenter))]
-public partial class DockingManager : Control
+public partial class DockingManager : Control, IDisposable
 {
     private static readonly System.Runtime.CompilerServices.ConditionalWeakTable<LayoutContent, WeakReference<DockingManager>> LayoutItemOwners = new();
     private readonly ILayoutEngine layoutEngine = new DefaultLayoutEngine();
@@ -27,6 +27,7 @@ public partial class DockingManager : Control
     private LayoutRoot? attachedLayout;
     private bool replacingNullLayout;
     private LayoutRoot? layoutBeforeNullReplacement;
+    private bool isDisposed;
 
     public DockingManager()
     {
@@ -40,6 +41,64 @@ public partial class DockingManager : Control
             RootPanel = new LayoutPanel(new LayoutDocumentPaneGroup(new LayoutDocumentPane()))
         };
     }
+
+    /// <summary>在 UI 线程永久释放视图、原生窗口和外部订阅，保留可序列化的布局内容；临时卸载无需调用。</summary>
+    public void Dispose()
+    {
+        if (isDisposed)
+        {
+            return;
+        }
+
+        isDisposed = true;
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+
+    protected virtual void Dispose(bool disposing)
+    {
+        if (!disposing)
+        {
+            return;
+        }
+
+        Loaded -= OnLoaded;
+        Unloaded -= OnUnloaded;
+        SizeChanged -= OnSizeChanged;
+        refreshPending = false;
+        rootCommandRequeryPending = false;
+        rootCommandRequeryRoot = null;
+        layoutBeforeNullReplacement = null;
+        LayoutRoot? oldLayout = attachedLayout;
+        if (oldLayout != null)
+        {
+            oldLayout.PropertyChanged -= OnLayoutRootPropertyChanged;
+            oldLayout.Updated -= OnLayoutRootUpdated;
+            oldLayout.ElementAdded -= Layout_ElementAdded;
+            oldLayout.ElementRemoved -= Layout_ElementRemoved;
+            oldLayout.FloatingWindows.CollectionChanged -= OnFloatingWindowsChanged;
+        }
+
+        ReleaseSources();
+        CancelPendingDetachedRestore();
+        navigatorWindow?.Abort();
+        navigatorWindow = null;
+        EndContentDrag();
+        dockingOverlay.Dispose();
+        FocusElementManager.FinalizeFocusManagement(this);
+        autoHideWindowManager?.Dispose();
+        autoHideWindowManager = null;
+        ReleaseAutoHideViews();
+        CloseWindowHosts(oldLayout, preserveLayout: true);
+        ReleaseLayoutView();
+        DetachLayoutItems();
+        ClearLogicalChildrenList();
+        attachedLayout = null;
+        layoutHost = null;
+        autoHideArea = null;
+    }
+
+    internal bool IsDisposed => isDisposed;
 
     public event EventHandler? LayoutChanging;
     public event EventHandler? LayoutChanged;
@@ -242,11 +301,21 @@ public partial class DockingManager : Control
 
     private void OnLayoutChanging(LayoutRoot newLayout)
     {
+        if (isDisposed)
+        {
+            return;
+        }
+
         LayoutChanging?.Invoke(this, EventArgs.Empty);
     }
 
     protected virtual void OnLayoutChanged(LayoutRoot? oldLayout, LayoutRoot newLayout)
     {
+        if (isDisposed)
+        {
+            return;
+        }
+
         // The original LayoutChanged notification precedes detached-window restore.
         // Suppress only native host admission while the old and new roots exchange.
         pendingDetachedRestoreRoot = null;
@@ -314,8 +383,12 @@ public partial class DockingManager : Control
 
     private static void OnActiveContentChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
     {
-        ((DockingManager)d).InternalSetActiveContent(e.NewValue);
-        ((DockingManager)d).OnActiveContentChanged(e);
+        DockingManager manager = (DockingManager)d;
+        if (!manager.isDisposed)
+        {
+            manager.InternalSetActiveContent(e.NewValue);
+            manager.OnActiveContentChanged(e);
+        }
     }
 
     protected virtual void OnActiveContentChanged(DependencyPropertyChangedEventArgs e) => ActiveContentChanged?.Invoke(this, EventArgs.Empty);
@@ -330,6 +403,11 @@ public partial class DockingManager : Control
 
     protected virtual void OnAllowFloatingWindowsChanged(DependencyPropertyChangedEventArgs e)
     {
+        if (isDisposed)
+        {
+            return;
+        }
+
         if (!(bool)e.NewValue)
         {
             DockAllFloatingWindows();
@@ -339,6 +417,11 @@ public partial class DockingManager : Control
 
     protected virtual void OnAllowDetachedWindowsChanged(DependencyPropertyChangedEventArgs e)
     {
+        if (isDisposed)
+        {
+            return;
+        }
+
         if (!(bool)e.NewValue)
         {
             ReattachAllDetachedAnchorables();
@@ -367,6 +450,12 @@ public partial class DockingManager : Control
 
     protected override void OnApplyTemplate()
     {
+        if (isDisposed)
+        {
+            base.OnApplyTemplate();
+            return;
+        }
+
         HideAutoHideWindow();
         ReleaseLayoutView();
         if (!ReferenceEquals(Layout?.Manager, this))
@@ -386,6 +475,11 @@ public partial class DockingManager : Control
 
     internal UIElement? CreateUIElementForModel(ILayoutElement? model)
     {
+        if (isDisposed)
+        {
+            return null;
+        }
+
         if (model is LayoutPanel typedLayoutPanel)
         {
             return LayoutViewBuilder.Initialize(new LayoutPanelControl(typedLayoutPanel));
@@ -447,7 +541,7 @@ public partial class DockingManager : Control
 
     internal void RequestViewRefresh()
     {
-        if (refreshPending || !IsLoaded)
+        if (isDisposed || refreshPending || !IsLoaded)
         {
             return;
         }
@@ -455,7 +549,7 @@ public partial class DockingManager : Control
         if (!DispatcherQueue.TryEnqueue(() =>
         {
             refreshPending = false;
-            if (IsLoaded && ReferenceEquals(Layout?.Manager, this))
+            if (!isDisposed && IsLoaded && ReferenceEquals(Layout?.Manager, this))
             {
                 RefreshLayoutView();
             }
@@ -468,6 +562,11 @@ public partial class DockingManager : Control
     private static void LayoutPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
     {
         DockingManager manager = (DockingManager)d;
+        if (manager.isDisposed)
+        {
+            return;
+        }
+
         if (e.NewValue is not LayoutRoot root)
         {
             manager.layoutBeforeNullReplacement = e.OldValue as LayoutRoot;
@@ -500,6 +599,11 @@ public partial class DockingManager : Control
 
     private void OnLoaded(object sender, RoutedEventArgs? e)
     {
+        if (isDisposed)
+        {
+            return;
+        }
+
         if (ReferenceEquals(Layout?.Manager, this))
         {
             InitializeAutoHideViews();
@@ -525,6 +629,11 @@ public partial class DockingManager : Control
 
     private void OnUnloaded(object sender, RoutedEventArgs e)
     {
+        if (isDisposed)
+        {
+            return;
+        }
+
         SizeChanged -= OnSizeChanged;
         FocusElementManager.FinalizeFocusManagement(this);
         navigatorWindow?.Abort();
@@ -534,7 +643,13 @@ public partial class DockingManager : Control
         ReleaseLayoutView();
         // A native reparent can report Unloaded after the manager has re-entered a live
         // tree. Restore the final attached state instead of leaving its side views null.
-        DispatcherQueue.TryEnqueue(() => { if (IsLoaded && LeftSidePanel == null) { OnLoaded(this, null); } });
+        DispatcherQueue.TryEnqueue(() =>
+        {
+            if (!isDisposed && IsLoaded && LeftSidePanel == null)
+            {
+                OnLoaded(this, null);
+            }
+        });
     }
 
     private void OnSizeChanged(object sender, SizeChangedEventArgs e)
@@ -553,6 +668,11 @@ public partial class DockingManager : Control
 
     private void OnLayoutRootPropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
+        if (isDisposed)
+        {
+            return;
+        }
+
         if (e.PropertyName == nameof(LayoutRoot.ActiveContent))
         {
             if (Layout.ActiveContent != null)
@@ -578,6 +698,11 @@ public partial class DockingManager : Control
 
     private void OnLayoutRootUpdated(object? sender, EventArgs e)
     {
+        if (isDisposed)
+        {
+            return;
+        }
+
         if (IsLoaded)
         {
             InitializeAutoHideViews();
@@ -595,7 +720,7 @@ public partial class DockingManager : Control
             rootCommandRequeryPending = false;
             LayoutRoot? root = rootCommandRequeryRoot;
             rootCommandRequeryRoot = null;
-            if (root != null && ReferenceEquals(root, Layout) && ReferenceEquals(root.Manager, this))
+            if (!isDisposed && root != null && ReferenceEquals(root, Layout) && ReferenceEquals(root.Manager, this))
             {
                 RequeryLayoutItemCommands();
             }
@@ -628,7 +753,7 @@ public partial class DockingManager : Control
 
     private void RefreshLayoutView()
     {
-        if (layoutHost == null)
+        if (isDisposed || layoutHost == null)
         {
             return;
         }

@@ -3,6 +3,7 @@ using System.Windows.Input;
 using AvalonDock.Controls;
 using AvalonDock.Core;
 using AvalonDock.Layout;
+using AvalonDock.Platforms;
 using Microsoft.UI.Input;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
@@ -26,7 +27,7 @@ public partial class ToggleDockingManager
     private void RefreshShortcuts()
     {
         RemoveShortcuts();
-        if (!IsLoaded || XamlRoot?.Content is not UIElement root)
+        if (IsDisposed || !IsLoaded || XamlRoot?.Content is not UIElement root)
         {
             return;
         }
@@ -45,41 +46,15 @@ public partial class ToggleDockingManager
     }
     private void OnShortcutKey(object sender, KeyRoutedEventArgs args)
     {
-        if (args.Handled)
+        if (IsDisposed || args.Handled)
         {
             return;
         }
 
-        VirtualKeyModifiers modifiers = VirtualKeyModifiers.None;
-        bool Down(VirtualKey key) => (InputKeyboardSource.GetKeyStateForCurrentThread(key) & CoreVirtualKeyStates.Down) != 0;
-        if (Down(VirtualKey.Control))
-        {
-            modifiers |= VirtualKeyModifiers.Control;
-        }
-
-        if (Down(VirtualKey.Shift))
-        {
-            modifiers |= VirtualKeyModifiers.Shift;
-        }
-
-        if (Down(VirtualKey.Menu))
-        {
-            modifiers |= VirtualKeyModifiers.Menu;
-        }
-
-        if (Down(VirtualKey.LeftWindows) || Down(VirtualKey.RightWindows))
-        {
-            modifiers |= VirtualKeyModifiers.Windows;
-        }
+        VirtualKeyModifiers modifiers = PlatformServices.Keyboard.GetModifiers();
         // WPF's RealKey distinguishes modifier sides. WinUI reports the generic key
         // with physical scan/extended metadata, so normalize only these three families.
-        VirtualKey key = args.Key switch
-        {
-            VirtualKey.Shift => args.KeyStatus.ScanCode == 0x36 ? VirtualKey.RightShift : VirtualKey.LeftShift,
-            VirtualKey.Control => args.KeyStatus.IsExtendedKey ? VirtualKey.RightControl : VirtualKey.LeftControl,
-            VirtualKey.Menu => args.KeyStatus.IsExtendedKey ? VirtualKey.RightMenu : VirtualKey.LeftMenu,
-            _ => args.Key
-        };
+        VirtualKey key = PlatformServices.Keyboard.NormalizeKey(args.Key, modifiers, args.KeyStatus);
         foreach ((ToggleToolboxCommand Command, VirtualKey Key, VirtualKeyModifiers Modifiers) shortcut in shortcuts.AsEnumerable().Reverse())
         {
             if (shortcut.Key == key && shortcut.Modifiers == modifiers && shortcut.Command.CanExecute(null))
@@ -116,11 +91,11 @@ public partial class ToggleDockingManager
             }
         }
 
-        public bool CanExecute(object? parameter) => true;
+        public bool CanExecute(object? parameter) => !manager.IsDisposed;
 
         public void Execute(object? parameter)
         {
-            if (!manager.toolboxToAnchorable.TryGetValue(toolbox, out LayoutAnchorable? anchorable))
+            if (manager.IsDisposed || !manager.toolboxToAnchorable.TryGetValue(toolbox, out LayoutAnchorable? anchorable))
             {
                 return;
             }

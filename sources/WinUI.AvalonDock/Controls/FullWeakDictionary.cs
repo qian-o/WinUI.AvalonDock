@@ -92,8 +92,20 @@ internal class FullWeakDictionary<K, V>
         return value is not null;
     }
 
-    /// <summary>
-    /// Removes all entries where either the key or the value (or both)
+    public bool Remove(K key)
+    {
+        CollectGarbage();
+        int index = keys.FindIndex(item => item.GetValueOrDefault<K>() == key);
+        if (index < 0)
+        {
+            return false;
+        }
+
+        keys.RemoveAt(index);
+        values.RemoveAt(index);
+        return true;
+    }
+
     /// have already been garbage collected.
     /// </summary>
     private void CollectGarbage()

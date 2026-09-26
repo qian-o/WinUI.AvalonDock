@@ -233,7 +233,11 @@ public class NavigatorWindow : Window
         {
             // Press Tab to switch Selected LayoutContent.
             case VirtualKey.Tab:
-                SetNextLayoutContent(true);
+                SetNextLayoutContent(PlatformServices.Keyboard.IsKeyDown(VirtualKey.Shift) == false);
+                e.Handled = true;
+                break;
+            case VirtualKey.Escape:
+                Abort();
                 e.Handled = true;
                 break;
             case VirtualKey.Left:
@@ -333,11 +337,20 @@ public class NavigatorWindow : Window
 
     protected virtual void OnKeyUp(KeyRoutedEventArgs e)
     {
-        if (e.Key is not (VirtualKey.Tab or VirtualKey.Left or VirtualKey.Right or VirtualKey.Up or VirtualKey.Down))
+        if (e.Key is VirtualKey.Escape)
         {
-            CloseAndActivateSelected();
+            Abort();
             e.Handled = true;
+            return;
         }
+
+        if (e.Key is VirtualKey.Tab or VirtualKey.Left or VirtualKey.Right or VirtualKey.Up or VirtualKey.Down or VirtualKey.Shift)
+        {
+            return;
+        }
+
+        CloseAndActivateSelected();
+        e.Handled = true;
     }
     public bool? ShowDialog()
     {

@@ -33,7 +33,7 @@ public partial class DockingManager
     }
     protected override void OnPreviewKeyDown(KeyRoutedEventArgs e)
     {
-        if (e.Key == VirtualKey.Tab && (InputKeyboardSource.GetKeyStateForCurrentThread(VirtualKey.Control) & CoreVirtualKeyStates.Down) != 0
+        if (e.Key == VirtualKey.Tab && PlatformServices.Keyboard.IsKeyDown(VirtualKey.Control)
             && ShowNavigator && navigatorWindow == null && layoutItems.Count != 0)
         {
             e.Handled = true;

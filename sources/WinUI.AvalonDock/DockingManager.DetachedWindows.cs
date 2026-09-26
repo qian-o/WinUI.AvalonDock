@@ -18,7 +18,7 @@ public partial class DockingManager
     private readonly Dictionary<LayoutAnchorable, DetachedEntry> detachedEntries = [];
     private void RestoreDetachedAnchorables(LayoutRoot layout)
     {
-        if (layout == null)
+        if (isDisposed || layout == null)
         {
             return;
         }
@@ -62,7 +62,7 @@ public partial class DockingManager
 
     private void SchedulePendingDetachedRestore()
     {
-        if (pendingDetachedRestoreRoot == null || pendingDetachedRestoreQueued)
+        if (isDisposed || pendingDetachedRestoreRoot == null || pendingDetachedRestoreQueued)
         {
             return;
         }
@@ -76,8 +76,8 @@ public partial class DockingManager
         pendingDetachedRestoreQueued = DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Normal, () =>
         {
             pendingDetachedRestoreQueued = false;
-            LayoutRoot layout = pendingDetachedRestoreRoot;
-            if (!IsLoaded || !ReferenceEquals(layout, Layout))
+            LayoutRoot? layout = pendingDetachedRestoreRoot;
+            if (isDisposed || !IsLoaded || layout == null || !ReferenceEquals(layout, Layout))
             {
                 return;
             }
@@ -99,11 +99,28 @@ public partial class DockingManager
             }
         });
     }
+
+    private void CancelPendingDetachedRestore()
+    {
+        LayoutRoot? root = pendingDetachedRestoreRoot;
+        LayoutAnchorable[] anchorables = pendingDetachedRestores;
+        pendingDetachedRestoreRoot = null;
+        pendingDetachedRestores = [];
+        pendingDetachedRestoreQueued = false;
+        foreach (LayoutAnchorable anchorable in anchorables)
+        {
+            if (root != null && ReferenceEquals(anchorable.Root, root))
+            {
+                anchorable.IsDetached = true;
+            }
+        }
+    }
+
     public IEnumerable<LayoutAnchorable> DetachedAnchorables => detachedEntries.Keys.ToList();
     public bool IsDetached(LayoutAnchorable anchorable) => anchorable != null && detachedEntries.ContainsKey(anchorable);
     public void DetachAnchorableToWindow(LayoutAnchorable anchorable)
     {
-        if (!AllowDetachedWindows)
+        if (isDisposed || !AllowDetachedWindows)
         {
             return;
         }
@@ -215,7 +232,7 @@ public partial class DockingManager
         }
 
         ContentPresenter? view = entry.Window.ReleaseView();
-        if (view != null && ReferenceEquals(anchorable.Root, formerLayout ?? Layout))
+        if (!isDisposed && view != null && ReferenceEquals(anchorable.Root, formerLayout ?? Layout))
         {
             InternalAddLogicalChild(view);
         }
@@ -225,16 +242,19 @@ public partial class DockingManager
             entry.Window.WindowHost.Dispose();
         }
 
-        if (returnToLayout && ReferenceEquals(anchorable.Root, formerLayout ?? Layout))
+        if (!isDisposed && returnToLayout && ReferenceEquals(anchorable.Root, formerLayout ?? Layout))
         {
             ReturnToLayout(anchorable, entry.RestoreState);
         }
 
-        OnDetachedAnchorablesChanged(anchorable);
+        if (!isDisposed)
+        {
+            OnDetachedAnchorablesChanged(anchorable);
+        }
     }
     private void OnDetachedModelChanged(object? sender, PropertyChangedEventArgs args)
     {
-        if (sender is not LayoutAnchorable anchorable || args.PropertyName is not (nameof(LayoutElement.Root) or nameof(LayoutElement.Parent))
+        if (isDisposed || sender is not LayoutAnchorable anchorable || args.PropertyName is not (nameof(LayoutElement.Root) or nameof(LayoutElement.Parent))
             || !detachedEntries.TryGetValue(anchorable, out DetachedEntry? entry))
         {
             return;
@@ -242,7 +262,7 @@ public partial class DockingManager
 
         DispatcherQueue.TryEnqueue(() =>
         {
-            if (detachedEntries.TryGetValue(anchorable, out DetachedEntry? current) && ReferenceEquals(current, entry)
+            if (!isDisposed && detachedEntries.TryGetValue(anchorable, out DetachedEntry? current) && ReferenceEquals(current, entry)
                 && (!ReferenceEquals(anchorable.Root, Layout) || !Layout.Descendents().Contains(anchorable)))
             {
                 ReturnDetached(anchorable, false);

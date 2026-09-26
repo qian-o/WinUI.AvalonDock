@@ -9,11 +9,12 @@ namespace AvalonDock.Controls;
 /// <summary>
 /// Represents the auto Hide Window Manager.
 /// </summary>
-internal class AutoHideWindowManager
+internal class AutoHideWindowManager : IDisposable
 {
-    private DockingManager manager;
+    private readonly DockingManager manager;
     private WeakReference? currentAutohiddenAnchor;
     private readonly DispatcherQueueTimer closeTimer;
+    private bool disposed;
     private bool hidingWindow;
 
     /// <summary>
@@ -33,7 +34,7 @@ internal class AutoHideWindowManager
     /// <param name="anchor">The anchor.</param>
     public void ShowAutoHideWindow(LayoutAnchorControl anchor)
     {
-        if (hidingWindow || manager.AutoHideWindow is not { } autoHideWindow)
+        if (disposed || manager.IsDisposed || hidingWindow || manager.AutoHideWindow is not { } autoHideWindow)
         {
             return;
         }
@@ -53,7 +54,7 @@ internal class AutoHideWindowManager
     /// <param name="anchor">The anchor.</param>
     public void HideAutoWindow(LayoutAnchorControl? anchor = null)
     {
-        if (hidingWindow)
+        if (disposed || hidingWindow)
         {
             return;
         }
@@ -72,23 +73,53 @@ internal class AutoHideWindowManager
     private void SetupCloseTimer()
     {
         UpdateCloseDelay(manager.AutoHideDelay);
-        closeTimer.Tick += (s, e) =>
-        {
-            if (manager.AutoHideWindow is { } window && (window.IsPointerWithin ||
-                window.Model is LayoutAnchorable { IsActive: true } || window.IsResizing))
-            {
-                return;
-            }
-
-            StopCloseTimer();
-        };
+        closeTimer.Tick += OnCloseTimerTick;
     }
 
-    internal void UpdateCloseDelay(int delay) => closeTimer.Interval = TimeSpan.FromMilliseconds(delay);
+    private void OnCloseTimerTick(object? sender, object args)
+    {
+        if (disposed)
+        {
+            return;
+        }
+
+        if (manager.AutoHideWindow is { } window && (window.IsPointerWithin ||
+            window.Model is LayoutAnchorable { IsActive: true } || window.IsResizing))
+        {
+            return;
+        }
+
+        StopCloseTimer();
+    }
+
+    public void Dispose()
+    {
+        if (disposed)
+        {
+            return;
+        }
+
+        disposed = true;
+        closeTimer.Tick -= OnCloseTimerTick;
+        closeTimer.Stop();
+        StopCloseTimer();
+        currentAutohiddenAnchor = null;
+    }
+
+    internal void UpdateCloseDelay(int delay)
+    {
+        if (!disposed)
+        {
+            closeTimer.Interval = TimeSpan.FromMilliseconds(delay);
+        }
+    }
 
     private void StartCloseTimer()
     {
-        closeTimer.Start();
+        if (!disposed)
+        {
+            closeTimer.Start();
+        }
     }
 
     private void StopCloseTimer()

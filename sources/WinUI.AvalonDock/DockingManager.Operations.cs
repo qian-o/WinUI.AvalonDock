@@ -13,6 +13,7 @@ namespace AvalonDock;
 public partial class DockingManager
 {
     private readonly Dictionary<LayoutFloatingWindow, IDockingWindowHost> floatingHosts = [];
+    private readonly Dictionary<IDockingWindowHost, FloatingHostSubscriptions> floatingHostSubscriptions = [];
     private readonly Dictionary<LayoutAnchorable, IDockingWindowHost> detachedHosts = [];
     private bool synchronizingWindows;
     private readonly HashSet<IDockingWindowHost> managerHiddenHosts = [];
@@ -228,7 +229,7 @@ public partial class DockingManager
 
     private LayoutFloatingWindowControl? StartFloatingContent(LayoutContent contentModel)
     {
-        if (!TryBeginContentFloating(contentModel))
+        if (isDisposed || !TryBeginContentFloating(contentModel))
         {
             return null;
         }
@@ -333,13 +334,16 @@ public partial class DockingManager
 
     private void AttachFloatingHost(LayoutFloatingWindow model, IDockingWindowHost host)
     {
-        host.MoveChanged += (_, update) =>
+        EventHandler<WindowMoveUpdate> moveChanged = (_, update) =>
         {
-            OnWindowMove(model, host, update);
+            if (!isDisposed)
+            {
+                OnWindowMove(model, host, update);
+            }
         };
-        host.Closing += (_, args) =>
+        EventHandler<CancelEventArgs> closing = (_, args) =>
         {
-            if (controlsByHost.ContainsKey(host))
+            if (isDisposed || controlsByHost.ContainsKey(host))
             {
                 return;
             }
@@ -361,7 +365,7 @@ public partial class DockingManager
                 }
             }
         };
-        host.Closed += (_, _) =>
+        EventHandler closed = (_, _) =>
         {
             if (ReferenceEquals(chromeDragHost, host) || ReferenceEquals(paneDragHost, host)
                 || ReferenceEquals(tabDragHost, host)
@@ -371,16 +375,33 @@ public partial class DockingManager
             }
 
             floatingHosts.Remove(model);
-            if (!model.Descendents().OfType<LayoutContent>().Any())
+            if (!isDisposed && !model.Descendents().OfType<LayoutContent>().Any())
             {
                 Layout?.FloatingWindows.Remove(model);
             }
         };
+        floatingHostSubscriptions.Add(host, new FloatingHostSubscriptions(moveChanged, closing, closed));
+        host.MoveChanged += moveChanged;
+        host.Closing += closing;
+        host.Closed += closed;
     }
+
+    private void DetachFloatingHost(IDockingWindowHost host)
+    {
+        if (floatingHostSubscriptions.Remove(host, out FloatingHostSubscriptions? subscriptions))
+        {
+            host.MoveChanged -= subscriptions.MoveChanged;
+            host.Closing -= subscriptions.Closing;
+            host.Closed -= subscriptions.Closed;
+        }
+    }
+
+    private sealed record FloatingHostSubscriptions(EventHandler<WindowMoveUpdate> MoveChanged,
+        EventHandler<CancelEventArgs> Closing, EventHandler Closed);
 
     private void SynchronizeWindowHosts()
     {
-        if (synchronizingWindows)
+        if (isDisposed || synchronizingWindows)
         {
             return;
         }
@@ -452,41 +473,41 @@ public partial class DockingManager
         }
     }
 
-    private void CloseWindowHosts(LayoutRoot? oldLayout)
+    private void CloseWindowHosts(LayoutRoot? oldLayout, bool preserveLayout = false)
     {
-        CloseDetachedWindows(true, oldLayout);
-        KeyValuePair<LayoutFloatingWindow, IDockingWindowHost>[] oldFloatingHosts = floatingHosts.ToArray();
+        IDockingWindowHost[] oldFloatingHosts = floatingHosts.Values.Concat(controlsByHost.Keys).Distinct().ToArray();
+        foreach (IDockingWindowHost host in oldFloatingHosts)
+        {
+            if (controlsByHost.TryGetValue(host, out LayoutFloatingWindowControl? control))
+            {
+                control.UpdatePositionAndSizeOfPanes();
+                control.DisableBindings();
+            }
+        }
+
+        // 原生关闭回调会按 Manager 删除浮动模型；永久释放必须先断开所有权。
+        if (preserveLayout && oldLayout != null && ReferenceEquals(oldLayout.Manager, this))
+        {
+            oldLayout.Manager = null;
+        }
+
+        CloseDetachedWindows(!preserveLayout, oldLayout);
         IDockingWindowHost[] remainingDetachedHosts = detachedHosts.Values.ToArray();
         floatingHosts.Clear();
         detachedHosts.Clear();
         managerHiddenHosts.Clear();
-        foreach ((LayoutFloatingWindow? model, IDockingWindowHost? host) in oldFloatingHosts)
+        foreach (IDockingWindowHost host in oldFloatingHosts)
         {
-            if (controlsByHost.TryGetValue(host, out LayoutFloatingWindowControl? control))
-            {
-                // The original manager calls InternalClose before disconnecting the old
-                // root. A canceled close leaves its window and model alive but clears the
-                // manager's floating-control list for the replacement layout.
-                control.InternalClose();
-                if (!host.IsClosed)
-                {
-                    controlsByHost.Remove(host);
-                    floatingControls.Remove(control);
-                }
-            }
-            else
-            {
-                host.Dispose();
-                if (ReferenceEquals(model.Root, oldLayout))
-                {
-                    oldLayout?.FloatingWindows.Remove(model);
-                }
-            }
+            DetachFloatingHost(host);
+            host.Dispose();
+            ReleaseFloatingControl(host);
         }
         foreach (IDockingWindowHost? host in remainingDetachedHosts)
         {
             host.Dispose();
         }
+        controlsByHost.Clear();
+        floatingControls.Clear();
     }
 
     private void HideWindowHosts()
@@ -510,6 +531,11 @@ public partial class DockingManager
 
     private void ShowWindowHosts()
     {
+        if (isDisposed)
+        {
+            return;
+        }
+
         // WPF re-enables every retained floating control, including windows that were
         // already hidden before manager unload. Visibility intent is handled separately.
         foreach (IDockingWindowHost? host in floatingHosts.Values.ToArray())

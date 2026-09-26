@@ -77,25 +77,78 @@ public partial class ToggleDockingManager : DockingManager
             Source = new Uri("ms-appx:///WinUI.AvalonDock/Themes/Generic.xaml")
         };
         AnchorablePaneControlStyle = defaultPaneStyle = (Style)defaults["ToggleAnchorablePaneControlStyle"];
-        Loaded += (_, _) => { ObserveLayout(); ReapplyThemeStyles(); };
-        Unloaded += (_, _) =>
-        {
-            StopZoneDrag();
-            RemoveToggleDockButtonBars();
-            ObserveLayout(null);
-            DispatcherQueue.TryEnqueue(() => { if (IsLoaded && leftTopBar == null) { ObserveLayout(); ReapplyThemeStyles(); } });
-        };
-        ActiveContentChanged += (_, _) => RefreshButtonStates();
+        Loaded += OnToggleLoaded;
+        Unloaded += OnToggleUnloaded;
+        ActiveContentChanged += OnToggleActiveContentChanged;
     }
+
+    protected override void Dispose(bool disposing)
+    {
+        try
+        {
+            if (disposing)
+            {
+                Loaded -= OnToggleLoaded;
+                Unloaded -= OnToggleUnloaded;
+                ActiveContentChanged -= OnToggleActiveContentChanged;
+                StopZoneDrag();
+                ObserveLayout(null);
+                RemoveToggleDockButtonBars();
+                detachedZones.Clear();
+                refreshQueued = false;
+            }
+        }
+        finally
+        {
+            base.Dispose(disposing);
+        }
+    }
+
+    private void OnToggleLoaded(object sender, RoutedEventArgs args)
+    {
+        if (!IsDisposed)
+        {
+            ObserveLayout();
+            ReapplyThemeStyles();
+        }
+    }
+
+    private void OnToggleUnloaded(object sender, RoutedEventArgs args)
+    {
+        if (IsDisposed)
+        {
+            return;
+        }
+
+        StopZoneDrag();
+        RemoveToggleDockButtonBars();
+        ObserveLayout(null);
+        DispatcherQueue.TryEnqueue(() =>
+        {
+            if (!IsDisposed && IsLoaded && leftTopBar == null)
+            {
+                ObserveLayout();
+                ReapplyThemeStyles();
+            }
+        });
+    }
+
+    private void OnToggleActiveContentChanged(object? sender, EventArgs args) => RefreshButtonStates();
+
     protected override void OnDockLayoutChanged(IRootDock? oldValue, IRootDock? newValue)
     {
+        if (IsDisposed)
+        {
+            return;
+        }
+
         base.OnDockLayoutChanged(oldValue, newValue);
         if (IsLoaded)
         {
             SetupToggleDockButtonBars();
             DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Low, () =>
             {
-                if (!IsLoaded)
+                if (IsDisposed || !IsLoaded)
                 {
                     return;
                 }
@@ -108,6 +161,11 @@ public partial class ToggleDockingManager : DockingManager
     }
     protected override void OnLayoutChanged(LayoutRoot? oldLayout, LayoutRoot newLayout)
     {
+        if (IsDisposed)
+        {
+            return;
+        }
+
         List<LayoutAnchorable> restoreDocked = CollectDockedAnchorables(newLayout);
         base.OnLayoutChanged(oldLayout, newLayout);
         if (oldLayout == null || detachedZones == null)
@@ -139,7 +197,7 @@ public partial class ToggleDockingManager : DockingManager
     protected override void OnThemeChanged(DependencyPropertyChangedEventArgs e)
     {
         base.OnThemeChanged(e);
-        if (IsLoaded)
+        if (!IsDisposed && IsLoaded)
         {
             DispatcherQueue.TryEnqueue(ReapplyThemeStyles);
         }
@@ -148,14 +206,14 @@ public partial class ToggleDockingManager : DockingManager
     {
         RemoveToggleDockButtonBars();
         base.OnApplyTemplate();
-        if (IsLoaded)
+        if (!IsDisposed && IsLoaded)
         {
             ReapplyThemeStyles();
         }
     }
     private void ReapplyThemeStyles()
     {
-        if (!IsLoaded || settingUp)
+        if (IsDisposed || !IsLoaded || settingUp)
         {
             return;
         }
@@ -169,6 +227,11 @@ public partial class ToggleDockingManager : DockingManager
     }
     public void ToggleAnchorable(LayoutAnchorable anchorable, DockZone zone)
     {
+        if (IsDisposed)
+        {
+            return;
+        }
+
         if (IsDetached(anchorable))
         {
             ActivateDetachedWindow(anchorable);
@@ -207,7 +270,7 @@ public partial class ToggleDockingManager : DockingManager
     }
     public void MoveAnchorableToZone(LayoutAnchorable anchorable, DockZone targetZone)
     {
-        if (anchorable == null)
+        if (IsDisposed || anchorable == null)
         {
             return;
         }
@@ -300,7 +363,7 @@ public partial class ToggleDockingManager : DockingManager
     }
     private void SetupToggleDockButtonBars()
     {
-        if (settingUp)
+        if (IsDisposed || settingUp)
         {
             return;
         }
@@ -454,6 +517,7 @@ public partial class ToggleDockingManager : DockingManager
 
         leftTopBar = leftBottomBar = rightTopBar = rightBottomBar = bottomLeftBar = bottomRightBar = null;
         injectedLeftDockPanel = injectedRightDockPanel = null;
+        leftSeparator = rightSeparator = null;
         injectedRoot = null;
         hiddenButton = null;
     }
@@ -492,7 +556,7 @@ public partial class ToggleDockingManager : DockingManager
             observedLayout.ElementAdded -= OnToggleElementChanged;
             observedLayout.ElementRemoved -= OnToggleElementChanged;
         }
-        observedLayout = layout;
+        observedLayout = IsDisposed ? null : layout;
         if (observedLayout != null)
         {
             observedLayout.Updated += OnToggleLayoutUpdated;
@@ -503,7 +567,7 @@ public partial class ToggleDockingManager : DockingManager
     private void OnToggleElementChanged(object? sender, LayoutElementEventArgs args) => OnToggleLayoutUpdated(sender, args);
     private void OnToggleLayoutUpdated(object? sender, EventArgs e)
     {
-        if (settingUp || refreshQueued || !IsLoaded)
+        if (IsDisposed || settingUp || refreshQueued || !IsLoaded)
         {
             return;
         }
@@ -512,7 +576,7 @@ public partial class ToggleDockingManager : DockingManager
         DispatcherQueue.TryEnqueue(() =>
         {
             refreshQueued = false;
-            if (!IsLoaded || leftTopBar == null)
+            if (IsDisposed || !IsLoaded || leftTopBar == null)
             {
                 return;
             }
@@ -566,11 +630,19 @@ public partial class ToggleDockingManager : DockingManager
 
     private void QueuePinButtonUpdate()
     {
-        DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Low, UpdatePinButtonsToMinimize);
+        if (!IsDisposed)
+        {
+            DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Low, UpdatePinButtonsToMinimize);
+        }
     }
 
     private void UpdatePinButtonsToMinimize()
     {
+        if (IsDisposed || !IsLoaded)
+        {
+            return;
+        }
+
         foreach (AnchorablePaneTitle title in Visuals<AnchorablePaneTitle>(this))
         {
             // The source leaves the specialized title's own template buttons alone.

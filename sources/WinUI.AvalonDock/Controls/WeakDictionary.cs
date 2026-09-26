@@ -90,8 +90,20 @@ internal class WeakDictionary<K, V>
         return true;
     }
 
-    /// <summary>
-    /// Removes all entries where the key has already been garbage collected.
+    public bool Remove(K key)
+    {
+        CollectGarbage();
+        int index = keys.FindIndex(item => item.GetValueOrDefault<K>() == key);
+        if (index < 0)
+        {
+            return false;
+        }
+
+        keys.RemoveAt(index);
+        values.RemoveAt(index);
+        return true;
+    }
+
     /// </summary>
     private void CollectGarbage()
     {

@@ -34,7 +34,7 @@ public abstract partial class LayoutFloatingWindowControl
     internal FrameworkElement? HostedRoot => (Content as FloatingWindowContentHost)?.RootVisual as FrameworkElement ?? Content as FrameworkElement;
 
     /// <summary>Hosts floating content in a native child XAML root through the platform adapter.</summary>
-    protected internal class FloatingWindowContentHost : HwndHost
+    protected internal class FloatingWindowContentHost : ChildWindowHost
     {
         private readonly LayoutFloatingWindowControl owner;
         private Border? rootPresenter;
@@ -98,7 +98,7 @@ public abstract partial class LayoutFloatingWindowControl
             QueueContentSize();
         }
 
-        protected override HandleRef BuildWindowCore(HandleRef hwndParent)
+        protected override void OnHostConnected()
         {
             ReleaseHostedContent();
             rootPresenter = new Border { Child = Content };
@@ -109,9 +109,8 @@ public abstract partial class LayoutFloatingWindowControl
             UpdatePresentation();
             HostedRoot = rootPresenter;
             QueueContentSize();
-            return PreparedChild;
         }
-        protected override void DestroyWindowCore(HandleRef hwnd) => ReleaseHostedContent();
+        protected override void OnHostDisconnected() => ReleaseHostedContent();
         internal void ReleaseHostedContent()
         {
             ObserveManager(null);

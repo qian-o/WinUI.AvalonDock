@@ -21,7 +21,7 @@ public partial class DockingManager
 
     public LayoutFloatingWindowControl? CreateFloatingWindow(LayoutContent contentModel, bool isContentImmutable)
     {
-        if (!AllowFloatingWindows)
+        if (isDisposed || !AllowFloatingWindows)
         {
             return null;
         }
@@ -73,7 +73,7 @@ public partial class DockingManager
 
     private LayoutFloatingWindowControl? CreateFloatingWindowForLayoutAnchorableWithoutParent(LayoutAnchorablePane paneModel, bool isContentImmutable)
     {
-        if (!AllowFloatingWindows)
+        if (isDisposed || !AllowFloatingWindows)
         {
             return null;
         }
@@ -198,7 +198,7 @@ public partial class DockingManager
 
     private LayoutFloatingWindowControl? CreateFloatingWindowCore(LayoutContent contentModel, bool isContentImmutable)
     {
-        if (!AllowFloatingWindows)
+        if (isDisposed || !AllowFloatingWindows)
         {
             return null;
         }
@@ -354,6 +354,7 @@ public partial class DockingManager
     private IDockingWindowHost CreatePublicWindowHost(LayoutFloatingWindow model, string? title, Rect bounds, bool immutable = false,
         WindowPlacement placement = WindowPlacement.ConstrainToWorkArea)
     {
+        ObjectDisposedException.ThrowIf(isDisposed, this);
         LayoutFloatingWindowControl control = model switch
         {
             LayoutDocumentFloatingWindow document => new LayoutDocumentFloatingWindowControl(document, immutable),
@@ -369,7 +370,7 @@ public partial class DockingManager
             control.AttachHost(host);
             floatingControls.Add(control);
             controlsByHost.Add(host, control);
-            host.Closed += (_, _) => ReleaseFloatingControl(host);
+            host.Closed += OnFloatingControlHostClosed;
             return host;
         }
         catch
@@ -413,6 +414,8 @@ public partial class DockingManager
 
     private void ReleaseFloatingControl(IDockingWindowHost host)
     {
+        host.Closed -= OnFloatingControlHostClosed;
+        DetachFloatingHost(host);
         // The derived OnClosed normally removes the control first. Native disposal can
         // also arrive after its model has lost the root that owns that source hook.
         if (!controlsByHost.TryGetValue(host, out LayoutFloatingWindowControl? control))
@@ -421,7 +424,18 @@ public partial class DockingManager
         }
 
         RemoveFloatingWindow(control);
-        control.Model?.Root?.CollectGarbage();
+        if (!isDisposed)
+        {
+            control.Model?.Root?.CollectGarbage();
+        }
+    }
+
+    private void OnFloatingControlHostClosed(object? sender, EventArgs args)
+    {
+        if (sender is IDockingWindowHost host)
+        {
+            ReleaseFloatingControl(host);
+        }
     }
 
     private void NotifyFloatingControlCreated(IDockingWindowHost host)
@@ -435,7 +449,7 @@ public partial class DockingManager
     public void DockAllFloatingWindows()
     {
         LayoutRoot layout = Layout;
-        if (layout == null)
+        if (isDisposed || layout == null)
         {
             return;
         }

@@ -93,15 +93,9 @@ public partial class DockingManager
     private void ApplyStyleToLayoutItem(LayoutItem layoutItem)
     {
         layoutItem.ClearDefaultBindingsForManager();
-        if (LayoutItemContainerStyle != null)
-        {
-            layoutItem.Style = LayoutItemContainerStyle;
-        }
-        else if (LayoutItemContainerStyleSelector != null)
-        {
-            layoutItem.Style = LayoutItemContainerStyleSelector.SelectStyle(layoutItem.Model, layoutItem);
-        }
-
+        Style? style = LayoutItemContainerStyle
+            ?? LayoutItemContainerStyleSelector?.SelectStyle(layoutItem.Model, layoutItem);
+        layoutItem.ApplyManagerStyle(style);
         layoutItem.SetDefaultBindingsForManager();
     }
 

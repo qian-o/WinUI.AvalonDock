@@ -9,13 +9,15 @@ namespace AvalonDock.Controls;
 internal sealed record OverlayTarget(ILayoutGroup Model, FrameworkElement Area, DropTargetType Type, Rect ScreenBounds);
 
 /// <summary>Reuses one overlay window per destination and closes it when the destination unloads.</summary>
-internal sealed class DockingOverlay
+internal sealed class DockingOverlay : IDisposable
 {
     private readonly Dictionary<FrameworkElement, OverlayWindow> windows = [];
     private OverlayWindow? active;
+    private bool disposed;
 
     internal OverlayWindow Show(IOverlayWindowHost host, LayoutFloatingWindowControl source)
     {
+        ObjectDisposedException.ThrowIf(disposed, this);
         FrameworkElement destination = OverlayHost.Element(host) ?? throw new InvalidOperationException("An overlay host requires connected content.");
         if (!destination.IsLoaded || !ReferenceEquals(source.Model?.Root?.Manager, host.Manager) || ReferenceEquals(host, source))
         {
@@ -43,6 +45,24 @@ internal sealed class DockingOverlay
         }
 
         return window;
+    }
+
+    public void Dispose()
+    {
+        if (disposed)
+        {
+            return;
+        }
+
+        disposed = true;
+        KeyValuePair<FrameworkElement, OverlayWindow>[] ownedWindows = windows.ToArray();
+        windows.Clear();
+        active = null;
+        foreach (KeyValuePair<FrameworkElement, OverlayWindow> entry in ownedWindows)
+        {
+            entry.Key.Unloaded -= OnHostUnloaded;
+            entry.Value.CloseHost();
+        }
     }
 
     internal void Hide(IOverlayWindowHost host)

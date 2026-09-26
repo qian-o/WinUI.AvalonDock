@@ -9,11 +9,11 @@ using Windows.Graphics;
 
 namespace AvalonDock.Platforms.Windows;
 
-internal sealed class WindowsChildWindowHost(HwndHost owner) : IChildWindowHost
+internal sealed class WindowsChildWindowHost(IChildWindowHostOwner owner) : IChildWindowHost
 {
     [ThreadStatic] private static List<WeakReference<WindowsChildWindowHost>>? nativeHosts;
     private int connectionVersion;
-    internal HwndHost Owner => owner;
+    internal FrameworkElement Owner => owner.Element;
     internal int ConnectionVersion => connectionVersion;
     internal bool ContainsNativeChild(nint child) => connected && !disconnecting && source == null
         && nativeChild != 0 && IsChild(nativeChild, child);
@@ -36,6 +36,8 @@ internal sealed class WindowsChildWindowHost(HwndHost owner) : IChildWindowHost
     private bool buildStarted;
     private nint nativeChild;
     private nint nativeParent;
+    private bool semanticContentBuilt;
+    private readonly HwndHost? legacyOwner = owner as HwndHost;
     public UIElement? RootVisual
     {
         get => root;
@@ -51,41 +53,55 @@ internal sealed class WindowsChildWindowHost(HwndHost owner) : IChildWindowHost
 
     public void Connect()
     {
-        if (connected || source != null || !owner.IsLoaded || owner.Visibility != Visibility.Visible || owner.XamlRoot == null)
+        if (connected || source != null || !owner.Element.IsLoaded || owner.Element.Visibility != Visibility.Visible || owner.Element.XamlRoot == null)
         {
             return;
         }
 
-        nint parent = Win32Interop.GetWindowFromWindowId(owner.XamlRoot.ContentIslandEnvironment.AppWindowId);
+        FrameworkElement element = owner.Element;
+        XamlRoot xamlRoot = element.XamlRoot ?? throw new InvalidOperationException("A child-window host requires a connected XamlRoot.");
+        nint parent = Win32Interop.GetWindowFromWindowId(xamlRoot.ContentIslandEnvironment.AppWindowId);
         nativeParent = parent;
         source = new DesktopWindowXamlSource();
         try
         {
             source.Initialize(Win32Interop.GetWindowIdFromWindow(parent));
-            owner.PreparedChild = new HandleRef(owner, Win32Interop.GetWindowFromWindowId(source.SiteBridge.WindowId));
-            buildStarted = true;
-            owner.BuildNativeHost(new HandleRef(owner, parent));
-            if (owner.Handle == 0 || !IsWindow(owner.Handle) || GetParent(owner.Handle) != parent || (GetWindowLongPtrW(owner.Handle, -16) & 0x40000000) == 0)
+            if (legacyOwner is { } legacy)
             {
-                throw new InvalidOperationException("BuildWindowCore must return a live child window of the supplied parent.");
-            }
+                legacy.PreparedChild = new HandleRef(legacy, Win32Interop.GetWindowFromWindowId(source.SiteBridge.WindowId));
+                buildStarted = true;
+                legacy.BuildNativeHost(new HandleRef(legacy, parent));
+                if (legacy.Handle == 0 || !IsWindow(legacy.Handle) || GetParent(legacy.Handle) != parent || (GetWindowLongPtrW(legacy.Handle, -16) & 0x40000000) == 0)
+                {
+                    throw new InvalidOperationException("BuildWindowCore must return a live child window of the supplied parent.");
+                }
 
-            nativeChild = owner.Handle;
-            connected = true;
-            connectionVersion++;
-            if (nativeChild == owner.PreparedChild.Handle)
-            {
-                source.Content = root;
-                source.TakeFocusRequested += OnTakeFocusRequested;
+                nativeChild = legacy.Handle;
+                if (nativeChild == legacy.PreparedChild.Handle)
+                {
+                    source.Content = owner.RootVisual;
+                    source.TakeFocusRequested += OnTakeFocusRequested;
+                }
+                else
+                {
+                    // A derived legacy host may supply a native child instead of the prepared XAML island.
+                    source.Dispose();
+                    source = null;
+                    legacy.PreparedChild = default;
+                    (nativeHosts ??= []).Add(new WeakReference<WindowsChildWindowHost>(this));
+                }
             }
             else
             {
-                // A derived host may supply a native child instead of the prepared XAML island.
-                source.Dispose();
-                source = null;
-                owner.PreparedChild = default;
-                (nativeHosts ??= []).Add(new WeakReference<WindowsChildWindowHost>(this));
+                owner.BuildHostContent();
+                semanticContentBuilt = true;
+                source.Content = owner.RootVisual;
+                source.TakeFocusRequested += OnTakeFocusRequested;
+                nativeChild = Win32Interop.GetWindowFromWindowId(source.SiteBridge.WindowId);
             }
+
+            connected = true;
+            connectionVersion++;
             UpdateBounds();
             if (source != null)
             {
@@ -110,13 +126,15 @@ internal sealed class WindowsChildWindowHost(HwndHost owner) : IChildWindowHost
 
     public void UpdateBounds()
     {
-        if (!connected || !owner.IsLoaded || owner.XamlRoot == null || disconnecting)
+        FrameworkElement element = owner.Element;
+        if (!connected || !element.IsLoaded || element.XamlRoot == null || disconnecting)
         {
             return;
         }
 
-        GeneralTransform transform = owner.TransformToVisual(null);
-        Rect rectangle = transform.TransformBounds(new Rect(0, 0, owner.ActualWidth, owner.ActualHeight));
+        XamlRoot xamlRoot = element.XamlRoot;
+        GeneralTransform transform = element.TransformToVisual(null);
+        Rect rectangle = transform.TransformBounds(new Rect(0, 0, element.ActualWidth, element.ActualHeight));
         if (source != null)
         {
             Point originInRoot = transform.TransformPoint(default);
@@ -128,20 +146,20 @@ internal sealed class WindowsChildWindowHost(HwndHost owner) : IChildWindowHost
             // can be reproduced exactly through the XAML island's rasterization override.
             if (xScale > 0 && Math.Abs(xScale - yScale) < .001 && Math.Abs(xAxis.Y - originInRoot.Y) < .001 && Math.Abs(yAxis.X - originInRoot.X) < .001)
             {
-                float scale = (float)(owner.XamlRoot.RasterizationScale * xScale);
+                float scale = (float)(xamlRoot.RasterizationScale * xScale);
                 if (Math.Abs(source.SiteBridge.OverrideScale - scale) > .001)
                 {
                     source.SiteBridge.OverrideScale = scale;
                 }
             }
         }
-        RectInt32 screen = owner.XamlRoot.CoordinateConverter.ConvertLocalToScreen(rectangle);
+        RectInt32 screen = xamlRoot.CoordinateConverter.ConvertLocalToScreen(rectangle);
         NativePoint origin = new()
         {
             X = screen.X,
             Y = screen.Y
         };
-        nint parent = Win32Interop.GetWindowFromWindowId(owner.XamlRoot.ContentIslandEnvironment.AppWindowId);
+        nint parent = Win32Interop.GetWindowFromWindowId(xamlRoot.ContentIslandEnvironment.AppWindowId);
         if (!ScreenToClient(parent, ref origin))
         {
             return;
@@ -182,9 +200,14 @@ internal sealed class WindowsChildWindowHost(HwndHost owner) : IChildWindowHost
                 previous.TakeFocusRequested -= OnTakeFocusRequested;
             }
 
-            if (buildStarted)
+            if (legacyOwner is { } legacy)
             {
-                owner.DestroyNativeHost();
+                legacy.DestroyNativeHost();
+            }
+            else if (semanticContentBuilt)
+            {
+                owner.ReleaseHostContent();
+                semanticContentBuilt = false;
             }
         }
         finally
@@ -214,7 +237,10 @@ internal sealed class WindowsChildWindowHost(HwndHost owner) : IChildWindowHost
                 nativeChild = nativeParent = 0;
                 root = null;
                 bounds = default;
-                owner.PreparedChild = default;
+                if (legacyOwner is { } legacy)
+                {
+                    legacy.PreparedChild = default;
+                }
                 disconnecting = false;
                 owner.NotifyDisconnected();
             }

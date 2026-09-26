@@ -297,6 +297,11 @@ public partial class ToggleDockingManager
     }
     internal void RegisterToolbox(IToolbox toolbox, LayoutAnchorable anchorable)
     {
+        if (IsDisposed)
+        {
+            return;
+        }
+
         if (toolboxToAnchorable.ContainsKey(toolbox))
         {
             toolboxToAnchorable[toolbox] = anchorable;
@@ -325,7 +330,7 @@ public partial class ToggleDockingManager
     }
     private void OnToolboxPropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
-        if (e.PropertyName != nameof(IToolbox.IsOpen) || syncDepth > 0)
+        if (IsDisposed || e.PropertyName != nameof(IToolbox.IsOpen) || syncDepth > 0)
         {
             return;
         }
@@ -482,6 +487,11 @@ public partial class ToggleDockingManager
     }
     private void RefreshButtonStates()
     {
+        if (IsDisposed)
+        {
+            return;
+        }
+
         object? activeContent = ActiveContent;
         RefreshBarStates(leftTopBar, activeContent);
         RefreshBarStates(leftBottomBar, activeContent);

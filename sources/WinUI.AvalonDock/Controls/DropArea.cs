@@ -58,19 +58,25 @@ public class DropArea<T> : IDropArea where T : FrameworkElement
 
 internal static class FloatingDropAreaRules
 {
-    internal static bool CanDockAsDocument(LayoutFloatingWindowControl draggingWindow)
+    internal static bool CanDockAsDocument(LayoutFloatingWindowControl draggingWindow) =>
+        CanDockAsDocument(draggingWindow.Model);
+
+    internal static bool CanDockAsDocument(ILayoutElement? draggingModel)
     {
-        if (draggingWindow.Model is not LayoutAnchorableFloatingWindow tools)
+        if (draggingModel is not LayoutAnchorableFloatingWindow tools)
         {
             return true;
         }
 
-        if (tools.IsSinglePane && tools.SinglePane is LayoutAnchorablePane { SelectedContent: LayoutAnchorable selected })
-        {
-            return selected.CanDockAsTabbedDocument != false;
-        }
-
-        return tools.RootPanel?.Descendents().OfType<LayoutAnchorable>()
-            .All(item => item.CanDockAsTabbedDocument != false) != false;
+        LayoutAnchorable[] anchorables = tools.RootPanel?.Descendents().OfType<LayoutAnchorable>().ToArray() ?? [];
+        return anchorables.Length > 0 && anchorables.All(item => item.CanDockAsTabbedDocument);
     }
+
+    internal static bool IsDocumentDropTarget(DropTargetType type) => type is
+        DropTargetType.DocumentPaneDockLeft or
+        DropTargetType.DocumentPaneDockTop or
+        DropTargetType.DocumentPaneDockRight or
+        DropTargetType.DocumentPaneDockBottom or
+        DropTargetType.DocumentPaneDockInside or
+        DropTargetType.DocumentPaneGroupDockInside;
 }

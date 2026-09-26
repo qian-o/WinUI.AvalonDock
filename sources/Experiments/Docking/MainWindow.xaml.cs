@@ -25,6 +25,7 @@ public sealed partial class MainWindow : Window
     {
         InitializeComponent();
         Title = "WinUI.AvalonDock 示例";
+        Closed += OnClosed;
 
         StyleSelector itemStyles = CreateItemStyleSelector();
         ClassicManager.LayoutItemContainerStyleSelector = itemStyles;
@@ -243,6 +244,12 @@ public sealed partial class MainWindow : Window
         PageRoot.RequestedTheme = PageRoot.RequestedTheme == ElementTheme.Dark
             ? ElementTheme.Light : ElementTheme.Dark;
         StatusText.Text = PageRoot.RequestedTheme == ElementTheme.Dark ? "深色主题。" : "浅色主题。";
+    }
+
+    private void OnClosed(object sender, WindowEventArgs args)
+    {
+        ClassicManager.Dispose();
+        ToggleManager.Dispose();
     }
 }
 

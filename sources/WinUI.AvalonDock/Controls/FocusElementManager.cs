@@ -13,7 +13,6 @@ internal static class FocusElementManager
     private static readonly FullWeakDictionary<ILayoutElement, UIElement> ModelFocusedElement = new();
     private static readonly WeakDictionary<ILayoutElement, INativeFocusTarget> ModelFocusedWindowHandle = new();
     private static IDisposable? windowHandler;
-    private static WeakReference? lastFocusedElement;
 
     internal static void SetupFocusManagement(DockingManager manager)
     {
@@ -53,20 +52,14 @@ internal static class FocusElementManager
 
     internal static void SetFocusOnLastElement(ILayoutElement model)
     {
-        bool focused = false;
-        if (ModelFocusedElement.GetValue(model, out UIElement? objectToFocus))
+        if (ModelFocusedElement.GetValue(model, out UIElement? objectToFocus) && FocusNativeElement(objectToFocus))
         {
-            focused = FocusNativeElement(objectToFocus);
+            return;
         }
 
         if (ModelFocusedWindowHandle.GetValue(model, out INativeFocusTarget? handleToFocus))
         {
-            focused = handleToFocus.Focus();
-        }
-
-        if (focused)
-        {
-            lastFocusedElement = new WeakReference(model);
+            handleToFocus.Focus();
         }
     }
 
@@ -88,6 +81,7 @@ internal static class FocusElementManager
             if (parentAnchorable?.Model is { } anchorable && ReferenceEquals(anchorable.Root?.Manager, manager))
             {
                 ModelFocusedWindowHandle[anchorable] = focusedWindow;
+                ModelFocusedElement.Remove(anchorable);
                 anchorable.IsActive = true;
             }
             else
@@ -96,6 +90,7 @@ internal static class FocusElementManager
                 if (parentDocument?.Model is { } document && ReferenceEquals(document.Root?.Manager, manager))
                 {
                     ModelFocusedWindowHandle[document] = focusedWindow;
+                    ModelFocusedElement.Remove(document);
                     document.IsActive = true;
                 }
             }
@@ -120,6 +115,7 @@ internal static class FocusElementManager
                 if (anchorable.Root?.Manager is { } manager && Managers.Contains(manager))
                 {
                     ModelFocusedElement[anchorable] = focusedElement;
+                    ModelFocusedWindowHandle.Remove(anchorable);
                 }
             }
             else
@@ -130,6 +126,7 @@ internal static class FocusElementManager
                     if (document.Root?.Manager is { } manager && Managers.Contains(manager))
                     {
                         ModelFocusedElement[document] = focusedElement;
+                        ModelFocusedWindowHandle.Remove(document);
                     }
                 }
             }
