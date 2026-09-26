@@ -1,0 +1,89 @@
+<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:AvalonDock.Controls"
+    xmlns:converters="using:AvalonDock.Converters"
+    xmlns:properties="using:AvalonDock.Properties">
+    <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="ms-appx:///WinUI.AvalonDock/Themes/Chrome.xaml" />
+    </ResourceDictionary.MergedDictionaries>
+    <converters:BoolToVisibilityConverter x:Key="EnabledVisibility" />
+    <!-- Adapted from the two Layout*FloatingWindowControl templates in
+         qian-o/AvalonDock.Themes.WPFUI e8a3da4 (MIT, Copyright (c) 2024 qian-o).
+         Window title-bar input and commands enter through the existing native window service. -->
+    <!-- Fluent System Icons geometry: Microsoft, MIT, commit 8512d0121f6abd6c8c40f0bc4eb502ccd66ce6e7. -->
+    <Style x:Key="AvalonDockFloatingWindowStyle" TargetType="ContentControl">
+        <Setter Property="Background" Value="{ThemeResource SolidBackgroundFillColorTertiaryBrush}" />
+        <Setter Property="BorderBrush" Value="{ThemeResource CardStrokeColorDefaultBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+        <Setter Property="VerticalContentAlignment" Value="Stretch" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ContentControl">
+                    <Border x:Name="WindowBorder" Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}"
+                            Padding="{TemplateBinding Padding}">
+                        <VisualStateManager.VisualStateGroups>
+                            <VisualStateGroup x:Name="CaptionKind">
+                                <VisualState x:Name="DocumentCaption" />
+                                <VisualState x:Name="ToolCaption"><VisualState.Setters>
+                                    <Setter Target="PART_CaptionMenu.Visibility" Value="Visible" />
+                                </VisualState.Setters></VisualState>
+                            </VisualStateGroup>
+                            <VisualStateGroup x:Name="WindowState">
+                                <VisualState x:Name="Restored" />
+                                <VisualState x:Name="Maximized">
+                                    <VisualState.Setters>
+                                        <Setter Target="PART_MaximizeButton.Visibility" Value="Collapsed" />
+                                        <Setter Target="PART_RestoreButton.Visibility" Value="Visible" />
+                                        <Setter Target="WindowBorder.Padding" Value="3" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                            </VisualStateGroup>
+                            <VisualStateGroup x:Name="ClosePolicy">
+                                <VisualState x:Name="CloseWindow" />
+                                <VisualState x:Name="HideTool">
+                                    <VisualState.Setters>
+                                        <Setter Target="CloseAction.Visibility" Value="Collapsed" />
+                                        <Setter Target="HideAction.Visibility" Value="Visible" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                            </VisualStateGroup>
+                        </VisualStateManager.VisualStateGroups>
+                        <Grid>
+                            <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="*" /></Grid.RowDefinitions>
+                            <Border x:Name="PART_Caption" MinHeight="36" Padding="8,2" Background="Transparent"
+                                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="0,0,0,1">
+                                <Grid>
+                                    <Grid.ColumnDefinitions><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /><ColumnDefinition Width="Auto" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+                                    <controls:DropDownControlArea x:Name="PART_CaptionContext" Tag="AvalonDock.DefaultContextMenu" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Center">
+                                        <ContentPresenter x:Name="PART_CaptionTitle" Tag="AvalonDock.ReferenceTitle" VerticalAlignment="Center" />
+                                    </controls:DropDownControlArea>
+                                    <controls:DropDownButton Style="{StaticResource AvalonDockChromeToggleButtonStyle}" x:Name="PART_CaptionMenu" Tag="AvalonDock.DefaultContextMenu" DropDownContextMenuDataContext="{Binding SingleContentLayoutItem, RelativeSource={RelativeSource TemplatedParent}}" Grid.Column="1" Width="28" Height="28" MinWidth="0" MinHeight="0" Padding="0" FontSize="12" FontFamily="{ThemeResource SymbolThemeFontFamily}" IsTabStop="False" Visibility="Collapsed"
+                                        ToolTipService.ToolTip="{properties:LocalizedString Key=Anchorable_CxMenu_Hint}" AutomationProperties.Name="{properties:LocalizedString Key=Anchorable_CxMenu_Hint}"  Background="Transparent" BorderBrush="Transparent" Foreground="{ThemeResource TextFillColorSecondaryBrush}"><Viewbox Width="12" Height="12"><Canvas Width="12" Height="12"><Path Fill="{Binding Foreground, ElementName=PART_CaptionMenu}" Data="M3.07615 4.61732C3.23093 4.24364 3.59557 4 4.00003 4H8.00003C8.40449 4 8.76913 4.24364 8.92391 4.61732C9.07869 4.99099 8.99313 5.42111 8.70714 5.70711L6.70714 7.70711C6.31661 8.09763 5.68345 8.09763 5.29292 7.70711L3.29292 5.70711C3.00692 5.42111 2.92137 4.99099 3.07615 4.61732Z" /></Canvas></Viewbox></controls:DropDownButton>
+                                    <controls:ChromeButton x:Name="PART_MaximizeButton" Grid.Column="2" Style="{StaticResource AvalonDockChromeButtonStyle}" FontSize="14"
+                                        Command="{Binding MaximizeWindowCommand, RelativeSource={RelativeSource TemplatedParent}}" CommandParameter="{Binding Window, RelativeSource={RelativeSource TemplatedParent}}" ToolTipService.ToolTip="{properties:LocalizedString Key=Window_Maximize}" AutomationProperties.Name="{properties:LocalizedString Key=Window_Maximize}" ><Viewbox Width="14" Height="14"><PathIcon Width="16" Height="16" Data="M3.75 3C3.33579 3 3 3.33579 3 3.75V5.5C3 5.77614 2.77614 6 2.5 6C2.22386 6 2 5.77614 2 5.5V3.75C2 2.7835 2.7835 2 3.75 2H5.5C5.77614 2 6 2.22386 6 2.5C6 2.77614 5.77614 3 5.5 3H3.75ZM10 2.5C10 2.22386 10.2239 2 10.5 2H12.25C13.2165 2 14 2.7835 14 3.75V5.5C14 5.77614 13.7761 6 13.5 6C13.2239 6 13 5.77614 13 5.5V3.75C13 3.33579 12.6642 3 12.25 3H10.5C10.2239 3 10 2.77614 10 2.5ZM2.5 10C2.77614 10 3 10.2239 3 10.5V12.25C3 12.6642 3.33579 13 3.75 13H5.5C5.77614 13 6 13.2239 6 13.5C6 13.7761 5.77614 14 5.5 14H3.75C2.7835 14 2 13.2165 2 12.25V10.5C2 10.2239 2.22386 10 2.5 10ZM13.5 10C13.7761 10 14 10.2239 14 10.5V12.25C14 13.2165 13.2165 14 12.25 14H10.5C10.2239 14 10 13.7761 10 13.5C10 13.2239 10.2239 13 10.5 13H12.25C12.6642 13 13 12.6642 13 12.25V10.5C13 10.2239 13.2239 10 13.5 10Z" /></Viewbox></controls:ChromeButton>
+                                    <controls:ChromeButton x:Name="PART_RestoreButton" Grid.Column="2" Style="{StaticResource AvalonDockChromeButtonStyle}" FontSize="14" Visibility="Collapsed"
+                                        Command="{Binding RestoreWindowCommand, RelativeSource={RelativeSource TemplatedParent}}" CommandParameter="{Binding Window, RelativeSource={RelativeSource TemplatedParent}}" ToolTipService.ToolTip="{properties:LocalizedString Key=Window_Restore}" AutomationProperties.Name="{properties:LocalizedString Key=Window_Restore}" ><Viewbox Width="14" Height="14"><PathIcon Width="16" Height="16" Data="M11 4C11 4.55228 11.4477 5 12 5H13.5C13.7761 5 14 5.22386 14 5.5C14 5.77614 13.7761 6 13.5 6H12C10.8954 6 10 5.10457 10 4V2.5C10 2.22386 10.2239 2 10.5 2C10.7761 2 11 2.22386 11 2.5V4ZM11 12C11 11.4477 11.4477 11 12 11H13.5C13.7761 11 14 10.7761 14 10.5C14 10.2239 13.7761 10 13.5 10H12C10.8954 10 10 10.8954 10 12V13.5C10 13.7761 10.2239 14 10.5 14C10.7761 14 11 13.7761 11 13.5V12ZM4 11C4.55228 11 5 11.4477 5 12V13.5C5 13.7761 5.22386 14 5.5 14C5.77614 14 6 13.7761 6 13.5V12C6 10.8954 5.10457 10 4 10H2.5C2.22386 10 2 10.2239 2 10.5C2 10.7761 2.22386 11 2.5 11H4ZM5 4C5 4.55228 4.55228 5 4 5H2.5C2.22386 5 2 5.22386 2 5.5C2 5.77614 2.22386 6 2.5 6H4C5.10457 6 6 5.10457 6 4V2.5C6 2.22386 5.77614 2 5.5 2C5.22386 2 5 2.22386 5 2.5V4Z" /></Viewbox></controls:ChromeButton>
+                                    <Grid x:Name="CloseAction" Grid.Column="3">
+                                    <controls:ChromeButton x:Name="PART_CloseButton" Style="{StaticResource AvalonDockChromeButtonStyle}"
+                                        Command="{Binding CloseWindowCommand, RelativeSource={RelativeSource TemplatedParent}}" ToolTipService.ToolTip="{properties:LocalizedString Key=Document_Close}" AutomationProperties.Name="{properties:LocalizedString Key=Document_Close}"
+                                        Visibility="{Binding IsEnabled, RelativeSource={RelativeSource Self}, Converter={StaticResource EnabledVisibility}}" ><PathIcon Width="12" Height="12" Data="M2.08859 2.21569L2.14645 2.14645C2.32001 1.97288 2.58944 1.9536 2.78431 2.08859L2.85355 2.14645L6 5.293L9.14645 2.14645C9.34171 1.95118 9.65829 1.95118 9.85355 2.14645C10.0488 2.34171 10.0488 2.65829 9.85355 2.85355L6.707 6L9.85355 9.14645C10.0271 9.32001 10.0464 9.58944 9.91141 9.78431L9.85355 9.85355C9.67999 10.0271 9.41056 10.0464 9.21569 9.91141L9.14645 9.85355L6 6.707L2.85355 9.85355C2.65829 10.0488 2.34171 10.0488 2.14645 9.85355C1.95118 9.65829 1.95118 9.34171 2.14645 9.14645L5.293 6L2.14645 2.85355C1.97288 2.67999 1.9536 2.41056 2.08859 2.21569L2.14645 2.14645L2.08859 2.21569Z" /></controls:ChromeButton>
+                                    </Grid>
+                                    <Grid x:Name="HideAction" Grid.Column="3" Visibility="Collapsed">
+                                    <controls:ChromeButton x:Name="PART_HideButton" Style="{StaticResource AvalonDockChromeButtonStyle}"
+                                        Command="{Binding HideWindowCommand, RelativeSource={RelativeSource TemplatedParent}}" ToolTipService.ToolTip="{properties:LocalizedString Key=Document_Close}" AutomationProperties.Name="{properties:LocalizedString Key=Document_Close}"
+                                        Visibility="{Binding IsEnabled, RelativeSource={RelativeSource Self}, Converter={StaticResource EnabledVisibility}}" ><PathIcon Width="12" Height="12" Data="M2.08859 2.21569L2.14645 2.14645C2.32001 1.97288 2.58944 1.9536 2.78431 2.08859L2.85355 2.14645L6 5.293L9.14645 2.14645C9.34171 1.95118 9.65829 1.95118 9.85355 2.14645C10.0488 2.34171 10.0488 2.65829 9.85355 2.85355L6.707 6L9.85355 9.14645C10.0271 9.32001 10.0464 9.58944 9.91141 9.78431L9.85355 9.85355C9.67999 10.0271 9.41056 10.0464 9.21569 9.91141L9.14645 9.85355L6 6.707L2.85355 9.85355C2.65829 10.0488 2.34171 10.0488 2.14645 9.85355C1.95118 9.65829 1.95118 9.34171 2.14645 9.14645L5.293 6L2.14645 2.85355C1.97288 2.67999 1.9536 2.41056 2.08859 2.21569L2.14645 2.14645L2.08859 2.21569Z" /></controls:ChromeButton>
+                                    </Grid>
+                                </Grid>
+                            </Border>
+                            <ContentPresenter x:Name="PART_ContentPresenter" Grid.Row="1" Content="{TemplateBinding Content}"
+                                              HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch" />
+                        </Grid>
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+</ResourceDictionary>

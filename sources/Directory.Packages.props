@@ -1,0 +1,15 @@
+<Project>
+
+    <PropertyGroup>
+        <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageVersion Include="Dirkster.AvalonDock.Core" Version="5.0.0" />
+        <PackageVersion Include="Dirkster.AvalonDock.Mvvm" Version="5.0.0" />
+        <PackageVersion Include="Dirkster.AvalonDock.Serializer.Xml" Version="5.0.0" />
+        <PackageVersion Include="Microsoft.WindowsAppSDK" Version="2.5.1" />
+        <PackageVersion Include="Roslynator.Analyzers" Version="5.0.0" />
+    </ItemGroup>
+
+</Project>

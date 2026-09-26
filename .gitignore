@@ -1,0 +1,34 @@
+# 本地构建、IDE 与诊断输出
+.vs/
+.idea/
+.vscode/
+**/bin/
+**/obj/
+**/TestResults/
+.nuget/
+artifacts/
+AppPackages/
+**/AppPackages/
+*.user
+*.suo
+*.rsuser
+*.binlog
+*.trx
+*.log
+*.nupkg
+*.snupkg
+*.appx
+*.appxbundle
+*.msix
+*.msixbundle
+
+# 本地配置与签名材料
+.env
+.env.*
+*.pfx
+*.publishsettings
+*.pubxml
+
+# 操作系统临时文件
+.DS_Store
+Thumbs.db

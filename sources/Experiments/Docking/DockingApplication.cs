@@ -1,0 +1,20 @@
+using Microsoft.UI.Xaml;
+
+namespace WinUI.AvalonDock.Experiments.Docking;
+
+public sealed partial class DockingApplication : Application
+{
+    private MainWindow? window;
+
+    internal DockingApplication()
+    {
+        InitializeComponent();
+    }
+
+    protected override void OnLaunched(LaunchActivatedEventArgs args)
+    {
+        window = new MainWindow();
+        window.AppWindow.Resize(new Windows.Graphics.SizeInt32(1100, 720));
+        window.Activate();
+    }
+}

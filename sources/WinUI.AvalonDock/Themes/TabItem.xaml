@@ -1,0 +1,125 @@
+<!-- Ported from AvalonDock.Themes.WPFUI e8a3da4, Styles/FluentResources.xaml
+     DockTabItemStyle / DockDocumentTabItemStyle / DockToolTabItemStyle (MIT, qian-o).
+     Native named parts and state names retain WinUI TabViewItem selection, close and automation. -->
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:controls="using:AvalonDock.Controls">
+    <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="ms-appx:///WinUI.AvalonDock/Themes/Chrome.xaml"/>
+    </ResourceDictionary.MergedDictionaries>
+    <Style x:Key="AvalonDockReferenceTabItemStyle" TargetType="TabViewItem">
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="Foreground" Value="{ThemeResource TextFillColorSecondaryBrush}"/>
+        <Setter Property="FontFamily" Value="{ThemeResource DockFontFamily}"/>
+        <Setter Property="FontSize" Value="12"/>
+        <Setter Property="FontWeight" Value="Normal"/>
+        <Setter Property="Height" Value="28"/>
+        <Setter Property="MinHeight" Value="28"/>
+        <Setter Property="MinWidth" Value="100"/>
+        <Setter Property="MaxWidth" Value="240"/>
+        <Setter Property="Margin" Value="0,0,1,0"/>
+        <Setter Property="Padding" Value="14,0,8,0"/>
+        <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+        <Setter Property="VerticalContentAlignment" Value="Stretch"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="TabViewItem">
+                    <Grid x:Name="LayoutRoot" Height="28" Background="Transparent" UseLayoutRounding="True"
+                          ToolTipService.ToolTip="{Binding Tag.Title, RelativeSource={RelativeSource TemplatedParent}}">
+                        <VisualStateManager.VisualStateGroups>
+                            <VisualStateGroup x:Name="CommonStates">
+                                <VisualState x:Name="Normal"/>
+                                <VisualState x:Name="PointerOver">
+                                    <VisualState.Setters>
+                                        <Setter Target="Surface.Background" Value="{ThemeResource SubtleFillColorSecondaryBrush}"/>
+                                        <Setter Target="ContentPresenter.Foreground" Value="{ThemeResource TextFillColorPrimaryBrush}"/>
+                                        <Setter Target="TabSeparator.Opacity" Value="0"/>
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState x:Name="Pressed">
+                                    <VisualState.Setters>
+                                        <Setter Target="Surface.Background" Value="{ThemeResource SubtleFillColorSecondaryBrush}"/>
+                                        <Setter Target="ContentPresenter.Foreground" Value="{ThemeResource TextFillColorPrimaryBrush}"/>
+                                        <Setter Target="TabSeparator.Opacity" Value="0"/>
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState x:Name="Selected">
+                                    <VisualState.Setters>
+                                        <Setter Target="Surface.Background" Value="Transparent"/>
+                                        <Setter Target="Surface.Margin" Value="0"/>
+                                        <Setter Target="ContentPresenter.Foreground" Value="{ThemeResource TextFillColorPrimaryBrush}"/>
+                                        <Setter Target="TabSeparator.Opacity" Value="0"/>
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState x:Name="PointerOverSelected">
+                                    <VisualState.Setters>
+                                        <Setter Target="Surface.Background" Value="Transparent"/>
+                                        <Setter Target="Surface.Margin" Value="0"/>
+                                        <Setter Target="ContentPresenter.Foreground" Value="{ThemeResource TextFillColorPrimaryBrush}"/>
+                                        <Setter Target="TabSeparator.Opacity" Value="0"/>
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState x:Name="PressedSelected">
+                                    <VisualState.Setters>
+                                        <Setter Target="Surface.Background" Value="Transparent"/>
+                                        <Setter Target="Surface.Margin" Value="0"/>
+                                        <Setter Target="ContentPresenter.Foreground" Value="{ThemeResource TextFillColorPrimaryBrush}"/>
+                                        <Setter Target="TabSeparator.Opacity" Value="0"/>
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState x:Name="Disabled">
+                                    <VisualState.Setters>
+                                        <Setter Target="ContentPresenter.Foreground" Value="{ThemeResource TextFillColorDisabledBrush}"/>
+                                    </VisualState.Setters>
+                                </VisualState>
+                            </VisualStateGroup>
+                            <VisualStateGroup x:Name="CloseButtonStates">
+                                <VisualState x:Name="CloseButtonVisible"/>
+                                <VisualState x:Name="CloseButtonCollapsed">
+                                    <VisualState.Setters>
+                                        <Setter Target="CloseButton.Visibility" Value="Collapsed"/>
+                                    </VisualState.Setters>
+                                </VisualState>
+                            </VisualStateGroup>
+                            <VisualStateGroup x:Name="WidthModeStates">
+                                <VisualState x:Name="StandardWidth"/>
+                                <VisualState x:Name="Compact"/>
+                            </VisualStateGroup>
+                            <VisualStateGroup x:Name="ForegroundStates">
+                                <VisualState x:Name="ForegroundSet"/>
+                                <VisualState x:Name="ForegroundNotSet"/>
+                            </VisualStateGroup>
+                            <VisualStateGroup x:Name="TabPlacementStates">
+                                <VisualState x:Name="DocumentTab"/>
+                                <VisualState x:Name="ToolTab">
+                                    <VisualState.Setters>
+                                        <Setter Target="Surface.Margin" Value="0,3,0,0"/>
+                                        <Setter Target="TabSeparator.Visibility" Value="Collapsed"/>
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState x:Name="ToolTabSelected">
+                                    <VisualState.Setters>
+                                        <Setter Target="Surface.Margin" Value="0"/>
+                                        <Setter Target="TabSeparator.Visibility" Value="Collapsed"/>
+                                    </VisualState.Setters>
+                                </VisualState>
+                            </VisualStateGroup>
+                        </VisualStateManager.VisualStateGroups>
+                        <Border x:Name="Surface" Margin="0,0,0,3" Background="{TemplateBinding Background}" BorderThickness="0" CornerRadius="4"/>
+                        <Border x:Name="TabSeparator" Width="1" Margin="0,8,0,8" HorizontalAlignment="Right" Background="{ThemeResource CardStrokeColorDefaultBrush}" IsHitTestVisible="False"/>
+                        <Grid x:Name="TabContainer" Margin="{TemplateBinding Padding}" Control.IsTemplateFocusTarget="True">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <ContentPresenter x:Name="ContentPresenter" Content="" ContentTemplate="{TemplateBinding HeaderTemplate}" HorizontalAlignment="Stretch" VerticalAlignment="Center" FontSize="12" FontWeight="{TemplateBinding FontWeight}" Foreground="{TemplateBinding Foreground}"/>
+                            <controls:ChromeButton x:Name="CloseButton" Grid.Column="1" Width="24" Height="24" Margin="4,0,0,0" VerticalAlignment="Center" IsTabStop="True" Style="{StaticResource AvalonDockChromeButtonStyle}"><Viewbox Width="12" Height="12"><PathIcon Width="12" Height="12" Data="M2.08859 2.21569L2.14645 2.14645C2.32001 1.97288 2.58944 1.9536 2.78431 2.08859L2.85355 2.14645L6 5.293L9.14645 2.14645C9.34171 1.95118 9.65829 1.95118 9.85355 2.14645C10.0488 2.34171 10.0488 2.65829 9.85355 2.85355L6.707 6L9.85355 9.14645C10.0271 9.32001 10.0464 9.58944 9.91141 9.78431L9.85355 9.85355C9.67999 10.0271 9.41056 10.0464 9.21569 9.91141L9.14645 9.85355L6 6.707L2.85355 9.85355C2.65829 10.0488 2.34171 10.0488 2.14645 9.85355C1.95118 9.65829 1.95118 9.34171 2.14645 9.14645L5.293 6L2.14645 2.85355C1.97288 2.67999 1.9536 2.41056 2.08859 2.21569L2.14645 2.14645L2.08859 2.21569Z"/></Viewbox></controls:ChromeButton>
+                        </Grid>
+                    </Grid>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+    <Style x:Key="AvalonDockReferenceToolTabItemStyle" TargetType="TabViewItem" BasedOn="{StaticResource AvalonDockReferenceTabItemStyle}">
+        <Setter Property="MinWidth" Value="0"/>
+        <Setter Property="Padding" Value="12,0"/>
+    </Style>
+</ResourceDictionary>

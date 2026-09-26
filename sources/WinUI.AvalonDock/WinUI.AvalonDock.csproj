@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>$(StandardTargetFramework)-windows10.0.19041.0</TargetFramework>
+        <TargetPlatformMinVersion>10.0.19041.0</TargetPlatformMinVersion>
+        <UseWinUI>true</UseWinUI>
+        <GenerateLibraryLayout>true</GenerateLibraryLayout>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Dirkster.AvalonDock.Core" />
+        <PackageReference Include="Microsoft.WindowsAppSDK" />
+        <EmbeddedResource Update="Properties/Resources*.resx">
+            <ManifestResourceName>AvalonDock.Properties.%(Filename)</ManifestResourceName>
+        </EmbeddedResource>
+    </ItemGroup>
+
+    <Import Project="..\NuGet.Packaging.props" />
+
+</Project>
