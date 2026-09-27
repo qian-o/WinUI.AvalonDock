@@ -2,6 +2,7 @@
     x:Class="WinUI.AvalonDock.Experiments.Mvvm.MainWindow"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:Microsoft.UI.Xaml.Controls"
     xmlns:dock="using:AvalonDock">
     <Grid x:Name="PageRoot" Padding="8" RowSpacing="8" Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
         <Grid.RowDefinitions>
@@ -10,27 +11,36 @@
             <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
-        <ScrollViewer HorizontalScrollBarVisibility="Auto" HorizontalScrollMode="Enabled" VerticalScrollMode="Disabled">
-            <StackPanel Orientation="Horizontal" Spacing="8">
-                <Button Content="新建文档" Command="{x:Bind ViewModel.OpenCommand}" />
-                <Button Content="保存活动文档" Command="{x:Bind ViewModel.SaveCommand}" />
-                <Button Content="关闭活动文档" Command="{x:Bind ViewModel.CloseActiveCommand}" />
-                <Button Content="下一个文档" Command="{x:Bind ViewModel.NextCommand}" />
-                <Button Content="替换活动文档" Command="{x:Bind ViewModel.ReplaceCommand}" />
-                <Button Content="重置文档集合" Command="{x:Bind ViewModel.ResetCommand}" />
-                <Button Content="添加工具" Command="{x:Bind ViewModel.AddToolCommand}" />
-                <Button Content="替换工具" Command="{x:Bind ViewModel.ReplaceToolCommand}" />
-                <Button Content="重置工具" Command="{x:Bind ViewModel.ResetToolsCommand}" />
-                <Button Content="切换浮动策略" Command="{x:Bind ViewModel.ToggleFloatingCommand}" />
-                <Button Content="保存布局" Click="SaveLayout_Click" />
-                <Button Content="恢复布局" Click="RestoreLayout_Click" />
-                <Button Content="切换主题" Click="ToggleTheme_Click" />
-            </StackPanel>
-        </ScrollViewer>
+        <controls:MenuBar Grid.Row="0">
+            <controls:MenuBarItem Title="文件">
+                <controls:MenuFlyoutItem Text="新建文档" Command="{x:Bind ViewModel.OpenCommand}" />
+                <controls:MenuFlyoutItem Text="保存活动文档" Command="{x:Bind ViewModel.SaveCommand}" />
+                <controls:MenuFlyoutItem Text="关闭活动文档" Command="{x:Bind ViewModel.CloseActiveCommand}" />
+            </controls:MenuBarItem>
+            <controls:MenuBarItem Title="编辑">
+                <controls:MenuFlyoutItem Text="下一个文档" Command="{x:Bind ViewModel.NextCommand}" />
+                <controls:MenuFlyoutItem Text="替换活动文档" Command="{x:Bind ViewModel.ReplaceCommand}" />
+                <controls:MenuFlyoutItem Text="重置文档集合" Command="{x:Bind ViewModel.ResetCommand}" />
+            </controls:MenuBarItem>
+            <controls:MenuBarItem Title="工具">
+                <controls:MenuFlyoutItem Text="添加工具" Command="{x:Bind ViewModel.AddToolCommand}" />
+                <controls:MenuFlyoutItem Text="替换工具" Command="{x:Bind ViewModel.ReplaceToolCommand}" />
+                <controls:MenuFlyoutItem Text="重置工具" Command="{x:Bind ViewModel.ResetToolsCommand}" />
+            </controls:MenuBarItem>
+            <controls:MenuBarItem Title="布局">
+                <controls:MenuFlyoutItem Text="保存布局" Click="SaveLayout_Click" />
+                <controls:MenuFlyoutItem Text="恢复布局" Click="RestoreLayout_Click" />
+                <controls:MenuFlyoutSeparator />
+                <controls:MenuFlyoutItem Text="切换浮动窗口策略" Command="{x:Bind ViewModel.ToggleFloatingCommand}" />
+            </controls:MenuBarItem>
+            <controls:MenuBarItem Title="主题">
+                <controls:MenuFlyoutItem Text="切换浅色/深色主题" Click="ToggleTheme_Click" />
+            </controls:MenuBarItem>
+        </controls:MenuBar>
         <TextBlock Grid.Row="1" Text="{x:Bind ViewModel.StatusText, Mode=OneWay}" />
         <dock:DockingManager x:Name="Manager" Grid.Row="2"
                              DockLayout="{x:Bind ViewModel.Layout, Mode=OneWay}"
                              LayoutItemTemplate="{StaticResource WorkspaceContentTemplate}" />
-        <TextBlock Grid.Row="3" Text="编辑文本会更新 IsModified；命令由 ViewModel 处理文档和工具模型，DockLayout 绑定官方 RootDock。" Opacity="0.75" />
+        <TextBlock Grid.Row="3" Text="文档和工具由 ViewModel 管理；编辑文本后保存，再测试关闭、替换、重置和布局恢复。" Opacity="0.75" />
     </Grid>
 </Window>

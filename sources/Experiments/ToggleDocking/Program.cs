@@ -1,6 +1,6 @@
 using Microsoft.UI.Xaml;
 
-namespace WinUI.AvalonDock.Experiments.ToggleDockingManager;
+namespace WinUI.AvalonDock.Experiments.ToggleDocking;
 
 internal static class Program
 {

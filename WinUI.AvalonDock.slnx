@@ -6,8 +6,8 @@
 	</Folder>
 	<Project Path="sources/WinUI.AvalonDock/WinUI.AvalonDock.csproj" />
 	<Folder Name="/Experiments/">
-		<Project Path="sources/Experiments/DockingManager/DockingManager.csproj" />
-		<Project Path="sources/Experiments/ToggleDockingManager/ToggleDockingManager.csproj" />
+		<Project Path="sources/Experiments/Docking/Docking.csproj" />
+		<Project Path="sources/Experiments/ToggleDocking/ToggleDocking.csproj" />
 		<Project Path="sources/Experiments/Mvvm/Mvvm.csproj" />
 	</Folder>
 </Solution>

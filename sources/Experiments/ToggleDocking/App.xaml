@@ -1,5 +1,5 @@
 <Application
-    x:Class="WinUI.AvalonDock.Experiments.DockingManager.DockingApplication"
+    x:Class="WinUI.AvalonDock.Experiments.ToggleDocking.DockingApplication"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:controls="using:Microsoft.UI.Xaml.Controls">

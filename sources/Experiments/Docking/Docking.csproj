@@ -11,9 +11,10 @@
         <IsPackable>false</IsPackable>
         <ApplicationManifest>app.manifest</ApplicationManifest>
         <DefineConstants>$(DefineConstants);DISABLE_XAML_GENERATED_MAIN</DefineConstants>
-        <RootNamespace>WinUI.AvalonDock.Experiments.ToggleDockingManager</RootNamespace>
+        <RootNamespace>WinUI.AvalonDock.Experiments.Docking</RootNamespace>
     </PropertyGroup>
     <ItemGroup>
+        <PackageReference Include="Dirkster.AvalonDock.Serializer.Xml" />
         <PackageReference Include="Dirkster.AvalonDock.Mvvm" />
         <ProjectReference Include="../../WinUI.AvalonDock/WinUI.AvalonDock.csproj" />
         <Compile Include="../Shared/WorkspaceContent.cs" Link="Shared/WorkspaceContent.cs" />
@@ -21,3 +22,4 @@
         <Compile Include="../Shared/SampleChecks.cs" Link="Shared/SampleChecks.cs" />
     </ItemGroup>
 </Project>
+

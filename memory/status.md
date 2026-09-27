@@ -6,9 +6,9 @@
 
 `Sources/Experiments` 已从一个混合窗口重构为三个独立、可运行的经典示例：
 
-- `DockingManager`：经典 XAML `LayoutRoot`、`DocumentsSource`、`AnchorablesSource`，以及 Add/Replace/Reset、可取消关闭、隐藏/自动隐藏、浮动/停靠、独立工具窗口和 XML `ContentId` 恢复。
-- `ToggleDockingManager`：官方 `DockLayoutService` 工具模型、六个 `DockZone`、区域移动、工具 Toggle、隐藏恢复和独立工具窗口。
-- `Mvvm`：官方 `RootDock`、文档/工具模型和 `DockLayoutService`，覆盖模型驱动的打开、关闭、活动项、工具状态、窗口策略和 XML 恢复。
+- `Docking`：经典 XAML `LayoutRoot`、`DocumentsSource`、`AnchorablesSource`，以及 Add/Replace/Reset、可取消关闭、隐藏/自动隐藏、浮动/停靠、独立工具窗口和 XML `ContentId` 恢复；菜单按文件、编辑、布局、工具和主题分组。
+- `ToggleDocking`：官方 `DockLayoutService` 工具模型、六个 `DockZone`、区域移动、工具 Toggle、隐藏恢复和独立工具窗口；菜单按文件、布局、视图和主题分组。
+- `Mvvm`：官方 `RootDock`、文档/工具模型和 `DockLayoutService`，覆盖模型驱动的打开、关闭、活动项、工具状态、窗口策略和 XML 恢复；菜单按文件、编辑、工具、布局和主题分组。
 
 三个项目只共享 [Experiments/Shared](../sources/Experiments/Shared/) 中的示例模型和布局项样式；每个管理器和窗口都独立创建、独立释放，便于按场景定位问题。
 
@@ -45,6 +45,7 @@
 
 - 修正了 MVVM 工具侧边导入顺序、内容引用身份判断、工具 `CanMove` 回调、浮动事件重复发送、拆分工具取消操作的状态顺序、多显示器浮动边界和运行时自动隐藏延时；删除无调用的重复屏幕定位方法。保留原有版权声明。
 - 依据 [Zenith.NET](https://github.com/qian-o/Zenith.NET) 的现有源码，统一 224 个手写 C# 文件的四空格、LF、文件作用域命名空间、控制流大括号、导入顺序、字段命名、显式局部类型及可推断类型的 `new()`；按实际生命周期标注并处理可空值。手写源码中的 `#nullable disable` 已清零；仅原样保留上游自动生成的 `Resources.Designer.cs` 中 1 处。`.editorconfig` 固定风格规则，`IDE0003`、`IDE0008`、`IDE0011`、`IDE0090`、`IDE0161`、`IDE1006` 检查通过。
-- 三个实验项目已完成 Debug 构建，解决方案 `dotnet build .\WinUI.AvalonDock.slnx -c Debug --no-restore /p:BuildInParallel=false` 通过：0 警告、0 错误；`dotnet format whitespace --verify-no-changes` 通过。三个 `--smoke-test` 进程均真实创建 WinUI 窗口并通过自动场景检查：Classic 覆盖源集合 Add/Replace/Reset、可取消关闭、ContentId 恢复和窗口策略；Toggle 覆盖六区工具、区域移动、隐藏恢复和窗口策略；MVVM 覆盖模型命令、文档/工具集合、活动项、脏状态、窗口策略和 XML 恢复。实际拖动、主题呈现及浮动窗口视觉位置仍需在对应示例中人工观察。
+- 三个示例项目已统一为 `Docking`、`ToggleDocking`、`Mvvm`，顶部操作区使用 WinUI `MenuBar`：Docking 对应经典 File/Edit/Layout/Tools/Theme 工作流，ToggleDocking 对应 File/Layout/View/Theme 六区侧栏工作流，Mvvm 对应 File/Edit/Tools/Layout/Theme 模型工作流；原有场景验证入口保留在菜单中。
+- 本轮验证：`dotnet build .\WinUI.AvalonDock.slnx -c Debug --no-restore /p:BuildInParallel=false` 通过，0 警告、0 错误；Docking、ToggleDocking、Mvvm 三个 `--smoke-test` 均通过；`dotnet format whitespace --verify-no-changes` 通过。
 - `DockingManager` 示例用 `ObservableCollection` 明确提供 Add、Replace、Reset 入口；`Mvvm` 示例使用官方 MVVM 包和 `ICommand` 绑定；三个应用的 XAML、启动入口、清单、共享模型和 smoke-test 基础设施均已纳入解决方案。
 - 产品直接引用官方 Core；示例按需引用官方 MVVM 与 XML 序列化包。Windows 平台服务仍隔离输入、窗口、覆盖层、焦点、窗口顺序和坐标转换；共享布局与停靠逻辑未引入 HWND 或原生消息。仓库未提交、推送或发布。

@@ -7,7 +7,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using WinUI.AvalonDock.Experiments.Shared;
 
-namespace WinUI.AvalonDock.Experiments.DockingManager;
+namespace WinUI.AvalonDock.Experiments.Docking;
 
 public sealed partial class MainWindow : Window
 {
@@ -19,7 +19,7 @@ public sealed partial class MainWindow : Window
     public MainWindow()
     {
         InitializeComponent();
-        Title = "DockingManager 经典工作区";
+        Title = "Docking 经典工作区";
         Closed += OnClosed;
 
         Manager.LayoutItemContainerStyleSelector = SampleStyles.CreateItemStyleSelector();
@@ -223,6 +223,13 @@ public sealed partial class MainWindow : Window
         StatusText.Text = "布局已恢复，内容按 ContentId 重新连接。";
     }
 
+    private void AllowCloseModified_Click(object sender, RoutedEventArgs e)
+    {
+        StatusText.Text = AllowCloseModifiedMenuItem.IsChecked
+            ? "已允许关闭修改中的文档。"
+            : "关闭修改中的文档仍会被取消。";
+    }
+
     private void ToggleWindowPolicy_Click(object sender, RoutedEventArgs e)
     {
         Manager.AllowFloatingWindows = !Manager.AllowFloatingWindows;
@@ -238,10 +245,10 @@ public sealed partial class MainWindow : Window
 
     private void OnDocumentClosing(object? sender, DocumentClosingEventArgs e)
     {
-        if (e.Document.Content is WorkspaceDocument document && document.IsModified && !AllowCloseModifiedSwitch.IsOn)
+        if (e.Document.Content is WorkspaceDocument document && document.IsModified && !AllowCloseModifiedMenuItem.IsChecked)
         {
             e.Cancel = true;
-            StatusText.Text = $"已取消关闭修改中的 {document.Title}；打开“允许关闭修改项”后重试。";
+            StatusText.Text = $"已取消关闭修改中的 {document.Title}；在“编辑”菜单中启用允许关闭修改项后重试。";
         }
     }
 
@@ -299,7 +306,7 @@ public sealed partial class MainWindow : Window
         layoutDocument!.Close();
         await SampleChecks.SettleAsync();
         SampleChecks.Require(documents.Contains(dirtyDocument), "修改文档的关闭请求已取消。");
-        AllowCloseModifiedSwitch.IsOn = true;
+        AllowCloseModifiedMenuItem.IsChecked = true;
         layoutDocument.Close();
         await SampleChecks.SettleAsync();
         SampleChecks.Require(!documents.Contains(dirtyDocument), "允许关闭后文档可关闭。");

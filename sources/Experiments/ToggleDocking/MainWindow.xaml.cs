@@ -5,7 +5,7 @@ using AvalonDock.Mvvm;
 using Microsoft.UI.Xaml;
 using WinUI.AvalonDock.Experiments.Shared;
 
-namespace WinUI.AvalonDock.Experiments.ToggleDockingManager;
+namespace WinUI.AvalonDock.Experiments.ToggleDocking;
 
 public sealed partial class MainWindow : Window
 {
@@ -15,7 +15,7 @@ public sealed partial class MainWindow : Window
     public MainWindow()
     {
         InitializeComponent();
-        Title = "ToggleDockingManager 六区工作台";
+        Title = "ToggleDocking：六区工作台";
         Closed += OnClosed;
 
         WorkspaceTool[] tools =
@@ -32,7 +32,7 @@ public sealed partial class MainWindow : Window
         {
             Id = "toggle-editor",
             Title = "工作区",
-            Text = "ToggleDockingManager 使用同一棵布局树管理六个工具区。",
+            Text = "ToggleDocking 使用同一棵布局树管理六个工具区。",
             IsModified = false
         });
         layoutService.OpenDocument(new WorkspaceDocument
@@ -156,6 +156,24 @@ public sealed partial class MainWindow : Window
             model.Zone = zone;
         }
         StatusText.Text = $"已将 {tool.Title} 移到 {zone}。";
+    }
+
+    private void BottomFullWidth_Click(object sender, RoutedEventArgs e)
+    {
+        Manager.LayoutPriority = DockLayoutPriority.BottomFullWidth;
+        StatusText.Text = "布局优先级：底部工具区横跨全宽。";
+    }
+
+    private void SidesFullHeight_Click(object sender, RoutedEventArgs e)
+    {
+        Manager.LayoutPriority = DockLayoutPriority.SidesFullHeight;
+        StatusText.Text = "布局优先级：左右工具区保持全高。";
+    }
+
+    private void DefaultLayoutPriority_Click(object sender, RoutedEventArgs e)
+    {
+        Manager.LayoutPriority = DockLayoutPriority.Default;
+        StatusText.Text = "布局优先级：使用默认布局。";
     }
 
     private void ToggleTheme_Click(object sender, RoutedEventArgs e)

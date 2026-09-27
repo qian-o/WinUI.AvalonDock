@@ -1,0 +1,46 @@
+<Window
+    x:Class="WinUI.AvalonDock.Experiments.ToggleDocking.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:controls="using:Microsoft.UI.Xaml.Controls"
+    xmlns:dock="using:AvalonDock">
+    <Grid x:Name="PageRoot" Padding="8" RowSpacing="8" Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <controls:MenuBar Grid.Row="0">
+            <controls:MenuBarItem Title="文件">
+                <controls:MenuFlyoutItem Text="新建文档" Click="AddDocument_Click" />
+            </controls:MenuBarItem>
+            <controls:MenuBarItem Title="布局">
+                <controls:MenuFlyoutItem Text="拆分或附回当前工具" Click="DetachTool_Click" />
+                <controls:MenuFlyoutSeparator />
+                <controls:MenuFlyoutItem Text="左上区域" Click="MoveLeftTop_Click" />
+                <controls:MenuFlyoutItem Text="左下区域" Click="MoveLeftBottom_Click" />
+                <controls:MenuFlyoutItem Text="右上区域" Click="MoveRightTop_Click" />
+                <controls:MenuFlyoutItem Text="右下区域" Click="MoveRightBottom_Click" />
+                <controls:MenuFlyoutItem Text="底部左侧区域" Click="MoveBottomLeft_Click" />
+                <controls:MenuFlyoutItem Text="底部右侧区域" Click="MoveBottomRight_Click" />
+            </controls:MenuBarItem>
+            <controls:MenuBarItem Title="视图">
+                <controls:MenuFlyoutItem Text="切换当前工具" Click="ToggleTool_Click" />
+                <controls:MenuFlyoutItem Text="显示隐藏工具" Click="ShowHiddenTool_Click" />
+                <controls:MenuFlyoutSeparator />
+                <controls:MenuFlyoutItem Text="底部区域横跨全宽" Click="BottomFullWidth_Click" />
+                <controls:MenuFlyoutItem Text="左右侧栏保持全高" Click="SidesFullHeight_Click" />
+                <controls:MenuFlyoutItem Text="默认布局优先级" Click="DefaultLayoutPriority_Click" />
+            </controls:MenuBarItem>
+            <controls:MenuBarItem Title="主题">
+                <controls:MenuFlyoutItem Text="切换浅色/深色主题" Click="ToggleTheme_Click" />
+            </controls:MenuBarItem>
+        </controls:MenuBar>
+        <TextBlock x:Name="StatusText" Grid.Row="1" Text="ToggleDocking：六个工具区和侧栏切换按钮。" />
+        <dock:ToggleDockingManager x:Name="Manager" Grid.Row="2"
+                                   LayoutPriority="BottomFullWidth"
+                                   LayoutItemTemplate="{StaticResource WorkspaceContentTemplate}" />
+        <TextBlock Grid.Row="3" Text="每个工具模型的 Zone 决定左上、左下、右上、右下、底左或底右；拖动工具可测试区域引导。" Opacity="0.75" />
+    </Grid>
+</Window>

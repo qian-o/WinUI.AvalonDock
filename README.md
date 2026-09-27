@@ -21,12 +21,12 @@ dotnet build .\WinUI.AvalonDock.slnx -c Debug
 运行三个经典示例：
 
 ```powershell
-dotnet run --project .\sources\Experiments\DockingManager\DockingManager.csproj -c Debug
-dotnet run --project .\sources\Experiments\ToggleDockingManager\ToggleDockingManager.csproj -c Debug
+dotnet run --project .\sources\Experiments\Docking\Docking.csproj -c Debug
+dotnet run --project .\sources\Experiments\ToggleDocking\ToggleDocking.csproj -c Debug
 dotnet run --project .\sources\Experiments\Mvvm\Mvvm.csproj -c Debug
 ```
 
-示例按场景拆分为 [DockingManager 经典工作区](sources/Experiments/DockingManager/)、[ToggleDockingManager 六区工作台](sources/Experiments/ToggleDockingManager/) 和 [MVVM 数据驱动工作区](sources/Experiments/Mvvm/)，共用最小的示例模型与布局项样式。每个程序都提供文档、工具窗格、停靠状态、主题和释放路径的操作入口；详细覆盖范围见[实验项目说明](sources/Experiments/README.md)。
+示例按场景拆分为 [Docking 经典工作区](sources/Experiments/Docking/)、[ToggleDocking 六区工作台](sources/Experiments/ToggleDocking/) 和 [MVVM 数据驱动工作区](sources/Experiments/Mvvm/)，共用最小的示例模型与布局项样式。每个程序都提供文档、工具窗格、停靠状态、主题和释放路径的操作入口；详细覆盖范围见[实验项目说明](sources/Experiments/README.md)。
 
 ## 许可与归属
 

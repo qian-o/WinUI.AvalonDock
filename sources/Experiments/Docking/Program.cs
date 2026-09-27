@@ -1,6 +1,6 @@
 using Microsoft.UI.Xaml;
 
-namespace WinUI.AvalonDock.Experiments.DockingManager;
+namespace WinUI.AvalonDock.Experiments.Docking;
 
 internal static class Program
 {
