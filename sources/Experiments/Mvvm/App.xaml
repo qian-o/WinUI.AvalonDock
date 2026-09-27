@@ -9,13 +9,8 @@
                 <controls:XamlControlsResources />
             </ResourceDictionary.MergedDictionaries>
             <DataTemplate x:Key="WorkspaceContentTemplate">
-                <Grid Padding="20" RowSpacing="12">
-                    <Grid.RowDefinitions>
-                        <RowDefinition Height="Auto" />
-                        <RowDefinition Height="*" />
-                    </Grid.RowDefinitions>
-                    <TextBlock Text="{Binding Title}" Style="{StaticResource SubtitleTextBlockStyle}" />
-                    <TextBox Grid.Row="1" Text="{Binding Text, Mode=TwoWay}" AcceptsReturn="True" TextWrapping="Wrap" MinHeight="180" />
+                <Grid Padding="8">
+                    <TextBox Text="{Binding Text, Mode=TwoWay}" AcceptsReturn="True" TextWrapping="Wrap" MinHeight="180" />
                 </Grid>
             </DataTemplate>
         </ResourceDictionary>
