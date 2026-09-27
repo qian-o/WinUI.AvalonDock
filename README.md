@@ -18,13 +18,15 @@ dotnet build .\WinUI.AvalonDock.slnx -c Debug
 
 构建确认项目可编译；普通停靠交互和外观的操作结果见[当前状态](memory/status.md)。
 
-运行单一示例：
+运行三个经典示例：
 
 ```powershell
-dotnet run --project .\sources\Experiments\Docking\Docking.csproj -c Debug
+dotnet run --project .\sources\Experiments\DockingManager\DockingManager.csproj -c Debug
+dotnet run --project .\sources\Experiments\ToggleDockingManager\ToggleDockingManager.csproj -c Debug
+dotnet run --project .\sources\Experiments\Mvvm\Mvvm.csproj -c Debug
 ```
 
-示例包含经典 XAML 布局、MVVM/Toggle、常用停靠操作和内存中的 XML 布局保存恢复；操作说明见 [示例 README](sources/Experiments/Docking/README.md)。窗口关闭时会调用两个管理器的 `Dispose()`，用于验证永久释放路径。
+示例按场景拆分为 [DockingManager 经典工作区](sources/Experiments/DockingManager/)、[ToggleDockingManager 六区工作台](sources/Experiments/ToggleDockingManager/) 和 [MVVM 数据驱动工作区](sources/Experiments/Mvvm/)，共用最小的示例模型与布局项样式。每个程序都提供文档、工具窗格、停靠状态、主题和释放路径的操作入口；详细覆盖范围见[实验项目说明](sources/Experiments/README.md)。
 
 ## 许可与归属
 
