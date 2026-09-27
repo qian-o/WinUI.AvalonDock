@@ -5,7 +5,7 @@
 | 功能与核心逻辑 | [Dirkster.AvalonDock v5.0.0，提交 `408dc2896e2f41f3bb79a15207f160edee8a6792`](https://github.com/Dirkster99/AvalonDock/tree/408dc2896e2f41f3bb79a15207f160edee8a6792) |
 | 共用模型 | `Dirkster.AvalonDock.Core` 5.0.0 |
 | MVVM 与布局持久化 | 官方 `Dirkster.AvalonDock.Mvvm`、`Dirkster.AvalonDock.Serializer.Xml` 5.0.0 |
-| 默认外观 | [AvalonDock.Themes.WPFUI，提交 `e8a3da4e9761ff549e5a2afca2bdf891a681baf2`](https://github.com/qian-o/AvalonDock.Themes.WPFUI/tree/e8a3da4e9761ff549e5a2afca2bdf891a681baf2) |
+| 默认外观 | [AvalonDock.Themes.WPFUI 1.2.1，提交 `ffff79aefd2139c34a3a87a0f1059bb036f1a0dc`](https://github.com/qian-o/AvalonDock.Themes.WPFUI/tree/ffff79aefd2139c34a3a87a0f1059bb036f1a0dc) |
 
 WPF 主库和 WPFUI 主题是源码与外观参考，不是产品运行依赖。升级上游版本需要单独核对；不要用随分支移动的源码作为迁移基线。
 

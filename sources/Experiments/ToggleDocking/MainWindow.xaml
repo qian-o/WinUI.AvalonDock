@@ -39,6 +39,7 @@
         </controls:MenuBar>
         <TextBlock x:Name="StatusText" Grid.Row="1" Text="ToggleDocking：六个工具区和侧栏切换按钮。" />
         <dock:ToggleDockingManager x:Name="Manager" Grid.Row="2"
+                                   ButtonSize="40"
                                    LayoutPriority="BottomFullWidth"
                                    LayoutItemTemplate="{StaticResource WorkspaceContentTemplate}" />
         <TextBlock Grid.Row="3" Text="每个工具模型的 Zone 决定左上、左下、右上、右下、底左或底右；拖动工具可测试区域引导。" Opacity="0.75" />

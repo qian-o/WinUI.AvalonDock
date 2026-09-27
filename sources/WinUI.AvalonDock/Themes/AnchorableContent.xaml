@@ -54,9 +54,10 @@
             </Setter.Value>
         </Setter>
     </Style>
+    <!-- Toggle-specific content frame follows WPFUI ffff79a ToggleDockingManager.xaml. -->
     <Style x:Key="DockToggleAnchorableContentStyle" TargetType="controls:LayoutAnchorableControl">
-        <Setter Property="Background" Value="{ThemeResource SolidBackgroundFillColorTertiaryBrush}" />
-        <Setter Property="BorderBrush" Value="{ThemeResource CardStrokeColorDefaultBrush}" />
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderBrush" Value="Transparent" />
         <Setter Property="BorderThickness" Value="0" />
         <Setter Property="FontFamily" Value="{ThemeResource DockFontFamily}" />
         <Setter Property="FontSize" Value="12" />
@@ -68,7 +69,7 @@
                     <Border x:Name="ContentBorder" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
                             Margin="{Binding Model, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource AutoHideModelMargin}}"
                             Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
-                            BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="4" TabFocusNavigation="Cycle">
+                            BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="5" TabFocusNavigation="Cycle">
                             <VisualStateManager.VisualStateGroups>
                                 <VisualStateGroup x:Name="ContentHostStates">
                                     <VisualState x:Name="ContentDocked" />
@@ -84,9 +85,9 @@
                         <Grid>
 
                             <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="*" /></Grid.RowDefinitions>
-                            <Border x:Name="Header" MinHeight="36" HorizontalAlignment="Stretch" VerticalAlignment="Top"
-                                    Background="Transparent" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                                    BorderThickness="0,0,0,1" CornerRadius="4,4,0,0">
+                            <Border x:Name="Header" Height="32" HorizontalAlignment="Stretch" VerticalAlignment="Top"
+                                    Background="Transparent" BorderBrush="{ThemeResource DockBorderBrush}"
+                                    BorderThickness="0,0,0,1" CornerRadius="5,5,0,0">
                                 <controls:ToggleAnchorablePaneTitle Model="{Binding Model, RelativeSource={RelativeSource TemplatedParent}}" />
                             </Border>
                             <Border x:Name="Content" Grid.Row="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Background="Transparent">

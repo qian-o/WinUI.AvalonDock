@@ -186,7 +186,8 @@ public class TabControlEx : TabView
         LayoutAnchorablePane? tool = (this as LayoutAnchorablePaneControl)?.Model as LayoutAnchorablePane;
         VisualStateManager.GoToState(this, SelectedItem is TabViewItem { Tag: LayoutContent { IsActive: true } }
             && tool?.IsDirectlyHostedInFloatingWindow != true ? "PaneActive" : "PaneInactive", false);
-        VisualStateManager.GoToState(this, tool?.ChildrenCount == 1 ? "SingleTool" : "MultipleTools", false);
+        VisualStateManager.GoToState(this, tool?.ChildrenCount == 0 ? "EmptyTool"
+            : tool?.ChildrenCount == 1 ? "SingleTool" : "MultipleTools", false);
         VisualStateManager.GoToState(this, tool?.IsDirectlyHostedInFloatingWindow == true ? "FloatingTool" : "DockedTool", false);
     }
     internal bool IsTabStripCollapsed => GetTemplateChild("TabContainerGrid") is FrameworkElement { Visibility: Visibility.Collapsed };

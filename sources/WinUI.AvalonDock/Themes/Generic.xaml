@@ -22,7 +22,7 @@
     <Style TargetType="controls:LayoutAnchorablePaneControl" BasedOn="{StaticResource AvalonDockToggleTabControlExStyle}" />
     <Style x:Key="DockDocumentPaneControlStyle" TargetType="controls:LayoutDocumentPaneControl" BasedOn="{StaticResource AvalonDockTabControlExStyle}" />
     <Style x:Key="DockAnchorablePaneControlStyle" TargetType="controls:LayoutAnchorablePaneControl" BasedOn="{StaticResource AvalonDockToggleTabControlExStyle}" />
-    <Style x:Key="ToggleAnchorablePaneControlStyle" TargetType="controls:LayoutAnchorablePaneControl" BasedOn="{StaticResource AvalonDockToggleTabControlExStyle}" />
+    <Style x:Key="ToggleAnchorablePaneControlStyle" TargetType="controls:LayoutAnchorablePaneControl" BasedOn="{StaticResource AvalonDockTogglePaneControlStyle}" />
 
     <MenuFlyout x:Key="AnchorableContextMenu">
         <MenuFlyoutItem Text="{properties:LocalizedString Key=Document_Float}" Command="{Binding FloatCommand}" />
@@ -70,6 +70,7 @@
             <Setter.Value>
                 <ControlTemplate TargetType="avalonDock:DockingManager">
                     <Border
+                        Padding="{TemplateBinding Padding}"
                         Background="{TemplateBinding Background}"
                         BorderBrush="{TemplateBinding BorderBrush}"
                         BorderThickness="{TemplateBinding BorderThickness}">
@@ -92,7 +93,37 @@
     </Style>
 
     <Style TargetType="avalonDock:DockingManager" BasedOn="{StaticResource AvalonDockManagerStyle}" />
-    <Style TargetType="avalonDock:ToggleDockingManager" BasedOn="{StaticResource AvalonDockManagerStyle}" />
+    <!-- Toggle-specific structure ported from WPFUI ffff79a Styles/ToggleDockingManager.xaml (MIT). -->
+    <Style TargetType="avalonDock:ToggleDockingManager" BasedOn="{StaticResource AvalonDockManagerStyle}">
+        <Setter Property="AnchorablePaneControlStyle" Value="{StaticResource ToggleAnchorablePaneControlStyle}" />
+        <Setter Property="GridSplitterHeight" Value="8" />
+        <Setter Property="GridSplitterWidth" Value="8" />
+        <Setter Property="Padding" Value="4" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="avalonDock:ToggleDockingManager">
+                    <Border Padding="{TemplateBinding Padding}" Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}">
+                        <Grid x:Name="PART_ToggleNavigationGrid" FlowDirection="LeftToRight">
+                            <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="*" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
+                            <Grid.ColumnDefinitions><ColumnDefinition Width="Auto" /><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+                            <Border x:Name="PART_LeftNavigationFrame" Grid.RowSpan="3" Style="{StaticResource TogglePaneFrameStyle}" IsHitTestVisible="False" />
+                            <Border x:Name="PART_RightNavigationFrame" Grid.RowSpan="3" Grid.Column="2" Style="{StaticResource TogglePaneFrameStyle}" IsHitTestVisible="False" />
+                            <ContentPresenter x:Name="PART_LayoutHost" Grid.Row="1" Grid.Column="1" Margin="4,0"
+                                              HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch" />
+                            <ContentPresenter Grid.Row="0" Grid.Column="1" Content="{TemplateBinding TopSidePanel}" />
+                            <ContentPresenter Grid.Row="2" Grid.Column="1" Content="{TemplateBinding BottomSidePanel}" />
+                            <ContentPresenter Grid.Row="1" Grid.Column="0" Content="{TemplateBinding LeftSidePanel}" />
+                            <ContentPresenter Grid.Row="1" Grid.Column="2" Content="{TemplateBinding RightSidePanel}" />
+                            <ContentPresenter x:Name="PART_AutoHideArea" Grid.Row="1" Grid.Column="1"
+                                              HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch"
+                                              Content="{TemplateBinding AutoHideWindow}" />
+                        </Grid>
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
     <Style TargetType="controls:LayoutDocumentControl">
         <Setter Property="HorizontalContentAlignment" Value="Stretch" />
         <Setter Property="VerticalContentAlignment" Value="Stretch" />

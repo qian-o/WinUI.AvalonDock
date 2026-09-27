@@ -34,7 +34,7 @@ public partial class ToggleDockingManager
         {
             if (!waitForLeave)
             {
-                zoneOverlay = new ToggleDockDragOverlay(this, origin);
+                zoneOverlay = new ToggleDockDragOverlay(this, tool);
                 zoneOverlay.Update(new Point(zoneInput.Position.X, zoneInput.Position.Y));
             }
         }
@@ -60,9 +60,9 @@ public partial class ToggleDockingManager
                 return;
             }
 
-            zoneOverlay = new ToggleDockDragOverlay(this, zoneOrigin);
+            zoneOverlay = new ToggleDockDragOverlay(this, zoneSource!);
         }
-        zoneOverlay?.Update(point);
+        zoneOverlay?.Update(point, refreshGeometry: update.Kind == DragInputUpdateKind.Released);
         if (update.Kind != DragInputUpdateKind.Released)
         {
             return;
@@ -90,7 +90,7 @@ public partial class ToggleDockingManager
             StopZoneDrag();
             return;
         }
-        zoneOverlay?.Update(new Point(zoneInput.Position.X, zoneInput.Position.Y));
+        zoneOverlay?.Update(new Point(zoneInput.Position.X, zoneInput.Position.Y), refreshGeometry: true);
     }
     private void StopZoneDrag()
     {

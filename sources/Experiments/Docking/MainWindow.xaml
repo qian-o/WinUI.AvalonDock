@@ -19,6 +19,7 @@
                 <controls:MenuFlyoutItem Text="重置文档源" Click="ResetDocuments_Click" />
             </controls:MenuBarItem>
             <controls:MenuBarItem Title="编辑">
+                <controls:MenuFlyoutItem Text="标记活动文档为已修改" Click="MarkActiveDocumentModified_Click" />
                 <controls:MenuFlyoutItem Text="关闭活动项" Click="CloseActive_Click" />
                 <controls:ToggleMenuFlyoutItem x:Name="AllowCloseModifiedMenuItem"
                                                 Text="允许关闭修改项"
@@ -36,7 +37,7 @@
             <controls:MenuBarItem Title="工具">
                 <controls:MenuFlyoutItem Text="自动隐藏工具" Click="AutoHideTool_Click" />
                 <controls:MenuFlyoutItem Text="显示隐藏工具" Click="ShowHiddenTool_Click" />
-                <controls:MenuFlyoutItem Text="拆分或附回工具" Click="DetachTool_Click" />
+                <controls:MenuFlyoutItem Text="浮动或停靠工具" Click="ToggleToolFloating_Click" />
             </controls:MenuBarItem>
             <controls:MenuBarItem Title="主题">
                 <controls:MenuFlyoutItem Text="切换浅色/深色主题" Click="ToggleTheme_Click" />

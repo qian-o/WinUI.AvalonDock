@@ -95,7 +95,8 @@ public sealed partial class MainWindow : Window
         SampleChecks.Require(HasContent(opened), "打开文档已同步到 Manager 布局。");
         checks.Record("文档打开和活动项同步通过。");
 
-        opened.Text += " 修改";
+        ViewModel.MarkModifiedCommand.Execute(null);
+        SampleChecks.Require(opened.IsModified, "编辑命令可标记活动文档为已修改。");
         ViewModel.CloseActiveCommand.Execute(null);
         SampleChecks.Require(ViewModel.Documents.Contains(opened), "修改中的文档不会被命令关闭。");
         ViewModel.SaveCommand.Execute(null);

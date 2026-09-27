@@ -35,6 +35,9 @@ public partial class OverlayWindow : Window
     private IReadOnlyList<OverlayTarget> targets = [];
     private OverlayTarget? active;
     private bool closed;
+    private bool resizePreviewShown;
+    private Brush? resizePreviewFill;
+    private double resizePreviewOpacity;
     private bool queued;
     private bool rendering;
     private int revision;
@@ -160,6 +163,8 @@ public partial class OverlayWindow : Window
 
     public void Show()
     {
+        resizePreviewShown = false;
+        resizePreviewFill = null;
         if (!PlatformServices.Coordinates.TryGetScreenBounds(destination, out Rect rectangle))
         {
             return;
@@ -175,6 +180,8 @@ public partial class OverlayWindow : Window
     }
     public void Hide()
     {
+        resizePreviewShown = false;
+        resizePreviewFill = null;
         ClearTargetedChrome();
         if (overlayHost != null)
         {
@@ -379,18 +386,33 @@ public partial class OverlayWindow : Window
 
     internal void ShowResizePreview(Rect screenRectangle, Brush fill, double opacity)
     {
-        Show();
+        // A splitter preview is a narrow, uniform rectangle. Keep its layered
+        // window the size of that rectangle so pointer movement only moves the
+        // already rendered frame instead of capturing the entire dock surface.
+        bool sizeChanged = !resizePreviewShown || bounds.Width != screenRectangle.Width || bounds.Height != screenRectangle.Height;
+        bool appearanceChanged = !ReferenceEquals(resizePreviewFill, fill) || resizePreviewOpacity != opacity;
+        bounds = screenRectangle;
+        if (sizeChanged)
+        {
+            double scale = destination.XamlRoot.RasterizationScale;
+            view.Width = bounds.Width / scale;
+            view.Height = bounds.Height / scale;
+            ApplyTemplate();
+        }
+
+        surface.Show(bounds);
+        resizePreviewShown = true;
         if (preview == null)
         {
             return;
         }
 
-        double scale = destination.XamlRoot.RasterizationScale;
-        preview.Data = new RectangleGeometry
+        if (!sizeChanged && !appearanceChanged)
         {
-            Rect = new Rect((screenRectangle.X - bounds.X) / scale,
-            (screenRectangle.Y - bounds.Y) / scale, screenRectangle.Width / scale, screenRectangle.Height / scale)
-        };
+            return;
+        }
+
+        preview.Data = new RectangleGeometry { Rect = new Rect(0, 0, view.Width, view.Height) };
         preview.Width = view.Width;
         preview.Height = view.Height;
         preview.Stretch = Stretch.None;
@@ -398,6 +420,8 @@ public partial class OverlayWindow : Window
         preview.StrokeThickness = 0;
         preview.Opacity = opacity;
         preview.Visibility = Visibility.Visible;
+        resizePreviewFill = fill;
+        resizePreviewOpacity = opacity;
         Invalidate();
     }
 

@@ -308,7 +308,11 @@ internal sealed class LayoutPanePresenter : IDisposable
         }
     }
 
-    private void OnChildrenChanged(object? sender, EventArgs e) => Rebuild();
+    private void OnChildrenChanged(object? sender, EventArgs e)
+    {
+        Rebuild();
+        tabs.UpdatePaneActiveState();
+    }
 
     private void OnLayoutItemCreated(LayoutContent content)
     {

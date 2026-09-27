@@ -13,6 +13,8 @@ public class MenuItemEx : MenuFlyoutItem
 {
     private bool reentrantFlag = false;
     private Style? sourceStyle;
+    private Image? observedIconImage;
+    private long iconSourceToken;
     private readonly Dictionary<DependencyProperty, Binding> styleBindings = [];
     public new Style? Style
     {
@@ -124,21 +126,54 @@ public class MenuItemEx : MenuFlyoutItem
             DataTemplate dataTemplateToUse = IconTemplateSelector.SelectTemplate(Icon, this);
             if (dataTemplateToUse != null)
             {
-                Icon = dataTemplateToUse.LoadContent();
+                SetTemplateIcon(dataTemplateToUse.LoadContent());
             }
         }
         else if (IconTemplate != null)
         {
-            Icon = IconTemplate.LoadContent();
+            SetTemplateIcon(IconTemplate.LoadContent());
         }
 
         reentrantFlag = false;
     }
+    private void SetTemplateIcon(object icon)
+    {
+        // LoadContent creates a detached element. Its bindings need the menu
+        // item's model even while an empty icon keeps the viewbox collapsed.
+        if (icon is FrameworkElement element
+            && element.ReadLocalValue(FrameworkElement.DataContextProperty) == DependencyProperty.UnsetValue)
+        {
+            BindingOperations.SetBinding(element, FrameworkElement.DataContextProperty,
+                new Binding { Source = this, Path = new PropertyPath(nameof(DataContext)) });
+        }
+
+        Icon = icon;
+    }
     private void SyncNativeIcon()
     {
-        // The native menu uses this property only to reserve its shared icon column.
-        // The retained template renders the original arbitrary Icon object.
-        if (Icon == null)
+        // The default icon template can produce an Image with no source. Keep that
+        // item out of the native icon column until the binding supplies a source.
+        if (!ReferenceEquals(observedIconImage, Icon))
+        {
+            if (observedIconImage is not null)
+            {
+                observedIconImage.UnregisterPropertyChangedCallback(Image.SourceProperty, iconSourceToken);
+            }
+
+            observedIconImage = Icon as Image;
+            if (observedIconImage is not null)
+            {
+                iconSourceToken = observedIconImage.RegisterPropertyChangedCallback(Image.SourceProperty,
+                    (_, _) => UpdateNativeIconPlaceholder());
+            }
+        }
+
+        UpdateNativeIconPlaceholder();
+    }
+    private void UpdateNativeIconPlaceholder()
+    {
+        // The retained template renders Icon; the native property reserves its column.
+        if (Icon is null or Image { Source: null })
         {
             base.Icon = null;
         }

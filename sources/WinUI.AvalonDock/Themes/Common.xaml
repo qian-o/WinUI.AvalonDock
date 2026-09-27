@@ -14,7 +14,7 @@
             <Image themes:RetainedIconSource.Source="{Binding IconSource}" Stretch="Uniform" VerticalAlignment="Center" />
             <TextBlock Grid.Column="1" Margin="{Binding IconSource, Converter={StaticResource HeaderIconMargin}}"
                        HorizontalAlignment="Stretch" VerticalAlignment="Center" Text="{Binding Title}"
-                       TextAlignment="Left" TextTrimming="CharacterEllipsis" />
+                       TextAlignment="Center" TextTrimming="CharacterEllipsis" />
         </Grid>
     </DataTemplate>
     <DataTemplate x:Key="DocumentTitleTemplate">

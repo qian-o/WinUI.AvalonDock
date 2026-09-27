@@ -1,63 +1,179 @@
+<!-- Ported from qian-o/AvalonDock.Themes.WPFUI ffff79a,
+     Styles/ToggleDockingManager.xaml. MIT, Copyright (c) 2024 qian-o;
+     see THIRD-PARTY-NOTICES.md. WinUI visual states replace WPF triggers. -->
 <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-                    xmlns:controls="using:AvalonDock.Controls">
+                    xmlns:controls="using:AvalonDock.Controls"
+                    xmlns:primitives="using:Microsoft.UI.Xaml.Controls.Primitives">
+    <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="ms-appx:///WinUI.AvalonDock/Themes/Chrome.xaml" />
+    </ResourceDictionary.MergedDictionaries>
+
+    <Style x:Key="TogglePaneFrameStyle" TargetType="Border">
+        <Setter Property="Background" Value="{ThemeResource DockSurfaceBrush}" />
+        <Setter Property="BorderBrush" Value="{ThemeResource DockBorderBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="6" />
+    </Style>
+    <SolidColorBrush x:Key="AvalonDock.Controls.ToggleDockButton.ForegroundBrush"
+                     Color="{ThemeResource TextFillColorSecondary}" />
+
     <Style TargetType="controls:ToggleDockButtonBar">
         <Setter Property="Template"><Setter.Value><ControlTemplate TargetType="controls:ToggleDockButtonBar"><ItemsPresenter /></ControlTemplate></Setter.Value></Setter>
     </Style>
     <Style TargetType="controls:ToggleDockButton">
-        <Setter Property="Padding" Value="0,4" />
+        <Setter Property="Padding" Value="0,6" />
         <Setter Property="Margin" Value="2" />
-        <Setter Property="FontSize" Value="12" />
+        <Setter Property="FontFamily" Value="{ThemeResource DockFontFamily}" />
+        <Setter Property="FontSize" Value="{ThemeResource DockFontSize}" />
         <Setter Property="MinWidth" Value="0" />
         <Setter Property="MinHeight" Value="25" />
         <Setter Property="Width" Value="25" />
-        <Setter Property="Foreground" Value="{ThemeResource TextFillColorPrimaryBrush}" />
-        <Setter Property="Background" Value="{ThemeResource SubtleFillColorTransparentBrush}" />
+        <Setter Property="Foreground" Value="{StaticResource AvalonDock.Controls.ToggleDockButton.ForegroundBrush}" />
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="CornerRadius" Value="{ThemeResource DockControlCornerRadius}" />
+        <Setter Property="UseSystemFocusVisuals" Value="True" />
+        <Setter Property="FocusVisualMargin" Value="-3" />
         <Setter Property="Template"><Setter.Value>
             <ControlTemplate TargetType="controls:ToggleDockButton">
-                <Grid>
+                <Grid x:Name="ButtonRoot" Background="Transparent">
                     <VisualStateManager.VisualStateGroups>
                         <VisualStateGroup x:Name="CommonStates">
                             <VisualState x:Name="Normal" />
-                            <VisualState x:Name="PointerOver"><VisualState.Setters><Setter Target="Frame.Background" Value="{ThemeResource SubtleFillColorSecondaryBrush}" /></VisualState.Setters></VisualState>
-                            <VisualState x:Name="Pressed"><VisualState.Setters><Setter Target="Frame.Background" Value="{ThemeResource SubtleFillColorTertiaryBrush}" /></VisualState.Setters></VisualState>
-                            <VisualState x:Name="Disabled"><VisualState.Setters><Setter Target="Frame.Opacity" Value="0.4" /></VisualState.Setters></VisualState>
-                            <VisualState x:Name="Checked"><VisualState.Setters><Setter Target="Frame.Background" Value="{ThemeResource AccentFillColorSecondaryBrush}" /></VisualState.Setters></VisualState>
-                            <VisualState x:Name="CheckedPointerOver"><VisualState.Setters><Setter Target="Frame.Background" Value="{ThemeResource AccentFillColorDefaultBrush}" /></VisualState.Setters></VisualState>
-                            <VisualState x:Name="CheckedPressed"><VisualState.Setters><Setter Target="Frame.Background" Value="{ThemeResource AccentFillColorTertiaryBrush}" /></VisualState.Setters></VisualState>
+                            <VisualState x:Name="PointerOver"><VisualState.Setters>
+                                <Setter Target="Frame.Background" Value="{ThemeResource DockHoverBrush}" />
+                                <Setter Target="PART_Text.Foreground" Value="{ThemeResource DockTextBrush}" />
+                            </VisualState.Setters></VisualState>
+                            <VisualState x:Name="Pressed"><VisualState.Setters><Setter Target="Frame.Background" Value="{ThemeResource DockPressedBrush}" /></VisualState.Setters></VisualState>
+                            <VisualState x:Name="Disabled"><VisualState.Setters><Setter Target="ButtonRoot.Opacity" Value="0.5" /></VisualState.Setters></VisualState>
+                            <VisualState x:Name="Checked"><VisualState.Setters>
+                                <Setter Target="Frame.Background" Value="{ThemeResource DockHoverBrush}" />
+                                <Setter Target="PART_Text.Foreground" Value="{ThemeResource DockTextBrush}" />
+                                <Setter Target="Indicator.Visibility" Value="Visible" />
+                            </VisualState.Setters></VisualState>
+                            <VisualState x:Name="CheckedPointerOver"><VisualState.Setters>
+                                <Setter Target="Frame.Background" Value="{ThemeResource DockHoverBrush}" />
+                                <Setter Target="PART_Text.Foreground" Value="{ThemeResource DockTextBrush}" />
+                                <Setter Target="Indicator.Visibility" Value="Visible" />
+                            </VisualState.Setters></VisualState>
+                            <VisualState x:Name="CheckedPressed"><VisualState.Setters>
+                                <Setter Target="Frame.Background" Value="{ThemeResource DockPressedBrush}" />
+                                <Setter Target="PART_Text.Foreground" Value="{ThemeResource DockTextBrush}" />
+                                <Setter Target="Indicator.Visibility" Value="Visible" />
+                            </VisualState.Setters></VisualState>
+                            <VisualState x:Name="CheckedDisabled"><VisualState.Setters>
+                                <Setter Target="ButtonRoot.Opacity" Value="0.5" />
+                                <Setter Target="Indicator.Visibility" Value="Visible" />
+                            </VisualState.Setters></VisualState>
                         </VisualStateGroup>
                         <VisualStateGroup x:Name="AnchorableStates">
                             <VisualState x:Name="AnchorableUnfocused" />
-                            <VisualState x:Name="AnchorableFocused"><VisualState.Setters><Setter Target="FocusMark.Visibility" Value="Visible" /></VisualState.Setters></VisualState>
+                            <VisualState x:Name="AnchorableFocused"><VisualState.Setters>
+                                <Setter Target="PART_Text.Foreground" Value="{ThemeResource DockTextBrush}" />
+                                <Setter Target="Indicator.Background" Value="{ThemeResource DockTextBrush}" />
+                                <Setter Target="Indicator.Visibility" Value="Visible" />
+                            </VisualState.Setters></VisualState>
+                        </VisualStateGroup>
+                        <VisualStateGroup x:Name="ZoneStates">
+                            <VisualState x:Name="IndicatorLeft" />
+                            <VisualState x:Name="IndicatorRight"><VisualState.Setters>
+                                <Setter Target="Indicator.HorizontalAlignment" Value="Right" />
+                            </VisualState.Setters></VisualState>
                         </VisualStateGroup>
                     </VisualStateManager.VisualStateGroups>
-                    <Border x:Name="Frame" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}" CornerRadius="4">
+                    <Border x:Name="Frame" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}" CornerRadius="{TemplateBinding CornerRadius}">
                         <Grid>
                             <ContentPresenter x:Name="PART_IconContent" Width="20" Height="20" HorizontalAlignment="Center" VerticalAlignment="Center" />
                             <Image x:Name="PART_Icon" Width="20" Height="20" />
                             <ContentPresenter x:Name="PART_Text" Foreground="{TemplateBinding Foreground}" HorizontalAlignment="Center" VerticalAlignment="Center" />
                         </Grid>
                     </Border>
-                    <Border x:Name="FocusMark" Width="3" Height="16" Background="{ThemeResource AccentFillColorDefaultBrush}" HorizontalAlignment="Left" VerticalAlignment="Center" CornerRadius="2" Visibility="Collapsed" />
+                    <Border x:Name="Indicator" Width="2" Margin="0,10" Background="{ThemeResource DockSecondaryTextBrush}"
+                            HorizontalAlignment="Left" CornerRadius="1" Visibility="Collapsed" IsHitTestVisible="False" />
                 </Grid>
             </ControlTemplate>
         </Setter.Value></Setter>
     </Style>
     <Style TargetType="controls:ToggleAnchorablePaneTitle">
+        <Setter Property="Height" Value="32" />
+        <Setter Property="FontFamily" Value="{ThemeResource DockFontFamily}" />
+        <Setter Property="FontSize" Value="{ThemeResource DockFontSize}" />
+        <Setter Property="Foreground" Value="{ThemeResource DockTextBrush}" />
         <Setter Property="HorizontalContentAlignment" Value="Stretch" />
         <Setter Property="VerticalContentAlignment" Value="Center" />
         <Setter Property="Template"><Setter.Value>
             <ControlTemplate TargetType="controls:ToggleAnchorablePaneTitle">
-                <Grid Background="{TemplateBinding Background}" MinHeight="32" Padding="8,2,2,2">
+                <Grid Background="{TemplateBinding Background}" Padding="12,2,4,2">
                     <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
                     <ContentPresenter x:Name="PART_Title"
+                                      Margin="0,0,8,0"
                                       HorizontalAlignment="Stretch"
                                       VerticalAlignment="Stretch"
                                       HorizontalContentAlignment="Stretch"
-                                      VerticalContentAlignment="Center" />
-                    <Button x:Name="PART_OptionsButton" Grid.Column="1" Width="25" Height="25" MinWidth="0" MinHeight="0" Padding="0" IsTabStop="False" ToolTipService.ToolTip="Options"><FontIcon Glyph="&#xE712;" FontSize="12" /></Button>
-                    <Button x:Name="PART_MinimizeButton" Grid.Column="2" Width="25" Height="25" MinWidth="0" MinHeight="0" Padding="0" IsTabStop="False" ToolTipService.ToolTip="Minimize"
-                            Command="{Binding LayoutItem.AutoHideCommand, RelativeSource={RelativeSource TemplatedParent}}"><FontIcon Glyph="&#xE921;" FontSize="12" /></Button>
+                                      VerticalContentAlignment="Center"
+                                      FontWeight="SemiBold" />
+                    <Button x:Name="PART_OptionsButton" Grid.Column="1" Width="24" Height="24" Margin="2,0" MinWidth="0" MinHeight="0"
+                            Padding="0" IsTabStop="False" Style="{StaticResource AvalonDockChromeButtonStyle}"
+                            ToolTipService.ToolTip="Options"><FontIcon Glyph="&#xE712;" FontSize="14" /></Button>
+                    <Button x:Name="PART_MinimizeButton" Grid.Column="2" Width="24" Height="24" Margin="2,0" MinWidth="0" MinHeight="0"
+                            Padding="0" IsTabStop="False" Style="{StaticResource AvalonDockChromeButtonStyle}" ToolTipService.ToolTip="Minimize"
+                            Command="{Binding LayoutItem.AutoHideCommand, RelativeSource={RelativeSource TemplatedParent}}"><FontIcon Glyph="&#xE921;" FontSize="14" /></Button>
+                </Grid>
+            </ControlTemplate>
+        </Setter.Value></Setter>
+    </Style>
+
+    <Style x:Key="AvalonDockTogglePaneControlStyle" TargetType="controls:TabControlEx">
+        <Setter Property="VerticalAlignment" Value="Stretch" />
+        <Setter Property="FontFamily" Value="{ThemeResource DockFontFamily}" />
+        <Setter Property="FontSize" Value="{ThemeResource DockFontSize}" />
+        <Setter Property="Foreground" Value="{ThemeResource DockTextBrush}" />
+        <Setter Property="BorderBrush" Value="{ThemeResource DockBorderBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="6" />
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="IsTabStop" Value="False" />
+        <Setter Property="Background" Value="{ThemeResource DockSurfaceBrush}" />
+        <Setter Property="KeyboardAcceleratorPlacementMode" Value="Hidden" />
+        <Setter Property="Template"><Setter.Value>
+            <ControlTemplate TargetType="controls:TabControlEx">
+                <Grid>
+                    <Grid.Resources>
+                        <ResourceDictionary Source="ms-appx:///WinUI.AvalonDock/Themes/DockingResources.xaml" />
+                    </Grid.Resources>
+                    <Grid.RowDefinitions><RowDefinition Height="*" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
+                    <VisualStateManager.VisualStateGroups>
+                        <VisualStateGroup x:Name="ToolCountStates">
+                            <VisualState x:Name="MultipleTools" />
+                            <VisualState x:Name="SingleTool"><VisualState.Setters><Setter Target="TabStrip.Visibility" Value="Collapsed" /></VisualState.Setters></VisualState>
+                            <VisualState x:Name="EmptyTool"><VisualState.Setters><Setter Target="PaneFrame.Visibility" Value="Collapsed" /></VisualState.Setters></VisualState>
+                        </VisualStateGroup>
+                        <VisualStateGroup x:Name="ToolHostStates">
+                            <VisualState x:Name="DockedTool" />
+                            <VisualState x:Name="FloatingTool"><VisualState.Setters>
+                                <Setter Target="PaneFrame.BorderBrush" Value="Transparent" />
+                                <Setter Target="PaneFrame.CornerRadius" Value="0" />
+                            </VisualState.Setters></VisualState>
+                        </VisualStateGroup>
+                        <VisualStateGroup x:Name="PaneActivationStates">
+                            <VisualState x:Name="PaneInactive" />
+                            <VisualState x:Name="PaneActive" />
+                        </VisualStateGroup>
+                    </VisualStateManager.VisualStateGroups>
+                    <Border x:Name="PaneFrame" Grid.RowSpan="2" Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="{TemplateBinding CornerRadius}" />
+                    <Border x:Name="ContentPanel" Margin="{TemplateBinding Padding}" Background="Transparent" TabFocusNavigation="Cycle">
+                        <Grid x:Name="PART_ItemsHolder" />
+                    </Border>
+                    <Border x:Name="TabStrip" Grid.Row="1" Padding="4,0" Background="{ThemeResource DockChromeBrush}"
+                            BorderBrush="{ThemeResource DockBorderBrush}" BorderThickness="0,1,0,0" CornerRadius="0,0,5,5">
+                        <primitives:TabViewListView x:Name="TabListView" HorizontalAlignment="Stretch"
+                            CanReorderItems="{TemplateBinding CanReorderTabs}" CanDragItems="{TemplateBinding CanDragTabs}"
+                            AllowDrop="{TemplateBinding AllowDropTabs}" ItemsSource="{TemplateBinding TabItemsSource}"
+                            ItemTemplate="{TemplateBinding TabItemTemplate}" ItemTemplateSelector="{TemplateBinding TabItemTemplateSelector}" />
+                    </Border>
                 </Grid>
             </ControlTemplate>
         </Setter.Value></Setter>

@@ -23,6 +23,7 @@ internal sealed class DocumentPaneMenu : IDisposable
             new Binding { Source = pane, Path = new PropertyPath(nameof(LayoutDocumentPane.ChildrenSorted)) });
         button.DropDownContextMenu = menu;
         pane.ChildrenCollectionChanged += OnChildrenChanged;
+        manager.LayoutItemCreated += OnLayoutItemCreated;
         foreach (DependencyProperty? property in new[] { DockingManager.DocumentPaneMenuItemHeaderTemplateProperty, DockingManager.DocumentPaneMenuItemHeaderTemplateSelectorProperty,
             DockingManager.IconContentTemplateProperty, DockingManager.IconContentTemplateSelectorProperty })
         {
@@ -45,6 +46,8 @@ internal sealed class DocumentPaneMenu : IDisposable
     {
         LayoutContent model = (LayoutContent)value;
         item.Header = model;
+        item.SetBinding(MenuFlyoutItem.TextProperty,
+            new Binding { Source = model, Path = new PropertyPath(nameof(LayoutContent.Title)) });
         item.HeaderTemplate = manager.DocumentPaneMenuItemHeaderTemplate;
         item.HeaderTemplateSelector = manager.DocumentPaneMenuItemHeaderTemplateSelector;
         item.IconTemplate = manager.IconContentTemplate;
@@ -53,14 +56,17 @@ internal sealed class DocumentPaneMenu : IDisposable
         {
             item.Icon = model.IconSource == null ? null : new Image { Source = model.IconSource, Width = 16, Height = 16 };
         }
-        // The upstream command converter returns Binding.DoNothing while a source
-        // import has not created its LayoutItem. Preserve the current native target.
-        if (manager.GetLayoutItemFromModel(model) is { } layoutItem)
-        {
-            item.Command = layoutItem.ActivateCommand;
-        }
+        item.Command = manager.GetLayoutItemFromModel(model)?.ActivateCommand;
     }
     private void OnChildrenChanged(object? sender, EventArgs args) => Refresh();
+    private void OnLayoutItemCreated(LayoutContent content)
+    {
+        foreach (MenuItemEx item in menu.Items.OfType<MenuItemEx>()
+            .Where(item => ReferenceEquals(item.DataContext, content)))
+        {
+            item.Command = manager.GetLayoutItemFromModel(content)?.ActivateCommand;
+        }
+    }
     private void Refresh()
     {
         button.Visibility = pane.ChildrenCount == 0 ? Visibility.Collapsed : Visibility.Visible;
@@ -69,6 +75,7 @@ internal sealed class DocumentPaneMenu : IDisposable
     {
         menu.Hide();
         pane.ChildrenCollectionChanged -= OnChildrenChanged;
+        manager.LayoutItemCreated -= OnLayoutItemCreated;
         foreach ((DependencyProperty? property, long token) in presentationTokens)
         {
             manager.UnregisterPropertyChangedCallback(property, token);

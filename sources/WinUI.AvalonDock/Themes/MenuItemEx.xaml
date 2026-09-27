@@ -10,7 +10,7 @@
         <Setter Property="Foreground" Value="{ThemeResource MenuFlyoutItemForeground}" />
         <Setter Property="Padding" Value="{StaticResource MenuFlyoutItemThemePadding}" />
         <Setter Property="FontSize" Value="{ThemeResource ControlContentThemeFontSize}" />
-        <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+        <Setter Property="HorizontalContentAlignment" Value="Left" />
         <Setter Property="VerticalContentAlignment" Value="Center" />
         <Setter Property="UseSystemFocusVisuals" Value="{StaticResource UseSystemFocusVisuals}" />
         <Setter Property="KeyboardAcceleratorPlacementMode" Value="Hidden" />
@@ -116,14 +116,11 @@
                         </VisualStateManager.VisualStateGroups>
 
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto" />
-                            <ColumnDefinition Width="Auto" />
                             <ColumnDefinition Width="*" />
                             <ColumnDefinition Width="Auto" />
                         </Grid.ColumnDefinitions>
-                        <FontIcon x:Name="CheckGlyph" Grid.Column="0" FontFamily="{ThemeResource SymbolThemeFontFamily}" Glyph="&#xE73E;" FontSize="12" Foreground="{TemplateBinding Foreground}" Visibility="Collapsed" Margin="0,0,16,0" AutomationProperties.AccessibilityView="Raw" />
+                        <FontIcon x:Name="CheckGlyph" HorizontalAlignment="Left" FontFamily="{ThemeResource SymbolThemeFontFamily}" Glyph="&#xE73E;" FontSize="12" Foreground="{TemplateBinding Foreground}" Visibility="Collapsed" AutomationProperties.AccessibilityView="Raw" />
                         <Viewbox x:Name="IconRoot"
-                            Grid.Column="1"
                             HorizontalAlignment="Left"
                             VerticalAlignment="Center"
                             Width="16"
@@ -132,8 +129,8 @@
                             <ContentPresenter x:Name="IconContent" Content="{Binding Icon, RelativeSource={RelativeSource TemplatedParent}}" Foreground="{TemplateBinding Foreground}" />
 
                         </Viewbox>
-                        <ContentPresenter x:Name="TextBlock" Grid.Column="2" Content="{Binding Header, RelativeSource={RelativeSource TemplatedParent}}" ContentTemplate="{TemplateBinding HeaderTemplate}" ContentTemplateSelector="{TemplateBinding HeaderTemplateSelector}" Foreground="{TemplateBinding Foreground}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
-                        <TextBlock x:Name="KeyboardAcceleratorTextBlock" Grid.Column="3" Style="{ThemeResource CaptionTextBlockStyle}" Text="{TemplateBinding KeyboardAcceleratorTextOverride}" MinWidth="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.KeyboardAcceleratorTextMinWidth}" Margin="24,4,0,0" Foreground="{ThemeResource MenuFlyoutItemKeyboardAcceleratorTextForeground}" TextAlignment="Right" HorizontalAlignment="Right" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" Visibility="Collapsed" AutomationProperties.AccessibilityView="Raw" />
+                        <ContentPresenter x:Name="TextBlock" Content="{Binding Header, RelativeSource={RelativeSource TemplatedParent}}" ContentTemplate="{TemplateBinding HeaderTemplate}" ContentTemplateSelector="{TemplateBinding HeaderTemplateSelector}" Foreground="{TemplateBinding Foreground}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}" />
+                        <TextBlock x:Name="KeyboardAcceleratorTextBlock" Grid.Column="1" Style="{ThemeResource CaptionTextBlockStyle}" Text="{TemplateBinding KeyboardAcceleratorTextOverride}" MinWidth="{Binding RelativeSource={RelativeSource TemplatedParent}, Path=TemplateSettings.KeyboardAcceleratorTextMinWidth}" Margin="24,4,0,0" Foreground="{ThemeResource MenuFlyoutItemKeyboardAcceleratorTextForeground}" TextAlignment="Right" HorizontalAlignment="Right" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" Visibility="Collapsed" AutomationProperties.AccessibilityView="Raw" />
 
                     </Grid>
 

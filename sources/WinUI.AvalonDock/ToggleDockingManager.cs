@@ -395,7 +395,8 @@ public partial class ToggleDockingManager : DockingManager
             // The original SetAnchorables populates all six bars before registering
             // toolboxes. Registration order is bar order, including duplicate shortcuts.
             RegisterToolboxesFromBars();
-            Grid? root = Visuals<Grid>(this).FirstOrDefault();
+            Grid? root = GetTemplateChild("PART_ToggleNavigationGrid") as Grid
+                ?? Visuals<Grid>(this).FirstOrDefault();
             if (root == null)
             {
                 return;
@@ -412,6 +413,7 @@ public partial class ToggleDockingManager : DockingManager
             Grid.SetColumn(injectedRightDockPanel, 2);
             root.Children.Add(injectedLeftDockPanel);
             root.Children.Add(injectedRightDockPanel);
+            UpdateNavigationPanelVisibility();
             RefreshShortcuts();
         }
         finally { settingUp = false; }
@@ -428,7 +430,11 @@ public partial class ToggleDockingManager : DockingManager
     }
     private Grid SidePanel(ToggleDockButtonBar top, ToggleDockButtonBar middle, ToggleDockButtonBar bottom, bool left)
     {
-        Grid grid = new();
+        Grid grid = new()
+        {
+            Margin = new Thickness(4),
+            Background = new SolidColorBrush(Microsoft.UI.Colors.Transparent)
+        };
         foreach (GridLength height in new[] { GridLength.Auto, GridLength.Auto, GridLength.Auto, GridLength.Auto, new GridLength(1, GridUnitType.Star), GridLength.Auto })
         {
             grid.RowDefinitions.Add(new RowDefinition { Height = height });
@@ -458,7 +464,22 @@ public partial class ToggleDockingManager : DockingManager
         Grid.SetRow(bottom, 5);
         if (left)
         {
-            hiddenButton = new Button { Content = new FontIcon { Glyph = "\uE712", FontSize = 14 }, Width = ButtonSize, Height = ButtonSize, Padding = new Thickness(0), IsTabStop = false };
+            hiddenButton = new Button
+            {
+                Content = new FontIcon { Glyph = "\uE712", FontSize = 14 },
+                Width = ButtonSize,
+                Height = ButtonSize,
+                MinWidth = 0,
+                MinHeight = 0,
+                Margin = new Thickness(2),
+                Padding = new Thickness(0),
+                IsTabStop = false
+            };
+            if (Resources.TryGetValue("AvalonDockChromeButtonStyle", out object? chromeStyle)
+                || Application.Current.Resources.TryGetValue("AvalonDockChromeButtonStyle", out chromeStyle))
+            {
+                hiddenButton.Style = chromeStyle as Style;
+            }
             hiddenButton.SetBinding(WidthProperty, new Binding { Source = this, Path = new PropertyPath(nameof(ButtonSize)) });
             hiddenButton.SetBinding(HeightProperty, new Binding { Source = this, Path = new PropertyPath(nameof(ButtonSize)) });
             ToolTipService.SetToolTip(hiddenButton, "Show Hidden Tool Windows");
@@ -534,6 +555,7 @@ public partial class ToggleDockingManager : DockingManager
         {
             RegisterToolbox(toolbox, tool);
         }
+        UpdateNavigationPanelVisibility();
     }
     internal void RemoveButtonFromAllBars(LayoutAnchorable anchorable) => RemoveFromAllBars(anchorable);
     private void RemoveFromAllBars(LayoutAnchorable anchorable)
@@ -545,6 +567,20 @@ public partial class ToggleDockingManager : DockingManager
                 button.Release();
                 bar.Items.Remove(button);
             }
+        }
+        UpdateNavigationPanelVisibility();
+    }
+    private void UpdateNavigationPanelVisibility()
+    {
+        if (injectedLeftDockPanel != null)
+        {
+            injectedLeftDockPanel.Visibility = Visibility.Visible;
+        }
+
+        if (injectedRightDockPanel != null)
+        {
+            injectedRightDockPanel.Visibility = new[] { rightTopBar, rightBottomBar, bottomRightBar }
+                .OfType<ToggleDockButtonBar>().Any(bar => bar.Items.Count > 0) ? Visibility.Visible : Visibility.Collapsed;
         }
     }
     private void ObserveLayout() => ObserveLayout(Layout);
@@ -608,6 +644,7 @@ public partial class ToggleDockingManager : DockingManager
                 }
             }
 
+            UpdateNavigationPanelVisibility();
             RefreshButtonStates();
         });
     }

@@ -1,4 +1,5 @@
-// Adapted from Dirkster.AvalonDock v5.0.0 (MS-PL), Controls/ToggleDockButtonBar.cs.
+// Drag lifecycle adapted from Dirkster.AvalonDock v5.0.0 (MS-PL), Controls/ToggleDockButtonBar.cs.
+// Preview geometry and presentation ported from qian-o/AvalonDock.Themes.WPFUI ffff79a (MIT); see THIRD-PARTY-NOTICES.md.
 using System.Runtime.InteropServices.WindowsRuntime;
 using AvalonDock.Core;
 using AvalonDock.Layout;
@@ -7,6 +8,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Imaging;
+using Microsoft.UI.Xaml.Shapes;
 using Windows.Foundation;
 using Windows.Storage.Streams;
 using Windows.UI;
@@ -17,20 +19,29 @@ internal sealed class ToggleDockDragOverlay : IDisposable
 {
     private readonly ToggleDockingManager manager;
     private readonly Window window = new();
+    private readonly Window dragLabelWindow = new();
     private readonly Canvas canvas = new();
     private readonly Grid renderRoot = new() { Background = new SolidColorBrush(Microsoft.UI.Colors.Transparent) };
+    private readonly Grid dragLabelRoot = new() { Background = new SolidColorBrush(Microsoft.UI.Colors.Transparent) };
     private readonly IOverlayWindowSurface surface;
+    private readonly IOverlayWindowSurface dragLabelSurface;
     private readonly List<Zone> zones = [];
-    private readonly Image ghost = new() { Width = 24, Height = 24, Opacity = 0.6, IsHitTestVisible = false };
+    private readonly Border dragLabel;
+    private readonly FrameworkElement? leftNavigationFrame;
+    private readonly FrameworkElement? rightNavigationFrame;
     private Rect bounds;
     private double scale;
     private bool disposed;
     private bool rendering;
     private bool queued;
+    private bool dragLabelRendering;
+    private bool dragLabelRendered;
     private long revision;
-    private Point lastPointer;
+    private long dragLabelRevision;
     private bool updated;
     private bool failed;
+    private Zone? selectedZone;
+    private Rect dragLabelBounds;
     internal Exception? Failure
     {
         get; private set;
@@ -39,69 +50,111 @@ internal sealed class ToggleDockDragOverlay : IDisposable
     {
         get; private set;
     }
-    internal ToggleDockDragOverlay(ToggleDockingManager manager, FrameworkElement origin)
+    internal ToggleDockDragOverlay(ToggleDockingManager manager, LayoutAnchorable tool)
     {
         this.manager = manager;
+        leftNavigationFrame = ToggleDockingManager.Visuals<FrameworkElement>(manager)
+            .FirstOrDefault(element => element.Name == "PART_LeftNavigationFrame");
+        rightNavigationFrame = ToggleDockingManager.Visuals<FrameworkElement>(manager)
+            .FirstOrDefault(element => element.Name == "PART_RightNavigationFrame");
+        TextBlock label = new()
+        {
+            Text = tool.Title ?? string.Empty,
+            MaxWidth = 160,
+            TextTrimming = TextTrimming.CharacterEllipsis,
+            VerticalAlignment = VerticalAlignment.Center,
+            FontFamily = Resource("DockFontFamily", new FontFamily("Segoe UI Variable Text, Segoe UI")),
+            FontSize = Resource("DockFontSize", 12d),
+            Foreground = Brush("DockTextBrush", "TextFillColorPrimaryBrush")
+        };
+        dragLabel = new Border
+        {
+            Height = 28,
+            Padding = new Thickness(10, 0, 10, 0),
+            Background = Brush("DockSurfaceBrush", "SolidBackgroundFillColorTertiaryBrush"),
+            BorderBrush = Brush("DockBorderBrush", "CardStrokeColorDefaultBrush"),
+            BorderThickness = new Thickness(1),
+            CornerRadius = new CornerRadius(4),
+            Child = label,
+            IsHitTestVisible = false
+        };
         renderRoot.Children.Add(canvas);
+        dragLabelRoot.Children.Add(dragLabel);
         window.Content = renderRoot;
+        dragLabelWindow.Content = dragLabelRoot;
         try
         {
             surface = PlatformServices.CreateOverlayWindowSurface(window, manager);
         }
-        catch { window.Close(); throw; }
-        _ = CaptureGhost(origin);
-    }
-    private async Task CaptureGhost(FrameworkElement origin)
-    {
+        catch { window.Close(); dragLabelWindow.Close(); throw; }
         try
         {
-            RenderTargetBitmap image = new();
-            await image.RenderAsync(origin);
-            if (disposed)
+            dragLabelSurface = PlatformServices.CreateOverlayWindowSurface(dragLabelWindow, manager);
+        }
+        catch { surface.Dispose(); window.Close(); dragLabelWindow.Close(); throw; }
+    }
+    internal void Update(Point pointer, bool refreshGeometry = false)
+    {
+        if (disposed || failed)
+        {
+            return;
+        }
+
+        bool geometryChanged = false;
+        bool boundsChanged = false;
+        bool mainShown = false;
+        if (!updated || refreshGeometry)
+        {
+            if (!PlatformServices.Coordinates.TryGetScreenBounds(manager, out Rect nextBounds))
             {
+                zones.Clear();
+                selectedZone = null;
+                updated = false;
+                surface.Hide();
+                dragLabelSurface.Hide();
                 return;
             }
 
-            ghost.Source = image;
-            ghost.Width = origin is ToggleDockButton ? origin.ActualWidth : 24;
-            ghost.Height = origin is ToggleDockButton ? origin.ActualHeight : 24;
+            Zone[] previous = zones.ToArray();
+            double nextScale = manager.XamlRoot.RasterizationScale;
+            if (scale != nextScale)
+            {
+                dragLabelRendered = false;
+                dragLabelRevision++;
+            }
+            boundsChanged = bounds != nextBounds || scale != nextScale;
+            bounds = nextBounds;
+            scale = nextScale;
+            BuildZones();
+            geometryChanged = !updated || boundsChanged || !previous.SequenceEqual(zones);
+            updated = true;
+        }
+
+        Zone? selected = HitZone(pointer);
+        bool selectionChanged = !Equals(selectedZone, selected);
+        selectedZone = selected;
+        if (geometryChanged || selectionChanged || !surface.IsVisible)
+        {
+            canvas.Width = bounds.Width / scale;
+            canvas.Height = bounds.Height / scale;
+            renderRoot.Width = canvas.Width;
+            renderRoot.Height = canvas.Height;
+            if (boundsChanged || !surface.IsVisible)
+            {
+                surface.Show(bounds);
+                mainShown = true;
+            }
+
+            DrawZones(selected);
             Invalidate();
         }
-        catch (Exception exception)
-        {
-            if (!disposed)
-            {
-                Failure = exception;
-            }
-        }
+
+        MoveDragLabel(pointer, mainShown);
     }
-    internal void Update(Point pointer)
+    internal DockZone? Hit(Point point) => failed || disposed ? null : HitZone(point)?.Target;
+    private Zone? HitZone(Point point) => zones.LastOrDefault(zone => zone.Bounds.Contains(point));
+    private void DrawZones(Zone? selected)
     {
-        if (disposed || failed || !PlatformServices.Coordinates.TryGetScreenBounds(manager, out Rect nextBounds))
-        {
-            return;
-        }
-
-        Zone[] previous = zones.ToArray();
-        bool samePosition = updated && pointer == lastPointer && bounds == nextBounds;
-        bounds = nextBounds;
-        lastPointer = pointer;
-        updated = true;
-        scale = manager.XamlRoot.RasterizationScale;
-        BuildZones();
-        if (samePosition && previous.SequenceEqual(zones))
-        {
-            return;
-        }
-
-        canvas.Width = bounds.Width / scale;
-        canvas.Height = bounds.Height / scale;
-        renderRoot.Width = canvas.Width;
-        renderRoot.Height = canvas.Height;
-        surface.Show(bounds);
-        Zone? selected = HitZone(pointer);
-        Color accent = manager.Resources.TryGetValue("AccentFillColorDefaultBrush", out object? resource) && resource is SolidColorBrush local ? local.Color
-            : ((SolidColorBrush)Application.Current.Resources["AccentFillColorDefaultBrush"]).Color;
         canvas.Children.Clear();
         foreach (Zone zone in zones)
         {
@@ -111,103 +164,215 @@ internal sealed class ToggleDockDragOverlay : IDisposable
             }
 
             Rect rectangle = zone.Bounds;
-            Border border = new()
+            if (rectangle.Width <= 0 || rectangle.Height <= 0)
+            {
+                continue;
+            }
+
+            bool targeted = ReferenceEquals(zone, selected);
+            Rectangle border = new()
             {
                 Width = rectangle.Width / scale,
                 Height = rectangle.Height / scale,
-                CornerRadius = new CornerRadius(4),
-                Background = new SolidColorBrush(global::Windows.UI.Color.FromArgb(ReferenceEquals(zone, selected) ? (byte)96 : (byte)48, accent.R, accent.G, accent.B)),
-                BorderBrush = new SolidColorBrush(global::Windows.UI.Color.FromArgb(128, accent.R, accent.G, accent.B)),
-                BorderThickness = new Thickness(1.5)
+                RadiusX = 4,
+                RadiusY = 4,
+                Fill = targeted ? Brush("DockPreviewBrush", "SubtleFillColorTransparentBrush") : Brush("DockChromeBrush", "SolidBackgroundFillColorSecondaryBrush"),
+                Stroke = targeted ? Brush("DockPreviewBorderBrush", "AccentFillColorDefaultBrush") : Brush("DockBorderBrush", "CardStrokeColorDefaultBrush"),
+                StrokeThickness = targeted ? 1.5 : 1,
+                Opacity = targeted ? 1 : 0.65
             };
+            if (!targeted)
+            {
+                border.StrokeDashArray = new DoubleCollection { 4, 4 };
+            }
             Canvas.SetLeft(border, (rectangle.X - bounds.X) / scale);
             Canvas.SetTop(border, (rectangle.Y - bounds.Y) / scale);
+            canvas.Children.Add(border);
             if (zone.Label != null)
             {
-                border.Child = new TextBlock { Text = zone.Label, FontSize = 14, Foreground = new SolidColorBrush(accent), HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center };
+                TextBlock text = new()
+                {
+                    Text = zone.Label,
+                    FontFamily = Resource("DockFontFamily", new FontFamily("Segoe UI Variable Text, Segoe UI")),
+                    FontSize = Resource("DockFontSize", 12d),
+                    Foreground = targeted ? Brush("DockTextBrush", "TextFillColorPrimaryBrush") : Brush("DockSecondaryTextBrush", "TextFillColorSecondaryBrush"),
+                    FontWeight = targeted ? Microsoft.UI.Text.FontWeights.SemiBold : Microsoft.UI.Text.FontWeights.Normal,
+                    HorizontalAlignment = HorizontalAlignment.Center,
+                    VerticalAlignment = VerticalAlignment.Center,
+                    TextAlignment = TextAlignment.Center,
+                    TextTrimming = TextTrimming.CharacterEllipsis,
+                    IsHitTestVisible = false
+                };
+                Canvas.SetLeft(text, (rectangle.X - bounds.X) / scale);
+                Canvas.SetTop(text, (rectangle.Y - bounds.Y) / scale + Math.Max(0, rectangle.Height / scale / 2 - 10));
+                text.Width = rectangle.Width / scale;
+                canvas.Children.Add(text);
             }
-
-            canvas.Children.Add(border);
-            if (zone.Line is { } y)
+            if (targeted && zone.Line is { } y)
             {
+                double lineInset = Math.Min(6, rectangle.Width / scale / 2);
                 Border line = new()
                 {
-                    Height = 3,
-                    Width = Math.Max(0, rectangle.Width / scale - 4),
-                    Background = new SolidColorBrush(accent),
-                    CornerRadius = new CornerRadius(2)
+                    Height = 2,
+                    Width = Math.Max(0, rectangle.Width / scale - 2 * lineInset),
+                    Background = Brush("AccentFillColorDefaultBrush", "AccentFillColorDefaultBrush"),
+                    CornerRadius = new CornerRadius(1)
                 };
-                Canvas.SetLeft(line, (rectangle.X - bounds.X) / scale + 2);
-                Canvas.SetTop(line, (y - bounds.Y) / scale);
+                Canvas.SetLeft(line, (rectangle.X - bounds.X) / scale + lineInset);
+                Canvas.SetTop(line, (y - bounds.Y) / scale - line.Height / 2);
                 canvas.Children.Add(line);
             }
         }
-        canvas.Children.Add(ghost);
-        Canvas.SetLeft(ghost, (pointer.X - bounds.X) / scale + 12);
-        Canvas.SetTop(ghost, (pointer.Y - bounds.Y) / scale - ghost.Height / 2);
-        Invalidate();
     }
-    internal DockZone? Hit(Point point) => failed || disposed ? null : HitZone(point)?.Target;
-    private Zone? HitZone(Point point) => zones.LastOrDefault(zone => zone.Bounds.Contains(point));
+    private void MoveDragLabel(Point pointer, bool bringToFront)
+    {
+        if (!dragLabelRendered && !dragLabelRendering)
+        {
+            dragLabel.Measure(new Size(double.PositiveInfinity, 28));
+            dragLabelRoot.Width = dragLabel.DesiredSize.Width;
+            dragLabelRoot.Height = dragLabel.Height;
+        }
+
+        double width = Math.Ceiling(dragLabelRoot.Width * scale);
+        double height = Math.Ceiling(dragLabelRoot.Height * scale);
+        Rect nextBounds = new(
+            Math.Clamp(pointer.X + 16 * scale, bounds.Left + 4 * scale, Math.Max(bounds.Left + 4 * scale, bounds.Right - width - 4 * scale)),
+            Math.Clamp(pointer.Y - 14 * scale, bounds.Top + 4 * scale, Math.Max(bounds.Top + 4 * scale, bounds.Bottom - height - 4 * scale)),
+            width, height);
+        if (bringToFront || !dragLabelSurface.IsVisible || nextBounds != dragLabelBounds)
+        {
+            dragLabelBounds = nextBounds;
+            dragLabelSurface.Show(nextBounds);
+        }
+
+        if (!dragLabelRendered && !dragLabelRendering)
+        {
+            RenderDragLabel();
+        }
+    }
+    private async void RenderDragLabel()
+    {
+        dragLabelRendering = true;
+        long current = dragLabelRevision;
+        try
+        {
+            dragLabelRoot.Measure(new Size(dragLabelRoot.Width, dragLabelRoot.Height));
+            dragLabelRoot.Arrange(new Rect(0, 0, dragLabelRoot.Width, dragLabelRoot.Height));
+            dragLabelRoot.UpdateLayout();
+            RenderTargetBitmap bitmap = new();
+            await bitmap.RenderAsync(dragLabelRoot);
+            IBuffer pixels = await bitmap.GetPixelsAsync();
+            if (!disposed && current == dragLabelRevision)
+            {
+                dragLabelSurface.Present(pixels.ToArray(), bitmap.PixelWidth, bitmap.PixelHeight);
+                dragLabelRendered = true;
+            }
+        }
+        catch (Exception exception)
+        {
+            if (!disposed)
+            {
+                Failure = exception;
+                failed = true;
+                zones.Clear();
+                surface.Hide();
+                dragLabelSurface.Hide();
+            }
+        }
+        finally
+        {
+            dragLabelRendering = false;
+            if (!disposed && !failed && !dragLabelRendered && dragLabelSurface.IsVisible)
+            {
+                RenderDragLabel();
+            }
+        }
+    }
     private void BuildZones()
     {
         zones.Clear();
-        double Width(FrameworkElement? element) => element != null && IsEffectivelyVisible(element)
-            && PlatformServices.Coordinates.TryGetScreenBounds(element, out Rect rectangle) ? rectangle.Width : 0;
-        double leftBar = Width(manager.injectedLeftDockPanel);
-        double rightBar = Width(manager.rightTopBar);
-        double x = bounds.X + leftBar;
-        double width = bounds.Width - leftBar - rightBar;
-        double height = bounds.Height;
-        if (width < 50 * scale || height < 50 * scale)
+        if (manager.LayoutRootPanel is not { } root || !IsEffectivelyVisible(root)
+            || !PlatformServices.Coordinates.TryGetScreenBounds(root, out Rect content)
+            || content.Width < 50 * scale || content.Height < 50 * scale)
         {
             return;
         }
 
-        double Extent(AnchorSide side, double fallback, bool horizontal)
+        double leftWidth = content.Width * .25;
+        double rightWidth = content.Width * .25;
+        double bottomHeight = content.Height * .25;
+        double sideBottom = double.NaN;
+        foreach (LayoutAnchorablePaneControl pane in ToggleDockingManager.Visuals<LayoutAnchorablePaneControl>(manager))
         {
-            foreach (LayoutAnchorablePaneControl pane in ToggleDockingManager.Visuals<LayoutAnchorablePaneControl>(manager))
+            if (pane.Model is not LayoutAnchorablePane model || !model.Children.Any(tool => !tool.IsAutoHidden)
+                || !IsEffectivelyVisible(pane) || !PlatformServices.Coordinates.TryGetScreenBounds(pane, out Rect measured))
             {
-                if (pane.Model is LayoutAnchorablePane model && model.GetSide() == side && model.Children.Any(tool => !tool.IsAutoHidden)
-                    && PlatformServices.Coordinates.TryGetScreenBounds(pane, out Rect measured) && (horizontal ? measured.Width : measured.Height) > 10 * scale)
-                {
-                    return horizontal ? measured.Width : measured.Height;
-                }
+                continue;
             }
 
-            return fallback;
-        }
-        double left = Extent(AnchorSide.Left, width * .25, true);
-        double right = Extent(AnchorSide.Right, width * .25, true);
-        double bottom = Extent(AnchorSide.Bottom, height * .25, false);
-        double half = (height - bottom) / 2;
-        zones.Add(new(new Rect(x, bounds.Y, left, half), DockZone.LeftTop, "Left Top"));
-        zones.Add(new(new Rect(x, bounds.Y + half, left, half), DockZone.LeftBottom, "Left Bottom"));
-        zones.Add(new(new Rect(x + width - right, bounds.Y, right, half), DockZone.RightTop, "Right Top"));
-        zones.Add(new(new Rect(x + width - right, bounds.Y + half, right, half), DockZone.RightBottom, "Right Bottom"));
-        zones.Add(new(new Rect(x, bounds.Y + 2 * half, width / 2, bottom), DockZone.BottomLeft, "Bottom Left"));
-        zones.Add(new(new Rect(x + width / 2, bounds.Y + 2 * half, width / 2, bottom), DockZone.BottomRight, "Bottom Right"));
-        AddSide(manager.injectedLeftDockPanel, manager.leftSeparator, manager.bottomLeftBar, DockZone.LeftTop, DockZone.LeftBottom);
-        AddSide(manager.injectedRightDockPanel, manager.rightSeparator, manager.bottomRightBar, DockZone.RightTop, DockZone.RightBottom);
-        foreach (ToggleDockButtonBar? bar in new[] { manager.bottomLeftBar, manager.bottomRightBar })
-        {
-            if (bar != null && IsEffectivelyVisible(bar) && PlatformServices.Coordinates.TryGetScreenBounds(bar, out Rect barBounds))
+            switch (model.GetSide())
             {
-                zones.Add(new(new Rect(barBounds.X, barBounds.Y, Math.Max(barBounds.Width, 20 * scale), Math.Max(barBounds.Height, 20 * scale)), bar.Zone, null));
+                case AnchorSide.Left when measured.Width > 10 * scale:
+                    leftWidth = measured.Width;
+                    break;
+                case AnchorSide.Right when measured.Width > 10 * scale:
+                    rightWidth = measured.Width;
+                    break;
+                case AnchorSide.Bottom when measured.Height > 10 * scale:
+                    bottomHeight = content.Bottom - measured.Top;
+                    sideBottom = measured.Top - manager.GridSplitterHeight * scale;
+                    break;
             }
         }
+
+        leftWidth = Math.Clamp(leftWidth, 0, content.Width);
+        rightWidth = Math.Clamp(rightWidth, 0, content.Width);
+        bottomHeight = Math.Clamp(bottomHeight, 0, content.Height);
+        double bottomTop = content.Bottom - bottomHeight;
+        double sideEnd = double.IsNaN(sideBottom) ? bottomTop : Math.Clamp(sideBottom, content.Top, content.Bottom);
+        double halfSideHeight = Math.Max(0, sideEnd - content.Top) / 2;
+        zones.Add(new(new Rect(content.Left, content.Top, leftWidth, halfSideHeight), DockZone.LeftTop, "Left Top"));
+        zones.Add(new(new Rect(content.Left, content.Top + halfSideHeight, leftWidth, halfSideHeight), DockZone.LeftBottom, "Left Bottom"));
+        zones.Add(new(new Rect(content.Right - rightWidth, content.Top, rightWidth, halfSideHeight), DockZone.RightTop, "Right Top"));
+        zones.Add(new(new Rect(content.Right - rightWidth, content.Top + halfSideHeight, rightWidth, halfSideHeight), DockZone.RightBottom, "Right Bottom"));
+        zones.Add(new(new Rect(content.Left, bottomTop, content.Width / 2, bottomHeight), DockZone.BottomLeft, "Bottom Left"));
+        zones.Add(new(new Rect(content.Left + content.Width / 2, bottomTop, content.Width / 2, bottomHeight), DockZone.BottomRight, "Bottom Right"));
+
+        FrameworkElement? leftFrame = leftNavigationFrame ?? manager.injectedLeftDockPanel;
+        FrameworkElement? rightFrame = rightNavigationFrame ?? manager.injectedRightDockPanel;
+        AddSide(leftFrame, manager.leftSeparator, manager.bottomLeftBar, DockZone.LeftTop, DockZone.LeftBottom);
+        AddSide(rightFrame, manager.rightSeparator, manager.bottomRightBar, DockZone.RightTop, DockZone.RightBottom);
+        AddBar(leftFrame, manager.bottomLeftBar);
+        AddBar(rightFrame, manager.bottomRightBar);
     }
-    private void AddSide(FrameworkElement? panel, FrameworkElement? separator, ToggleDockButtonBar? bottom, DockZone topZone, DockZone lowerZone)
+    private void AddBar(FrameworkElement? frame, ToggleDockButtonBar? bar)
     {
-        if (panel == null || !IsEffectivelyVisible(panel) || !PlatformServices.Coordinates.TryGetScreenBounds(panel, out Rect area))
+        if (frame == null || bar == null || !IsEffectivelyVisible(frame) || !IsEffectivelyVisible(bar)
+            || !PlatformServices.Coordinates.TryGetScreenBounds(frame, out Rect frameBounds)
+            || !PlatformServices.Coordinates.TryGetScreenBounds(bar, out Rect barBounds))
+        {
+            return;
+        }
+
+        Rect aligned = new(frameBounds.X, barBounds.Y, frameBounds.Width, Math.Max(barBounds.Height, 20 * scale));
+        aligned.Intersect(frameBounds);
+        if (!aligned.IsEmpty && aligned.Width > 0 && aligned.Height > 0)
+        {
+            zones.Add(new(aligned, bar.Zone, null));
+        }
+    }
+    private void AddSide(FrameworkElement? frame, FrameworkElement? separator, ToggleDockButtonBar? bottom, DockZone topZone, DockZone lowerZone)
+    {
+        if (frame == null || !IsEffectivelyVisible(frame) || !PlatformServices.Coordinates.TryGetScreenBounds(frame, out Rect area))
         {
             return;
         }
 
         area = new Rect(area.X, area.Y, Math.Max(area.Width, 20 * scale), Math.Max(area.Height, 20 * scale));
-        double bottomBarHeight = bottom != null && IsEffectivelyVisible(bottom)
-            && PlatformServices.Coordinates.TryGetScreenBounds(bottom, out Rect bottomBounds) ? bottomBounds.Height : 0;
-        double usableHeight = area.Height - bottomBarHeight;
+        double usableBottom = bottom != null && IsEffectivelyVisible(bottom)
+            && PlatformServices.Coordinates.TryGetScreenBounds(bottom, out Rect bottomBounds)
+            ? Math.Clamp(bottomBounds.Top, area.Top, area.Bottom) : area.Bottom;
+        double usableHeight = usableBottom - area.Top;
         if (usableHeight < 10 * scale)
         {
             return;
@@ -215,9 +380,9 @@ internal sealed class ToggleDockDragOverlay : IDisposable
 
         double y = separator != null && IsEffectivelyVisible(separator)
             && PlatformServices.Coordinates.TryGetScreenBounds(separator, out Rect split)
-            ? split.Y + split.Height / 2 : area.Y + usableHeight / 2;
+            ? Math.Clamp(split.Y + split.Height / 2, area.Top, usableBottom) : area.Y + usableHeight / 2;
         zones.Add(new(new Rect(area.X, area.Y, area.Width, y - area.Y), topZone, null, y));
-        zones.Add(new(new Rect(area.X, y, area.Width, area.Y + usableHeight - y), lowerZone, null, y));
+        zones.Add(new(new Rect(area.X, y, area.Width, usableBottom - y), lowerZone, null, y));
     }
     private static bool IsEffectivelyVisible(FrameworkElement element)
     {
@@ -265,7 +430,7 @@ internal sealed class ToggleDockDragOverlay : IDisposable
                 PresentedFrames++;
             }
         }
-        catch (Exception exception) { if (!disposed) { Failure = exception; failed = true; zones.Clear(); surface.Hide(); } }
+        catch (Exception exception) { if (!disposed) { Failure = exception; failed = true; zones.Clear(); surface.Hide(); dragLabelSurface.Hide(); } }
         finally
         {
             rendering = false;
@@ -283,9 +448,29 @@ internal sealed class ToggleDockDragOverlay : IDisposable
         }
 
         disposed = true;
+        dragLabelSurface.Dispose();
         surface.Dispose();
+        dragLabelWindow.Content = null;
         window.Content = null;
+        dragLabelWindow.Close();
         window.Close();
     }
+    private T Resource<T>(string key, T fallback)
+    {
+        if (manager.Resources.TryGetValue(key, out object? local) && local is T value)
+        {
+            return value;
+        }
+
+        if (Application.Current.Resources.TryGetValue(key, out object? application) && application is T appValue)
+        {
+            return appValue;
+        }
+
+        return fallback;
+    }
+    private Brush Brush(string key, string fallbackKey) => Resource(key,
+        Application.Current.Resources.TryGetValue(fallbackKey, out object? fallback) && fallback is Brush brush
+            ? brush : new SolidColorBrush(Microsoft.UI.Colors.Transparent));
     private sealed record Zone(Rect Bounds, DockZone Target, string? Label, double? Line = null);
 }

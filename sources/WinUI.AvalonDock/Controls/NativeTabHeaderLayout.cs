@@ -86,7 +86,33 @@ internal sealed class NativeTabHeaderLayout : IDisposable
         entries.Clear();
     }
 
-    private void OnLoaded(object? sender, RoutedEventArgs e) => QueueUpdate();
+    private void OnLoaded(object? sender, RoutedEventArgs e)
+    {
+        if (sender is not TabViewItem tab)
+        {
+            QueueUpdate();
+            return;
+        }
+
+        // An unrealized header can only measure its outer template. Defer until its
+        // data template has entered the visual tree, then replace the provisional width.
+        if (!owner.DispatcherQueue.TryEnqueue(() =>
+        {
+            if (!disposed && entries.TryGetValue(tab, out Entry? entry))
+            {
+                entry.NaturalWidth = double.NaN;
+                QueueUpdate();
+            }
+        }))
+        {
+            if (entries.TryGetValue(tab, out Entry? entry))
+            {
+                entry.NaturalWidth = double.NaN;
+            }
+
+            QueueUpdate();
+        }
+    }
     private void OnSizeChanged(object? sender, SizeChangedEventArgs e) => QueueUpdate();
     private void OnItemsChanged(TabView sender, IVectorChangedEventArgs e) => QueueUpdate();
     private void OnSelectionChanged(object? sender, SelectionChangedEventArgs e) => QueueUpdate();
@@ -191,6 +217,7 @@ internal sealed class NativeTabHeaderLayout : IDisposable
                 {
                     tab.MaxWidth = entry.OriginalMaxWidth;
                     tab.Width = double.NaN;
+                    tab.Margin = entry.OriginalMargin;
                     owner.MeasureHeader(tab);
                     entry.NaturalWidth = tab.DesiredSize.Width;
                     entry.NaturalHeaderWidth = entry.Header?.DesiredSize.Width ?? 0;
@@ -198,7 +225,10 @@ internal sealed class NativeTabHeaderLayout : IDisposable
                 }
             }
             TabViewItem[] visible = tabs.Where(tab => tab.Visibility != Visibility.Collapsed).ToArray();
-            double available = Math.Max(0, Math.Min(owner.ActualWidth, list.MaxWidth) - list.Padding.Left - list.Padding.Right - 8);
+            // The document selector occupies its own 28-pixel column and 4-pixel
+            // margins on both sides; reserve it before choosing visible tabs.
+            double available = Math.Max(0, Math.Min(owner.ActualWidth, list.MaxWidth) - list.Padding.Left - list.Padding.Right - 8
+                - (documents ? 36 : 0));
             double[] widths = visible.Select(tab => entries[tab].NaturalWidth).ToArray();
             int count = documents ? TabHeaderLayoutRules.VisibleDocumentCount(widths, available) : visible.Length;
             double[] toolWidths = documents ? [] : TabHeaderLayoutRules.ToolWidths(widths, available);
@@ -209,7 +239,7 @@ internal sealed class NativeTabHeaderLayout : IDisposable
                 // Upstream panels arrange DesiredSize, which includes the margins.
                 // Native Width is the content box; otherwise the item margin is added twice.
                 double allocated = documents ? entry.NaturalWidth : toolWidths[index];
-                double width = Math.Max(0, allocated - tab.Margin.Left - tab.Margin.Right);
+                double width = Math.Max(0, allocated - entry.OriginalMargin.Left - entry.OriginalMargin.Right);
                 if (tab.MinWidth > width)
                 {
                     tab.MinWidth = 0;
@@ -220,14 +250,13 @@ internal sealed class NativeTabHeaderLayout : IDisposable
                     tab.MaxWidth = width;
                 }
 
-                entry.AllocatedWidth = width;
-                if (tab.Width != width)
-                {
-                    tab.Width = width;
-                }
-
                 if (index < count)
                 {
+                    entry.AllocatedWidth = width;
+                    if (tab.Width != width)
+                    {
+                        tab.Width = width;
+                    }
                     Restore(entry);
                 }
                 else
@@ -261,19 +290,22 @@ internal sealed class NativeTabHeaderLayout : IDisposable
 
     private static void Hide(Entry entry)
     {
-        if (entry.Hidden)
+        if (!entry.Hidden)
         {
-            return;
+            entry.Hidden = true;
+            entry.Opacity = entry.Tab.Opacity;
+            entry.HitTest = entry.Tab.IsHitTestVisible;
+            entry.TabStop = entry.Tab.IsTabStop;
+            entry.Accessibility = AutomationProperties.GetAccessibilityView(entry.Tab);
         }
-
-        entry.Hidden = true;
-        entry.Opacity = entry.Tab.Opacity;
-        entry.HitTest = entry.Tab.IsHitTestVisible;
-        entry.TabStop = entry.Tab.IsTabStop;
-        entry.Accessibility = AutomationProperties.GetAccessibilityView(entry.Tab);
         entry.Tab.Opacity = 0;
         entry.Tab.IsHitTestVisible = false;
         entry.Tab.IsTabStop = false;
+        entry.AllocatedWidth = 0;
+        entry.Tab.Width = 0;
+        entry.Tab.MinWidth = 0;
+        entry.Tab.MaxWidth = 0;
+        entry.Tab.Margin = new Thickness(0);
         AutomationProperties.SetAccessibilityView(entry.Tab, AccessibilityView.Raw);
     }
 
@@ -288,6 +320,7 @@ internal sealed class NativeTabHeaderLayout : IDisposable
         entry.Tab.Opacity = entry.Opacity;
         entry.Tab.IsHitTestVisible = entry.HitTest;
         entry.Tab.IsTabStop = entry.TabStop;
+        entry.Tab.Margin = entry.OriginalMargin;
         AutomationProperties.SetAccessibilityView(entry.Tab, entry.Accessibility);
     }
 
@@ -309,6 +342,7 @@ internal sealed class NativeTabHeaderLayout : IDisposable
         entry.Tab.Width = entry.OriginalWidth;
         entry.Tab.MinWidth = entry.OriginalMinWidth;
         entry.Tab.MaxWidth = entry.OriginalMaxWidth;
+        entry.Tab.Margin = entry.OriginalMargin;
     }
 
     private void AttachHeader(Entry entry)
@@ -428,6 +462,7 @@ internal sealed class NativeTabHeaderLayout : IDisposable
         internal double OriginalWidth { get; } = tab.Width;
         internal double OriginalMinWidth { get; } = tab.MinWidth;
         internal double OriginalMaxWidth { get; } = tab.MaxWidth;
+        internal Thickness OriginalMargin { get; } = tab.Margin;
         internal double NaturalWidth { get; set; } = double.NaN;
         internal double AllocatedWidth { get; set; } = double.NaN;
         internal double NaturalHeaderWidth

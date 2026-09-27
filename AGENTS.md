@@ -9,7 +9,7 @@
 - 重构时为以后接入 Uno 保留窄的平台接口：输入捕获、窗口/浮动宿主、覆盖层、焦点、窗口顺序和坐标转换由平台实现；共享布局与停靠逻辑不得依赖 HWND 或解释原生消息。目前只实现并验证 Windows，不提前开发 Uno 后端或跨平台测试矩阵。
 - 产品直接引用 `Dirkster.AvalonDock.Core`，按需使用官方 MVVM 与序列化包；不复制这些包，不在运行时依赖 WPF 主库。不要另建一套停靠框架，也不要使用 WinUI 数据拖放或 `TabView` tear-out 代替停靠引擎。
 - 保留实际消费者需要的 AvalonDock 名称、接口、命令、事件、模板和扩展点。无需逐行复制 WPF 实现、补齐 WPF 继承成员或追求 API 数量一致；也不要为此重建 WPF 属性系统、逻辑树或窗口框架。
-- 默认外观以 [AvalonDock.Themes.WPFUI](https://github.com/qian-o/AvalonDock.Themes.WPFUI/tree/e8a3da4e9761ff549e5a2afca2bdf891a681baf2) 为参考，在 WinUI 3 中检查正常 Light/Dark 呈现。
+- 默认外观以 [AvalonDock.Themes.WPFUI](https://github.com/qian-o/AvalonDock.Themes.WPFUI/tree/ffff79aefd2139c34a3a87a0f1059bb036f1a0dc) 为参考，在 WinUI 3 中检查正常 Light/Dark 呈现。
 - 只验证受改动影响的普通使用流程。不要把极端场景、压力矩阵、平台可靠性研究或 WinUI 框架源码调查纳入迁移任务。遇到实际平台限制，优先使用公开 API 的简单适配并记录限制。
 - 只处理本仓库；清理时保护未提交源码和文件内版权声明。提交、推送、发布和发行需要用户授权。
 - 仓库只保留源码、一个简明示例、必要的精简检查、当前记忆和许可证。生成物、截图、日志、下载的上游源码及一次性试验不得留在仓库。

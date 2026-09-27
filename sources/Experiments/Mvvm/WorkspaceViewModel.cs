@@ -26,7 +26,8 @@ public sealed class WorkspaceViewModel : INotifyPropertyChanged
         ];
         LayoutService = new DockLayoutService(Tools);
 
-        OpenCommand = new RelayCommand(_ => OpenDocument($"文档 {nextDocumentNumber}", "通过 ViewModel 创建的文档。\n\n编辑文本会更新 IsModified。"));
+        OpenCommand = new RelayCommand(_ => OpenDocument($"文档 {nextDocumentNumber}", "通过 ViewModel 创建的文档。\n\n可在编辑菜单标记文档为已修改。"));
+        MarkModifiedCommand = new RelayCommand(_ => MarkActiveDocumentModified());
         SaveCommand = new RelayCommand(_ => SaveActiveDocument());
         CloseActiveCommand = new RelayCommand(_ => CloseActiveDocument());
         NextCommand = new RelayCommand(_ => ActivateNextDocument());
@@ -37,7 +38,7 @@ public sealed class WorkspaceViewModel : INotifyPropertyChanged
         ResetToolsCommand = new RelayCommand(_ => ResetTools());
         ToggleFloatingCommand = new RelayCommand(_ => ToggleFloating());
 
-        OpenDocument("主文档", "这是由 DockLayoutService.OpenDocument 加入的便笺。\n\n修改文本后点击“保存活动文档”，再测试关闭。\n\n拖动标签可以验证文档重排和停靠。\n");
+        OpenDocument("主文档", "这是由 DockLayoutService.OpenDocument 加入的便笺。\n\n在编辑菜单标记为已修改后，点击“保存活动文档”再测试关闭。\n\n拖动标签可以验证文档重排和停靠。\n");
         OpenDocument("模型说明", "RootDock、DocumentDock 和 ToolDock 由官方 MVVM 包提供。\n\n窗口只绑定 DockLayout 和 ICommand，布局状态仍由模型树保存。\n");
     }
 
@@ -69,6 +70,11 @@ public sealed class WorkspaceViewModel : INotifyPropertyChanged
     }
 
     public ICommand OpenCommand
+    {
+        get;
+    }
+
+    public ICommand MarkModifiedCommand
     {
         get;
     }
@@ -180,6 +186,18 @@ public sealed class WorkspaceViewModel : INotifyPropertyChanged
 
         document.IsModified = false;
         SetStatus($"已保存 {document.Title}。");
+    }
+
+    private void MarkActiveDocumentModified()
+    {
+        if (ActiveDocument is not { } document)
+        {
+            SetStatus("当前没有活动文档。");
+            return;
+        }
+
+        document.IsModified = true;
+        SetStatus($"已标记 {document.Title} 为已修改。");
     }
 
     private void CloseActiveDocument()
@@ -416,4 +434,3 @@ internal sealed class RelayCommand : ICommand
 
     public void Execute(object? parameter) => execute(parameter);
 }
-

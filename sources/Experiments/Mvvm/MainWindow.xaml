@@ -18,6 +18,7 @@
                 <controls:MenuFlyoutItem Text="关闭活动文档" Command="{x:Bind ViewModel.CloseActiveCommand}" />
             </controls:MenuBarItem>
             <controls:MenuBarItem Title="编辑">
+                <controls:MenuFlyoutItem Text="标记活动文档为已修改" Command="{x:Bind ViewModel.MarkModifiedCommand}" />
                 <controls:MenuFlyoutItem Text="下一个文档" Command="{x:Bind ViewModel.NextCommand}" />
                 <controls:MenuFlyoutItem Text="替换活动文档" Command="{x:Bind ViewModel.ReplaceCommand}" />
                 <controls:MenuFlyoutItem Text="重置文档集合" Command="{x:Bind ViewModel.ResetCommand}" />
@@ -41,6 +42,6 @@
         <dock:DockingManager x:Name="Manager" Grid.Row="2"
                              DockLayout="{x:Bind ViewModel.Layout, Mode=OneWay}"
                              LayoutItemTemplate="{StaticResource WorkspaceContentTemplate}" />
-        <TextBlock Grid.Row="3" Text="文档和工具由 ViewModel 管理；编辑文本后保存，再测试关闭、替换、重置和布局恢复。" Opacity="0.75" />
+        <TextBlock Grid.Row="3" Text="文档和工具由 ViewModel 管理；可在编辑菜单标记文档为已修改，再测试保存、关闭、替换、重置和布局恢复。" Opacity="0.75" />
     </Grid>
 </Window>

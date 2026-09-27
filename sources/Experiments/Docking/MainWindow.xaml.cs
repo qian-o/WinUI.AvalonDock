@@ -1,11 +1,16 @@
 using System.Collections.ObjectModel;
 using AvalonDock;
+using AvalonDock.Controls;
 using AvalonDock.Core;
 using AvalonDock.Layout;
 using AvalonDock.Serializer.Xml;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Controls.Primitives;
+using Microsoft.UI.Xaml.Media;
 using WinUI.AvalonDock.Experiments.Shared;
+using Windows.Foundation;
 
 namespace WinUI.AvalonDock.Experiments.Docking;
 
@@ -35,7 +40,7 @@ public sealed partial class MainWindow : Window
         {
             Id = "classic-editor",
             Title = "编辑器",
-            Text = "这是一个由 DocumentsSource 导入的文档。修改文本后可以测试可取消关闭。",
+            Text = "这是一个由 DocumentsSource 导入的文档。可在编辑菜单标记为已修改，再测试可取消关闭。",
             IsModified = false
         });
         documents.Add(new WorkspaceDocument
@@ -124,6 +129,18 @@ public sealed partial class MainWindow : Window
         StatusText.Text = content is null ? "当前没有活动项。" : $"已请求关闭 {content.Title}。";
     }
 
+    private void MarkActiveDocumentModified_Click(object sender, RoutedEventArgs e)
+    {
+        if (ActiveLayoutContent?.Content is not WorkspaceDocument document)
+        {
+            StatusText.Text = "当前没有活动文档。";
+            return;
+        }
+
+        document.IsModified = true;
+        StatusText.Text = $"已标记 {document.Title} 为已修改。";
+    }
+
     private void FloatActive_Click(object sender, RoutedEventArgs e)
     {
         LayoutContent? content = ActiveLayoutContent;
@@ -164,24 +181,29 @@ public sealed partial class MainWindow : Window
         StatusText.Text = $"已显示 {tool.Title}。";
     }
 
-    private void DetachTool_Click(object sender, RoutedEventArgs e)
+    private void ToggleToolFloating_Click(object sender, RoutedEventArgs e)
     {
-        LayoutAnchorable? tool = Manager.Layout.Descendents().OfType<LayoutAnchorable>().FirstOrDefault();
+        LayoutAnchorable[] availableTools = Manager.Layout.Descendents().OfType<LayoutAnchorable>().ToArray();
+        LayoutAnchorable? tool = availableTools.FirstOrDefault(item => item.IsActive)
+            ?? availableTools.FirstOrDefault(item => item.IsFloating && item.IsSelected)
+            ?? availableTools.FirstOrDefault(item => item.IsSelected)
+            ?? availableTools.FirstOrDefault(item => item.IsFloating)
+            ?? availableTools.FirstOrDefault();
         if (tool is null)
         {
             StatusText.Text = "当前没有工具窗格。";
             return;
         }
 
-        if (Manager.IsDetached(tool))
+        if (tool.IsFloating)
         {
-            Manager.ReattachAllDetachedAnchorables();
-            StatusText.Text = $"已附回 {tool.Title}。";
+            tool.Dock();
+            StatusText.Text = $"已停靠 {tool.Title}。";
         }
         else
         {
-            Manager.DetachAnchorableToWindow(tool);
-            StatusText.Text = $"已拆分 {tool.Title}。";
+            tool.Float();
+            StatusText.Text = $"已浮动 {tool.Title}。";
         }
     }
 
@@ -283,6 +305,30 @@ public sealed partial class MainWindow : Window
         CheckSourceContent(checks, documents, "Classic 初始文档");
         CheckSourceContent(checks, tools, "Classic 初始工具");
 
+        TabViewItem[] initialToolTabs = PageRoot.FindVisualChildren<LayoutAnchorablePaneControl>()
+            .SelectMany(pane => pane.TabItems.OfType<TabViewItem>())
+            .ToArray();
+        SampleChecks.Require(initialToolTabs.Length == tools.Count, "Classic 首次加载已创建全部工具标签。");
+        SampleChecks.Require(initialToolTabs.All(tab => tab.Header is LayoutAnchorableTabItem { ActualWidth: > 0 } header
+            && header.FindVisualChildren<TextBlock>().Any(text => text.Visibility == Visibility.Visible && text.ActualWidth > 0)),
+            "Classic 首次加载的工具标签标题已完成测量并可见。");
+        checks.Record("Classic 首次加载工具标签呈现通过。");
+
+        await CheckDocumentChromeAsync(checks);
+
+        LayoutAnchorable floatingTool = Manager.Layout.Descendents().OfType<LayoutAnchorable>().First();
+        floatingTool.IsActive = true;
+        ToggleToolFloating_Click(this, new RoutedEventArgs());
+        await SampleChecks.SettleAsync();
+        SampleChecks.Require(floatingTool.IsFloating && !Manager.IsDetached(floatingTool), "工具菜单使用标准浮动布局，而不是独立窗口模式。");
+        SampleChecks.Require(Manager.FloatingWindows.OfType<LayoutAnchorableFloatingWindowControl>()
+            .Any(window => window.Model.Descendents().OfType<LayoutAnchorable>().Any(tool => ReferenceEquals(tool, floatingTool))),
+            "工具菜单创建了可参与停靠拖放的标准浮动窗口。");
+        ToggleToolFloating_Click(this, new RoutedEventArgs());
+        await SampleChecks.SettleAsync();
+        SampleChecks.Require(!floatingTool.IsFloating && !Manager.IsDetached(floatingTool), "工具菜单可将标准浮动工具停靠回原布局。");
+        checks.Record("Classic 工具菜单标准浮动和停靠通过。");
+
         AddDocument_Click(this, new RoutedEventArgs());
         await SampleChecks.SettleAsync();
         SampleChecks.Require(documents.Count == 3, "DocumentsSource Add 已生效。");
@@ -299,7 +345,9 @@ public sealed partial class MainWindow : Window
         CheckSourceContent(checks, documents, "Reset 后文档");
 
         WorkspaceDocument dirtyDocument = documents[0];
-        dirtyDocument.Text += " 修改";
+        Manager.ActiveContent = dirtyDocument;
+        MarkActiveDocumentModified_Click(this, new RoutedEventArgs());
+        SampleChecks.Require(dirtyDocument.IsModified, "编辑菜单可标记活动文档为已修改。");
         LayoutDocument? layoutDocument = Manager.Layout.Descendents().OfType<LayoutDocument>()
             .FirstOrDefault(item => ReferenceEquals(item.Content, dirtyDocument));
         SampleChecks.Require(layoutDocument is not null, "修改文档已连接到布局项。");
@@ -336,6 +384,167 @@ public sealed partial class MainWindow : Window
         checks.Record("Classic 窗口策略通过。");
     }
 
+    private async Task CheckDocumentChromeAsync(SampleChecks checks)
+    {
+        LayoutDocumentPaneControl? pane = PageRoot.FindVisualChildren<LayoutDocumentPaneControl>().FirstOrDefault();
+        SampleChecks.Require(pane is not null, "Classic 文档窗格已加载。");
+        TabViewItem[] tabs = pane!.TabItems.OfType<TabViewItem>().ToArray();
+        SampleChecks.Require(tabs.Length == documents.Count, "Classic 初始文档标签已加载。");
+        foreach (TabViewItem tab in tabs)
+        {
+            Button? closeButton = tab.FindVisualChildren<Button>().FirstOrDefault(button => button.Name == "CloseButton");
+            SampleChecks.Require(closeButton is not null && Math.Abs(closeButton.ActualWidth - 20) < 1
+                && Math.Abs(closeButton.ActualHeight - 20) < 1 && Math.Abs(tab.Padding.Right - 4) < 0.1,
+                "Classic 文档标签关闭按钮和右侧内边距符合 WPFUI 尺寸。");
+            SampleChecks.Require(closeButton!.Content is Viewbox { Width: 12, Height: 12, Child: PathIcon { Width: 12, Height: 12, Data: not null } },
+                "Classic 文档标签关闭图形为 12 像素。");
+        }
+        checks.Record("Classic 文档标签关闭按钮尺寸和图形通过。");
+
+        global::AvalonDock.Controls.DropDownButton? selectorButton = pane.FindVisualChildren<global::AvalonDock.Controls.DropDownButton>()
+            .FirstOrDefault(button => button.Name == "MenuDropDownButton");
+        SampleChecks.Require(selectorButton?.DropDownContextMenu is ContextMenuEx, "Classic 文档选择器已连接菜单。");
+        ContextMenuEx menu = (ContextMenuEx)selectorButton!.DropDownContextMenu!;
+        ElementTheme originalTheme = PageRoot.RequestedTheme;
+        try
+        {
+            foreach (ElementTheme theme in new[] { ElementTheme.Light, ElementTheme.Dark })
+            {
+                PageRoot.RequestedTheme = theme;
+                await SampleChecks.SettleAsync();
+                SampleChecks.Require(pane.Background is SolidColorBrush surface
+                    && surface.Color.A == 255
+                    && surface.Color.R == (theme == ElementTheme.Light ? 0xF9 : 0x28)
+                    && surface.Color.G == (theme == ElementTheme.Light ? 0xF9 : 0x28)
+                    && surface.Color.B == (theme == ElementTheme.Light ? 0xF9 : 0x28),
+                    $"Classic 文档表面符合{(theme == ElementTheme.Light ? "浅色" : "深色")}主题色。");
+                menu.ShowAt(selectorButton);
+                selectorButton.IsChecked = true;
+                await SampleChecks.SettleAsync();
+
+                Popup? popup = VisualTreeHelper.GetOpenPopupsForXamlRoot(PageRoot.XamlRoot)
+                    .FirstOrDefault(candidate => candidate.Child is MenuFlyoutPresenter
+                        || candidate.Child.FindVisualChildren<MenuFlyoutPresenter>().Any());
+                MenuFlyoutPresenter? flyoutPresenter = popup?.Child as MenuFlyoutPresenter
+                    ?? popup?.Child.FindVisualChildren<MenuFlyoutPresenter>().FirstOrDefault();
+                SampleChecks.Require(flyoutPresenter is not null && flyoutPresenter.ActualTheme == theme,
+                    $"Classic 文档选择器弹出菜单跟随{(theme == ElementTheme.Light ? "浅色" : "深色")}主题。");
+
+                if (theme == ElementTheme.Light)
+                {
+                    MenuItemEx[] items = menu.Items.OfType<MenuItemEx>().ToArray();
+                    SampleChecks.Require(items.Length == documents.Count, "Classic 文档选择器包含初始文档。");
+                    double? firstLeft = null;
+                    foreach (WorkspaceDocument document in documents)
+                    {
+                        MenuItemEx? item = items.FirstOrDefault(candidate => candidate.DataContext is LayoutContent model
+                            && ReferenceEquals(model.Content, document));
+                        ContentPresenter? titlePresenter = item?.FindVisualChildren<ContentPresenter>()
+                            .FirstOrDefault(presenter => presenter.Name == "TextBlock");
+                        TextBlock? title = titlePresenter?.FindVisualChildren<TextBlock>()
+                            .FirstOrDefault(text => text.Text == document.Title);
+                        Grid? itemRoot = item?.FindVisualChildren<Grid>().FirstOrDefault(grid => grid.Name == "LayoutRoot");
+                        SampleChecks.Require(item is not null && item.Text == document.Title
+                            && titlePresenter is not null && title is not null && itemRoot is not null
+                            && item.HorizontalContentAlignment == HorizontalAlignment.Left
+                            && titlePresenter.HorizontalContentAlignment == HorizontalAlignment.Left,
+                            "Classic 文档选择器标题文案与左对齐设置正确。");
+                        double titleLeft = title!.TransformToVisual(popup!.Child).TransformPoint(new Point(0, 0)).X;
+                        double presenterLeft = titlePresenter!.TransformToVisual(itemRoot).TransformPoint(new Point(0, 0)).X;
+                        SampleChecks.Require(item!.Icon is Image { Source: null }
+                            && ((MenuFlyoutItem)item).Icon is null
+                            && titlePresenter.Margin.Left < 1
+                            && titleLeft - itemRoot!.TransformToVisual(popup.Child).TransformPoint(new Point(0, 0)).X < 20,
+                            "Classic 无图标文档的菜单标题紧贴左侧，不预留空图标列。");
+                        SampleChecks.Require(Math.Abs(presenterLeft - itemRoot!.Padding.Left - titlePresenter.Margin.Left) < 1,
+                            "Classic 文档选择器标题无重复图标占位。");
+                        SampleChecks.Require(firstLeft is null || Math.Abs(titleLeft - firstLeft.Value) < 1,
+                            "Classic 长短文档标题具有相同左边界。");
+                        firstLeft ??= titleLeft;
+
+                        AutomationPeer? peer = FrameworkElementAutomationPeer.FromElement(item)
+                            ?? FrameworkElementAutomationPeer.CreatePeerForElement(item);
+                        SampleChecks.Require(peer?.GetName() == document.Title, "Classic 文档选择器自动化文案可读。");
+                    }
+                    checks.Record("Classic 文档选择器文案、左对齐和自动化名称通过。");
+
+                    LayoutContent iconDocument = (LayoutContent)items[0].DataContext;
+                    iconDocument.IconSource = new Microsoft.UI.Xaml.Media.Imaging.WriteableBitmap(1, 1);
+                    await SampleChecks.SettleAsync();
+                    menu.Hide();
+                    await SampleChecks.SettleAsync();
+                    menu.ShowAt(selectorButton);
+                    await SampleChecks.SettleAsync();
+                    ContentPresenter? iconTitle = items[0].FindVisualChildren<ContentPresenter>()
+                        .FirstOrDefault(presenter => presenter.Name == "TextBlock");
+                    Viewbox? iconRoot = items[0].FindVisualChildren<Viewbox>()
+                        .FirstOrDefault(viewbox => viewbox.Name == "IconRoot");
+                    SampleChecks.Require(items[0].Icon is Image { Source: not null }
+                        && ((MenuFlyoutItem)items[0]).Icon is not null
+                        && iconRoot?.Visibility == Visibility.Visible && iconTitle?.Margin.Left >= 20,
+                        "Classic 文档选择器在图标加载后预留图标列。");
+                    checks.Record("Classic 文档图标加载后菜单占位通过。");
+                }
+
+                menu.Hide();
+                selectorButton.IsChecked = false;
+                await SampleChecks.SettleAsync();
+            }
+            checks.Record("Classic 文档选择器浅色和深色弹出主题通过。");
+        }
+        finally
+        {
+            menu.Hide();
+            selectorButton.IsChecked = false;
+            PageRoot.RequestedTheme = originalTheme;
+        }
+
+        global::Windows.Graphics.SizeInt32 originalSize = AppWindow.Size;
+        WorkspaceDocument[] initialDocuments = documents.ToArray();
+        try
+        {
+            for (int index = 0; index < 4; index++)
+            {
+                AddDocument_Click(this, new RoutedEventArgs());
+            }
+
+            AppWindow.Resize(new global::Windows.Graphics.SizeInt32(720, originalSize.Height));
+            await SampleChecks.SettleAsync();
+            TabViewItem[] overflowTabs = pane.TabItems.OfType<TabViewItem>().ToArray();
+            SampleChecks.Require(overflowTabs.Length == 6 && overflowTabs.Any(tab => tab.Opacity == 0),
+                "Classic 文档选择器可配合窄窗格隐藏溢出标签。");
+            Rect selectorBounds = selectorButton.TransformToVisual(pane).TransformBounds(
+                new Rect(0, 0, selectorButton.ActualWidth, selectorButton.ActualHeight));
+            SampleChecks.Require(selectorBounds.Right <= pane.ActualWidth + 1 && selectorBounds.Left >= 0,
+                "Classic 窄窗格中的文档选择按钮仍位于窗格内。");
+            TabViewItem hiddenTab = overflowTabs.First(tab => tab.Opacity == 0);
+            LayoutContent hiddenModel = (LayoutContent)hiddenTab.Tag;
+            menu.ShowAt(selectorButton);
+            await SampleChecks.SettleAsync();
+            MenuItemEx? hiddenItem = menu.Items.OfType<MenuItemEx>()
+                .FirstOrDefault(item => ReferenceEquals(item.DataContext, hiddenModel));
+            SampleChecks.Require(hiddenItem?.Command?.CanExecute(null) == true,
+                "Classic 文档选择器提供溢出文档的激活命令。");
+            hiddenItem!.Command!.Execute(null);
+            menu.Hide();
+            await SampleChecks.SettleAsync();
+            SampleChecks.Require(hiddenModel.IsSelected && hiddenTab.Opacity > 0,
+                "Classic 从选择器激活的溢出文档重新显示在标签条中。");
+            checks.Record("Classic 窄窗格文档溢出、选择按钮与隐藏文档激活通过。");
+        }
+        finally
+        {
+            menu.Hide();
+            AppWindow.Resize(originalSize);
+            foreach (WorkspaceDocument extra in documents.Where(document => !initialDocuments.Contains(document)).ToArray())
+            {
+                documents.Remove(extra);
+            }
+
+            await SampleChecks.SettleAsync();
+        }
+    }
+
     private void CheckSourceContent<T>(SampleChecks checks, IEnumerable<T> models, string label)
     {
         object[] expected = models.Cast<object>().ToArray();
@@ -356,5 +565,3 @@ public sealed partial class MainWindow : Window
         Manager.Dispose();
     }
 }
-
-

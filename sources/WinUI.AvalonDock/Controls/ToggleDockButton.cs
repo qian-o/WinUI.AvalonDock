@@ -3,6 +3,7 @@ using AvalonDock.Core;
 using AvalonDock.Layout;
 using AvalonDock.Platforms;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Data;
@@ -77,7 +78,8 @@ public class ToggleDockButton : ToggleButton
     {
         get => (LayoutAnchorable?)GetValue(AnchorableProperty); set => SetValue(AnchorableProperty, value);
     }
-    public static readonly DependencyProperty ZoneProperty = DependencyProperty.Register(nameof(Zone), typeof(DockZone), typeof(ToggleDockButton), new PropertyMetadata(DockZone.LeftTop));
+    public static readonly DependencyProperty ZoneProperty = DependencyProperty.Register(nameof(Zone), typeof(DockZone), typeof(ToggleDockButton),
+        new PropertyMetadata(DockZone.LeftTop, (owner, _) => ((ToggleDockButton)owner).UpdateZoneState()));
     public DockZone Zone
     {
         get => (DockZone)GetValue(ZoneProperty); set => SetValue(ZoneProperty, value);
@@ -120,6 +122,12 @@ public class ToggleDockButton : ToggleButton
         Click -= clickHandler;
         Click += clickHandler;
         base.OnToggle();
+    }
+    protected override void OnApplyTemplate()
+    {
+        base.OnApplyTemplate();
+        UpdateZoneState();
+        VisualStateManager.GoToState(this, IsAnchorableFocused ? "AnchorableFocused" : "AnchorableUnfocused", false);
     }
     protected virtual void OnMouseLeftButtonDown(PointerRoutedEventArgs e)
     {
@@ -198,6 +206,7 @@ public class ToggleDockButton : ToggleButton
 
         LayoutAnchorable tool = Anchorable;
         Content = tool.Title;
+        AutomationProperties.SetName(this, tool.Title ?? string.Empty);
         IsChecked = !tool.IsAutoHidden;
         IconContent = ToggleDock.GetIcon(tool) ?? (tool.Content as IToolbox)?.Icon;
         IconSource = IconContent == null ? tool.IconSource : null;
@@ -223,7 +232,10 @@ public class ToggleDockButton : ToggleButton
             }
         }
         RefreshIcon();
+        UpdateZoneState();
     }
+    private void UpdateZoneState() => VisualStateManager.GoToState(this,
+        Zone is DockZone.RightTop or DockZone.RightBottom or DockZone.BottomRight ? "IndicatorRight" : "IndicatorLeft", false);
     private void RefreshIcon()
     {
         if (released || !IsLoaded)

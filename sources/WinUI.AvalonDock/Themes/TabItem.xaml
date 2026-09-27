@@ -1,4 +1,4 @@
-<!-- Ported from AvalonDock.Themes.WPFUI e8a3da4, Styles/FluentResources.xaml
+<!-- Ported from AvalonDock.Themes.WPFUI ffff79a, Styles/FluentResources.xaml
      DockTabItemStyle / DockDocumentTabItemStyle / DockToolTabItemStyle (MIT, qian-o).
      Native named parts and state names retain WinUI TabViewItem selection, close and automation. -->
 <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:controls="using:AvalonDock.Controls">
@@ -16,7 +16,7 @@
         <Setter Property="MinWidth" Value="100"/>
         <Setter Property="MaxWidth" Value="240"/>
         <Setter Property="Margin" Value="0,0,1,0"/>
-        <Setter Property="Padding" Value="14,0,8,0"/>
+        <Setter Property="Padding" Value="14,0,4,0"/>
         <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
         <Setter Property="VerticalContentAlignment" Value="Stretch"/>
         <Setter Property="Template">
@@ -111,7 +111,7 @@
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
                             <ContentPresenter x:Name="ContentPresenter" Content="" ContentTemplate="{TemplateBinding HeaderTemplate}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}" FontSize="12" FontWeight="{TemplateBinding FontWeight}" Foreground="{TemplateBinding Foreground}"/>
-                            <controls:ChromeButton x:Name="CloseButton" Grid.Column="1" Width="24" Height="24" Margin="4,0,0,0" VerticalAlignment="Center" IsTabStop="True" Style="{StaticResource AvalonDockChromeButtonStyle}"><Viewbox Width="12" Height="12"><PathIcon Width="12" Height="12" Data="M2.08859 2.21569L2.14645 2.14645C2.32001 1.97288 2.58944 1.9536 2.78431 2.08859L2.85355 2.14645L6 5.293L9.14645 2.14645C9.34171 1.95118 9.65829 1.95118 9.85355 2.14645C10.0488 2.34171 10.0488 2.65829 9.85355 2.85355L6.707 6L9.85355 9.14645C10.0271 9.32001 10.0464 9.58944 9.91141 9.78431L9.85355 9.85355C9.67999 10.0271 9.41056 10.0464 9.21569 9.91141L9.14645 9.85355L6 6.707L2.85355 9.85355C2.65829 10.0488 2.34171 10.0488 2.14645 9.85355C1.95118 9.65829 1.95118 9.34171 2.14645 9.14645L5.293 6L2.14645 2.85355C1.97288 2.67999 1.9536 2.41056 2.08859 2.21569L2.14645 2.14645L2.08859 2.21569Z"/></Viewbox></controls:ChromeButton>
+                            <controls:ChromeButton x:Name="CloseButton" Grid.Column="1" Width="20" Height="20" Margin="4,0,0,0" VerticalAlignment="Center" IsTabStop="True" Style="{StaticResource AvalonDockChromeButtonStyle}"><Viewbox Width="12" Height="12"><PathIcon Width="12" Height="12" Data="M2.08859 2.21569L2.14645 2.14645C2.32001 1.97288 2.58944 1.9536 2.78431 2.08859L2.85355 2.14645L6 5.293L9.14645 2.14645C9.34171 1.95118 9.65829 1.95118 9.85355 2.14645C10.0488 2.34171 10.0488 2.65829 9.85355 2.85355L6.707 6L9.85355 9.14645C10.0271 9.32001 10.0464 9.58944 9.91141 9.78431L9.85355 9.85355C9.67999 10.0271 9.41056 10.0464 9.21569 9.91141L9.14645 9.85355L6 6.707L2.85355 9.85355C2.65829 10.0488 2.34171 10.0488 2.14645 9.85355C1.95118 9.65829 1.95118 9.34171 2.14645 9.14645L5.293 6L2.14645 2.85355C1.97288 2.67999 1.9536 2.41056 2.08859 2.21569L2.14645 2.14645L2.08859 2.21569Z"/></Viewbox></controls:ChromeButton>
                         </Grid>
                     </Grid>
                 </ControlTemplate>

@@ -10,7 +10,7 @@
             </ResourceDictionary.MergedDictionaries>
             <DataTemplate x:Key="WorkspaceContentTemplate">
                 <Grid Padding="8">
-                    <TextBox Text="{Binding Text, Mode=TwoWay}" AcceptsReturn="True" TextWrapping="Wrap" MinHeight="180" />
+                    <TextBlock Text="{Binding Text}" TextWrapping="Wrap" />
                 </Grid>
             </DataTemplate>
         </ResourceDictionary>
