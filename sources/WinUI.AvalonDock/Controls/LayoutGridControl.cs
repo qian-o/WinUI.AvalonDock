@@ -580,6 +580,7 @@ public abstract class LayoutGridControl<T> : Grid, ILayoutControl, IAdjustableSi
         {
             resizePreviewWindow = new OverlayWindow(this, model.FindParent<LayoutFloatingWindow>() != null);
             resizePreviewWindow.ShowResizePreview(previewBounds, resize.Fill, resize.Opacity);
+            resize.ShownPreviewBounds = previewBounds;
         }
         catch { EndResize(false); throw; }
     }
@@ -631,9 +632,10 @@ public abstract class LayoutGridControl<T> : Grid, ILayoutControl, IAdjustableSi
         Rect bounds = resize.PreviewBounds;
         bounds.X += resize.Horizontal ? resize.Delta * resize.Scale : 0;
         bounds.Y += resize.Horizontal ? 0 : resize.Delta * resize.Scale;
-        if (!released)
+        if (!released && bounds != resize.ShownPreviewBounds)
         {
             resizePreviewWindow?.ShowResizePreview(bounds, resize.Fill, resize.Opacity);
+            resize.ShownPreviewBounds = bounds;
         }
 
         if (released)
@@ -790,8 +792,9 @@ public abstract class LayoutGridControl<T> : Grid, ILayoutControl, IAdjustableSi
                 double delta = availableSize.Height - currentSize.Height;
                 double relativeDelta = relativePanels.Sum(child => child.ActualHeight - child.CalculatedDockMinHeight());
                 delta += relativeDelta;
-                foreach (ILayoutPositionableElementWithActualSize fixedChild in fixedPanels)
+                for (int indexOfChild = 0; indexOfChild < fixedPanels.Count; indexOfChild++)
                 {
+                    ILayoutPositionableElementWithActualSize fixedChild = fixedPanels[indexOfChild];
                     if (minimumSize.Height >= availableSize.Height)
                     {
                         fixedChild.ResizableAbsoluteDockHeight = fixedChild.CalculatedDockMinHeight();
@@ -803,17 +806,22 @@ public abstract class LayoutGridControl<T> : Grid, ILayoutControl, IAdjustableSi
                     else if (relativePanels.All(child => Math.Abs(child.ActualHeight - child.CalculatedDockMinHeight()) <= 1))
                     {
                         double panelFraction;
-                        int indexOfChild = fixedPanels.IndexOf(fixedChild);
                         if (delta < 0)
                         {
-                            double availableHeightLeft = fixedPanels.Where(child => fixedPanels.IndexOf(child) >= indexOfChild)
-                              .Sum(child => child.ActualHeight - child.CalculatedDockMinHeight());
+                            double availableHeightLeft = 0;
+                            for (int index = indexOfChild; index < fixedPanels.Count; index++)
+                            {
+                                availableHeightLeft += fixedPanels[index].ActualHeight - fixedPanels[index].CalculatedDockMinHeight();
+                            }
                             panelFraction = (fixedChild.ActualHeight - fixedChild.CalculatedDockMinHeight()) / (availableHeightLeft > 0 ? availableHeightLeft : 1);
                         }
                         else
                         {
-                            double fixedHeightLeft = fixedPanels.Where(child => fixedPanels.IndexOf(child) >= indexOfChild)
-                              .Sum(child => child.FixedDockHeight);
+                            double fixedHeightLeft = 0;
+                            for (int index = indexOfChild; index < fixedPanels.Count; index++)
+                            {
+                                fixedHeightLeft += fixedPanels[index].FixedDockHeight;
+                            }
                             panelFraction = fixedChild.FixedDockHeight / (fixedHeightLeft > 0 ? fixedHeightLeft : 1);
                         }
 
@@ -829,8 +837,9 @@ public abstract class LayoutGridControl<T> : Grid, ILayoutControl, IAdjustableSi
                 double delta = availableSize.Width - currentSize.Width;
                 double relativeDelta = relativePanels.Sum(child => child.ActualWidth - child.CalculatedDockMinWidth());
                 delta += relativeDelta;
-                foreach (ILayoutPositionableElementWithActualSize fixedChild in fixedPanels)
+                for (int indexOfChild = 0; indexOfChild < fixedPanels.Count; indexOfChild++)
                 {
+                    ILayoutPositionableElementWithActualSize fixedChild = fixedPanels[indexOfChild];
                     if (minimumSize.Width >= availableSize.Width)
                     {
                         fixedChild.ResizableAbsoluteDockWidth = fixedChild.CalculatedDockMinWidth();
@@ -842,17 +851,22 @@ public abstract class LayoutGridControl<T> : Grid, ILayoutControl, IAdjustableSi
                     else
                     {
                         double panelFraction;
-                        int indexOfChild = fixedPanels.IndexOf(fixedChild);
                         if (delta < 0)
                         {
-                            double availableWidthLeft = fixedPanels.Where(child => fixedPanels.IndexOf(child) >= indexOfChild)
-                              .Sum(child => child.ActualWidth - child.CalculatedDockMinWidth());
+                            double availableWidthLeft = 0;
+                            for (int index = indexOfChild; index < fixedPanels.Count; index++)
+                            {
+                                availableWidthLeft += fixedPanels[index].ActualWidth - fixedPanels[index].CalculatedDockMinWidth();
+                            }
                             panelFraction = (fixedChild.ActualWidth - fixedChild.CalculatedDockMinWidth()) / (availableWidthLeft > 0 ? availableWidthLeft : 1);
                         }
                         else
                         {
-                            double fixedWidthLeft = fixedPanels.Where(child => fixedPanels.IndexOf(child) >= indexOfChild)
-                              .Sum(child => child.FixedDockWidth);
+                            double fixedWidthLeft = 0;
+                            for (int index = indexOfChild; index < fixedPanels.Count; index++)
+                            {
+                                fixedWidthLeft += fixedPanels[index].FixedDockWidth;
+                            }
                             panelFraction = fixedChild.FixedDockWidth / (fixedWidthLeft > 0 ? fixedWidthLeft : 1);
                         }
 
@@ -864,9 +878,12 @@ public abstract class LayoutGridControl<T> : Grid, ILayoutControl, IAdjustableSi
                 }
             }
 
-            foreach (IAdjustableSizeLayout child in GetLayoutChildren().OfType<IAdjustableSizeLayout>())
+            foreach (ChildView child in childViews)
             {
-                child.AdjustFixedChildrenPanelSizes(availableSize);
+                if (child.View is IAdjustableSizeLayout adjustable)
+                {
+                    adjustable.AdjustFixedChildrenPanelSizes(availableSize);
+                }
             }
         }
         finally { resizingFixedChildren = false; }
@@ -936,6 +953,10 @@ public abstract class LayoutGridControl<T> : Grid, ILayoutControl, IAdjustableSi
         internal double Scale { get; } = scale;
         internal bool Horizontal { get; } = horizontal;
         internal Rect PreviewBounds { get; } = previewBounds;
+        internal Rect ShownPreviewBounds
+        {
+            get; set;
+        }
         internal Brush Fill { get; } = fill;
         internal double Opacity { get; } = opacity;
         internal double Delta

@@ -12,6 +12,7 @@ public partial class OverlayWindow : IOverlayWindow
     private LayoutFloatingWindowControl? floatingWindow;
     private IDropTarget? currentDropTarget;
     private Rect currentPreviewAreaBounds;
+    private bool areaVisibilityDirty = true;
 
     internal OverlayWindow(IOverlayWindowHost host) : this(OverlayHost.Element(host)
         ?? throw new ArgumentException("The overlay host has no connected content.", nameof(host)), host is LayoutFloatingWindowControl)
@@ -27,6 +28,11 @@ public partial class OverlayWindow : IOverlayWindow
         currentDropTarget = null;
         currentPreviewAreaBounds = Rect.Empty;
         visibleAreas.Clear();
+        areaSnapshot.Clear();
+        preparedGroups.Clear();
+        duplicateTargetContents.Clear();
+        duplicateSourceContents.Clear();
+        areaVisibilityDirty = true;
         // Upstream HideOverlay retains the dragged window until the drop and leave calls finish.
     }
 
@@ -66,6 +72,7 @@ public partial class OverlayWindow : IOverlayWindow
         if (!visibleAreas.Contains(area))
         {
             visibleAreas.Add(area);
+            areaVisibilityDirty = true;
         }
 
         ApplyOriginalArea(area);
@@ -78,12 +85,15 @@ public partial class OverlayWindow : IOverlayWindow
             return;
         }
 
+        areaVisibilityDirty = true;
+
         if (currentDropTarget is DropTargetBase target && ReferenceEquals(target.Target.Area, OverlayHost.Element(area)))
         {
             ((IOverlayWindow)this).DragLeave(target);
         }
 
-        ((IOverlayWindow)this).GetTargets().ToArray();
+        // DragService 在离开和进入的区域全部协调后统一测量目标，避免此处重复布局。
+        Invalidate();
     }
     IEnumerable<IDropTarget> IOverlayWindow.GetTargets()
     {
@@ -98,23 +108,37 @@ public partial class OverlayWindow : IOverlayWindow
             return [];
         }
 
-        DropTargetBase[] result = GetOriginalTargets().Select(InitializeOriginalTarget).OfType<DropTargetBase>()
-            .Where(target => !target.Target.ScreenBounds.IsEmpty && target.Target.ScreenBounds.Width > 0 && target.Target.ScreenBounds.Height > 0).ToArray();
+        // 本次测量的目标共享同一来源树，以不可变快照避免逐指示器和标签重复遍历。
+        LayoutContent[] sourceContents = source.Descendents().OfType<LayoutContent>().ToArray();
+        List<DropTargetBase> result = [];
+        foreach (IDropTarget original in GetOriginalTargets())
+        {
+            if (InitializeOriginalTarget(original, sourceContents) is { } target
+                && !target.Target.ScreenBounds.IsEmpty && target.Target.ScreenBounds.Width > 0 && target.Target.ScreenBounds.Height > 0)
+            {
+                result.Add(target);
+            }
+        }
         OverlayTarget[] measured = result.Select(target => target.Target).Distinct().ToArray();
         bool changed = !targets.SequenceEqual(measured);
         targets = measured;
-        parts.Clear();
-        foreach (OverlayTarget? target in measured)
+        if (changed || partsDirty)
         {
-            foreach (FrameworkElement part in TemplateParts())
+            parts.Clear();
+            foreach (OverlayTarget? target in measured)
             {
-                if (IsNativeTargetVisible(part) && GetNativeScreenArea(part) == target.ScreenBounds)
+                foreach (FrameworkElement part in TemplateParts())
                 {
-                    part.Tag = target.Type;
-                    parts[target] = part;
-                    break;
+                    if (IsNativeTargetVisible(part) && GetNativeScreenArea(part) == target.ScreenBounds)
+                    {
+                        part.Tag = target.Type;
+                        parts[target] = part;
+                        break;
+                    }
                 }
             }
+
+            partsDirty = false;
         }
 
         if (changed)

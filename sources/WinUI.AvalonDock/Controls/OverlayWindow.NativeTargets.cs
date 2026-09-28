@@ -11,7 +11,7 @@ public partial class OverlayWindow
 {
     private static void SetNativeTargetVisibility(FrameworkElement? element, Visibility visibility)
     {
-        if (element != null)
+        if (element != null && element.Visibility != visibility)
         {
             element.Visibility = visibility;
         }
@@ -93,21 +93,33 @@ public partial class OverlayWindow
             surface.Show(bounds);
         }
 
-        foreach (Grid group in groups.Values)
+        if (areaVisibilityDirty)
         {
-            group.Visibility = Visibility.Collapsed;
+            foreach (FrameworkElement part in TemplateParts())
+            {
+                SetNativeTargetVisibility(part, Visibility.Visible);
+            }
+
+            areaVisibilityDirty = false;
         }
 
-        foreach (FrameworkElement part in TemplateParts())
-        {
-            part.Visibility = Visibility.Visible;
-        }
-
-        foreach (IDropArea area in visibleAreas.ToArray())
+        preparedGroups.Clear();
+        // ApplyOriginalArea 可能丢弃已断开的窗格；复用快照以避免每次位置更新创建数组。
+        areaSnapshot.Clear();
+        areaSnapshot.AddRange(visibleAreas);
+        foreach (IDropArea area in areaSnapshot)
         {
             if (OverlayHost.Element(area) is { IsLoaded: true })
             {
                 ApplyOriginalArea(area);
+            }
+        }
+
+        foreach (Grid group in groups.Values)
+        {
+            if (!preparedGroups.Contains(group))
+            {
+                SetNativeTargetVisibility(group, Visibility.Collapsed);
             }
         }
 
@@ -117,7 +129,7 @@ public partial class OverlayWindow
         return true;
     }
 
-    private DropTargetBase? InitializeOriginalTarget(IDropTarget target)
+    private DropTargetBase? InitializeOriginalTarget(IDropTarget target, LayoutContent[] sourceContents)
     {
         if (overlayHost is not { } host || floatingWindow?.Model is not LayoutFloatingWindow floatingModel)
         {
@@ -140,6 +152,6 @@ public partial class OverlayWindow
 
         DropTargetBase original = (DropTargetBase)target;
         OverlayTarget native = new(model, element, original.Type, rectangle);
-        return host.Manager.InitializeDropTarget(original, native, floatingModel, original.TabIndex);
+        return host.Manager.InitializeDropTarget(original, native, floatingModel, original.TabIndex, sourceContents);
     }
 }

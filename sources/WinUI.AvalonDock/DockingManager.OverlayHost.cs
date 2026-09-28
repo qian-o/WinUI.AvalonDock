@@ -15,16 +15,15 @@ public partial class DockingManager : IOverlayWindowHost
     IOverlayWindow IOverlayWindowHost.ShowOverlayWindow(LayoutFloatingWindowControl draggingWindow) => ShowOverlayWindow(this, draggingWindow);
     void IOverlayWindowHost.HideOverlayWindow()
     {
-        areas = null;
+        InvalidateDropAreas();
         HideOverlayWindow(this);
     }
 
     internal IOverlayWindow ShowOverlayWindow(IOverlayWindowHost host, LayoutFloatingWindowControl draggingWindow) => dockingOverlay.Show(host, draggingWindow);
     internal void HideOverlayWindow(IOverlayWindowHost host) => dockingOverlay.Hide(host);
 
-    internal DropTargetBase InitializeDropTarget(DropTargetBase result, OverlayTarget target, LayoutFloatingWindow model, int tabIndex)
+    internal DropTargetBase InitializeDropTarget(DropTargetBase result, OverlayTarget target, LayoutFloatingWindow model, int tabIndex, LayoutContent[] contents)
     {
-        LayoutContent[] contents = model.Descendents().OfType<LayoutContent>().ToArray();
         result.Target = target;
         result.TabIndex = tabIndex;
         // WinUI may clear root activation while the source child island unloads.

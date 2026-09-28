@@ -32,6 +32,9 @@ public class LayoutAutoHideWindowControl : ChildWindowHost, ILayoutControl
     private double candidateExtent;
     private bool resizing;
     private OverlayWindow? resizePreviewWindow;
+    private Rect? shownResizePreviewBounds;
+    private Brush? shownResizePreviewFill;
+    private double shownResizePreviewOpacity;
     private AnchorSide side;
     private bool focusOnLoad;
     private readonly List<(DependencyProperty Property, long Token)> managerTokens = [];
@@ -551,8 +554,17 @@ public class LayoutAutoHideWindowControl : ChildWindowHost, ILayoutControl
             }
             double displacement = (candidateExtent - initialExtent) * scale * (side is AnchorSide.Right or AnchorSide.Bottom ? -1 : 1);
             rectangle = new Rect(rectangle.X + (vertical ? displacement : 0), rectangle.Y + (vertical ? 0 : displacement), rectangle.Width, rectangle.Height);
-            resizePreviewWindow ??= new OverlayWindow(area, false);
-            resizePreviewWindow.ShowResizePreview(rectangle, resizer.BackgroundWhileDragging, resizer.OpacityWhileDragging);
+            Brush fill = resizer.BackgroundWhileDragging;
+            double opacity = resizer.OpacityWhileDragging;
+            if (rectangle != shownResizePreviewBounds || !ReferenceEquals(fill, shownResizePreviewFill)
+                || opacity != shownResizePreviewOpacity)
+            {
+                resizePreviewWindow ??= new OverlayWindow(area, false);
+                resizePreviewWindow.ShowResizePreview(rectangle, fill, opacity);
+                shownResizePreviewBounds = rectangle;
+                shownResizePreviewFill = fill;
+                shownResizePreviewOpacity = opacity;
+            }
         }
     }
     private void EndResize()
@@ -560,6 +572,8 @@ public class LayoutAutoHideWindowControl : ChildWindowHost, ILayoutControl
         resizer?.CancelDrag();
         OverlayWindow? preview = resizePreviewWindow;
         resizePreviewWindow = null;
+        shownResizePreviewBounds = null;
+        shownResizePreviewFill = null;
         try
         {
             preview?.CloseHost();

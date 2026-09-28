@@ -9,14 +9,16 @@
     <!-- Ported from WPFUI e8a3da4 Styles/LayoutAnchorableControl.xaml and
          LayoutAutoHideWindowControl.xaml (MIT, qian-o). Native PART_ContentHost
          retains the original editor across XamlRoot changes. -->
-    <Style x:Key="DockAnchorableContentStyle" TargetType="controls:LayoutAnchorableControl">
-        <Setter Property="Background" Value="{ThemeResource SolidBackgroundFillColorTertiaryBrush}" />
-        <Setter Property="BorderBrush" Value="{ThemeResource CardStrokeColorDefaultBrush}" />
+    <Style x:Key="DockAnchorableContentBaseStyle" TargetType="controls:LayoutAnchorableControl">
         <Setter Property="BorderThickness" Value="0" />
         <Setter Property="FontFamily" Value="{ThemeResource DockFontFamily}" />
         <Setter Property="FontSize" Value="12" />
         <Setter Property="Foreground" Value="{ThemeResource TextFillColorPrimaryBrush}" />
         <Setter Property="UseLayoutRounding" Value="True" />
+    </Style>
+    <Style x:Key="DockAnchorableContentStyle" TargetType="controls:LayoutAnchorableControl" BasedOn="{StaticResource DockAnchorableContentBaseStyle}">
+        <Setter Property="Background" Value="{ThemeResource SolidBackgroundFillColorTertiaryBrush}" />
+        <Setter Property="BorderBrush" Value="{ThemeResource CardStrokeColorDefaultBrush}" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="controls:LayoutAnchorableControl">
@@ -55,14 +57,9 @@
         </Setter>
     </Style>
     <!-- Toggle-specific content frame follows WPFUI ffff79a ToggleDockingManager.xaml. -->
-    <Style x:Key="DockToggleAnchorableContentStyle" TargetType="controls:LayoutAnchorableControl">
+    <Style x:Key="DockToggleAnchorableContentStyle" TargetType="controls:LayoutAnchorableControl" BasedOn="{StaticResource DockAnchorableContentBaseStyle}">
         <Setter Property="Background" Value="Transparent" />
         <Setter Property="BorderBrush" Value="Transparent" />
-        <Setter Property="BorderThickness" Value="0" />
-        <Setter Property="FontFamily" Value="{ThemeResource DockFontFamily}" />
-        <Setter Property="FontSize" Value="12" />
-        <Setter Property="Foreground" Value="{ThemeResource TextFillColorPrimaryBrush}" />
-        <Setter Property="UseLayoutRounding" Value="True" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="controls:LayoutAnchorableControl">

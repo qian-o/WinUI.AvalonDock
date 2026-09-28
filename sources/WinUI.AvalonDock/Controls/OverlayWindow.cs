@@ -26,13 +26,17 @@ public partial class OverlayWindow : Window
     private readonly Style defaultStyle;
     private bool automaticStyle = true;
     private readonly Dictionary<string, Grid> groups = [];
+    private readonly HashSet<FrameworkElement> preparedGroups = [];
     private readonly Dictionary<OverlayTarget, FrameworkElement> parts = [];
+    private IReadOnlyList<FrameworkElement> templateParts = [];
+    private readonly List<IDropArea> areaSnapshot = [];
     private readonly Dictionary<Border, (Brush Background, Brush BorderBrush, Thickness BorderThickness)> targetedChrome = [];
     private Canvas? canvas;
     private Path? preview;
     private ResourceDictionary? themeResources;
     private Rect bounds;
     private IReadOnlyList<OverlayTarget> targets = [];
+    private bool partsDirty = true;
     private OverlayTarget? active;
     private bool closed;
     private bool resizePreviewShown;
@@ -148,6 +152,9 @@ public partial class OverlayWindow : Window
         }
 
         parts.Clear();
+        templateParts = BuildTemplateParts();
+        partsDirty = true;
+        areaVisibilityDirty = true;
         active = null;
         if (preview != null)
         {
@@ -283,26 +290,21 @@ public partial class OverlayWindow : Window
 
 
 
-    private IEnumerable<FrameworkElement> TemplateParts()
-    {
-        foreach (string name in groups.Keys)
-        {
-            foreach (string? direction in new[] { "Left", "Top", "Right", "Bottom", "Into" })
-            {
-                if (GetTemplateChild("PART_" + name + "DropTarget" + direction) is FrameworkElement part)
-                {
-                    yield return part;
-                }
-            }
-        }
+    private IReadOnlyList<FrameworkElement> TemplateParts() => templateParts;
 
-        foreach (string? direction in new[] { "Left", "Top", "Right", "Bottom" })
-        {
-            if (GetTemplateChild("PART_DocumentPaneDropTarget" + direction + "AsAnchorablePane") is FrameworkElement part)
-            {
-                yield return part;
-            }
-        }
+    private FrameworkElement[] BuildTemplateParts()
+    {
+        // 复用 BindOriginalTargetParts 已绑定的部件，避免每次位置更新逐目标重复查找名称。
+        FrameworkElement?[] candidates =
+        [
+            dockingManagerDropTargetLeft, dockingManagerDropTargetTop, dockingManagerDropTargetRight, dockingManagerDropTargetBottom,
+            anchorablePaneDropTargetLeft, anchorablePaneDropTargetTop, anchorablePaneDropTargetRight, anchorablePaneDropTargetBottom, anchorablePaneDropTargetInto,
+            documentPaneDropTargetLeft, documentPaneDropTargetTop, documentPaneDropTargetRight, documentPaneDropTargetBottom, documentPaneDropTargetInto,
+            documentPaneFullDropTargetLeft, documentPaneFullDropTargetTop, documentPaneFullDropTargetRight, documentPaneFullDropTargetBottom, documentPaneFullDropTargetInto,
+            documentPaneDropTargetLeftAsAnchorablePane, documentPaneDropTargetTopAsAnchorablePane,
+            documentPaneDropTargetRightAsAnchorablePane, documentPaneDropTargetBottomAsAnchorablePane
+        ];
+        return candidates.OfType<FrameworkElement>().ToArray();
     }
 
     internal void SetActive(OverlayTarget? target)

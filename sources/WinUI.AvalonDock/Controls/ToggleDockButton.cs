@@ -20,6 +20,7 @@ public class ToggleDockButton : ToggleButton
     private bool suppressClick;
     private bool released;
     private bool pressed;
+    private bool iconRefreshQueued;
     private Point pressPoint;
     private ContentPresenter? iconHost;
     private Image? imageHost;
@@ -69,9 +70,21 @@ public class ToggleDockButton : ToggleButton
             iconHost = null;
             imageHost = null;
             textHost = null;
+            if (iconRefreshQueued)
+            {
+                return;
+            }
+
+            iconRefreshQueued = DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Low, () =>
+            {
+                iconRefreshQueued = false;
+                if (IsLoaded)
+                {
+                    RefreshIcon();
+                }
+            });
         });
         RegisterPropertyChangedCallback(ForegroundProperty, (_, _) => RefreshIcon());
-        LayoutUpdated += (_, _) => RefreshIcon();
     }
     public static readonly DependencyProperty AnchorableProperty = DependencyProperty.Register(nameof(Anchorable), typeof(LayoutAnchorable), typeof(ToggleDockButton), new PropertyMetadata(null, (owner, _) => ((ToggleDockButton)owner).Refresh()));
     public LayoutAnchorable? Anchorable
@@ -128,6 +141,7 @@ public class ToggleDockButton : ToggleButton
         base.OnApplyTemplate();
         UpdateZoneState();
         VisualStateManager.GoToState(this, IsAnchorableFocused ? "AnchorableFocused" : "AnchorableUnfocused", false);
+        RefreshIcon();
     }
     protected virtual void OnMouseLeftButtonDown(PointerRoutedEventArgs e)
     {
@@ -350,7 +364,12 @@ public class ToggleDockButton : ToggleButton
     private sealed class RotatedHeader : Panel
     {
         internal ContentPresenter Presenter { get; } = new();
-        internal RotatedHeader() => Children.Add(Presenter);
+        private readonly CompositeTransform rotation = new() { Rotation = -90 };
+        internal RotatedHeader()
+        {
+            Presenter.RenderTransform = rotation;
+            Children.Add(Presenter);
+        }
         protected override Size MeasureOverride(Size availableSize)
         {
             Presenter.Measure(new Size(double.PositiveInfinity, double.PositiveInfinity));
@@ -360,7 +379,10 @@ public class ToggleDockButton : ToggleButton
         {
             Size size = Presenter.DesiredSize;
             Presenter.Arrange(new Rect(0, 0, size.Width, size.Height));
-            Presenter.RenderTransform = new CompositeTransform { Rotation = -90, TranslateY = size.Width };
+            if (rotation.TranslateY != size.Width)
+            {
+                rotation.TranslateY = size.Width;
+            }
             return finalSize;
         }
     }

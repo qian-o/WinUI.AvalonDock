@@ -25,7 +25,9 @@ internal sealed class ToggleDockDragOverlay : IDisposable
     private readonly Grid dragLabelRoot = new() { Background = new SolidColorBrush(Microsoft.UI.Colors.Transparent) };
     private readonly IOverlayWindowSurface surface;
     private readonly IOverlayWindowSurface dragLabelSurface;
-    private readonly List<Zone> zones = [];
+    private readonly List<Zone> zones = new(16);
+    private readonly List<Zone> pendingZones = new(16);
+    private readonly Dictionary<DockZone, Rect> visiblePaneBounds = new(6);
     private readonly Border dragLabel;
     private readonly FrameworkElement? leftNavigationFrame;
     private readonly FrameworkElement? rightNavigationFrame;
@@ -115,7 +117,6 @@ internal sealed class ToggleDockDragOverlay : IDisposable
                 return;
             }
 
-            Zone[] previous = zones.ToArray();
             double nextScale = manager.XamlRoot.RasterizationScale;
             if (scale != nextScale)
             {
@@ -126,12 +127,17 @@ internal sealed class ToggleDockDragOverlay : IDisposable
             bounds = nextBounds;
             scale = nextScale;
             BuildZones();
-            geometryChanged = !updated || boundsChanged || !previous.SequenceEqual(zones);
+            geometryChanged = !updated || boundsChanged || !pendingZones.SequenceEqual(zones);
+            if (geometryChanged)
+            {
+                zones.Clear();
+                zones.AddRange(pendingZones);
+            }
             updated = true;
         }
 
         Zone? selected = HitZone(pointer);
-        bool selectionChanged = !Equals(selectedZone, selected);
+        bool selectionChanged = selectedZone != selected;
         selectedZone = selected;
         if (geometryChanged || selectionChanged || !surface.IsVisible)
         {
@@ -152,13 +158,25 @@ internal sealed class ToggleDockDragOverlay : IDisposable
         MoveDragLabel(pointer, mainShown);
     }
     internal DockZone? Hit(Point point) => failed || disposed ? null : HitZone(point)?.Target;
-    private Zone? HitZone(Point point) => zones.LastOrDefault(zone => zone.Bounds.Contains(point));
+    private Zone? HitZone(Point point)
+    {
+        for (int index = zones.Count - 1; index >= 0; index--)
+        {
+            if (zones[index].Bounds.Contains(point))
+            {
+                return zones[index];
+            }
+        }
+
+        return null;
+    }
     private void DrawZones(Zone? selected)
     {
         canvas.Children.Clear();
         foreach (Zone zone in zones)
         {
-            if (zone.Label == null && !ReferenceEquals(zone, selected))
+            bool targeted = selected.HasValue && zone == selected.Value;
+            if (zone.Label == null && !targeted)
             {
                 continue;
             }
@@ -169,7 +187,6 @@ internal sealed class ToggleDockDragOverlay : IDisposable
                 continue;
             }
 
-            bool targeted = ReferenceEquals(zone, selected);
             Rectangle border = new()
             {
                 Width = rectangle.Width / scale,
@@ -290,7 +307,7 @@ internal sealed class ToggleDockDragOverlay : IDisposable
     }
     private void BuildZones()
     {
-        zones.Clear();
+        pendingZones.Clear();
         if (manager.LayoutRootPanel is not { } root || !IsEffectivelyVisible(root)
             || !PlatformServices.Coordinates.TryGetScreenBounds(root, out Rect content)
             || content.Width < 50 * scale || content.Height < 50 * scale)
@@ -302,7 +319,7 @@ internal sealed class ToggleDockDragOverlay : IDisposable
         double rightWidth = content.Width * .25;
         double bottomHeight = content.Height * .25;
         double sideBottom = double.NaN;
-        Dictionary<DockZone, Rect> visiblePaneBounds = [];
+        visiblePaneBounds.Clear();
         foreach (LayoutAnchorablePaneControl pane in ToggleDockingManager.Visuals<LayoutAnchorablePaneControl>(manager))
         {
             if (pane.Model is not LayoutAnchorablePane model || !model.Children.Any(tool => !tool.IsAutoHidden)
@@ -368,8 +385,8 @@ internal sealed class ToggleDockDragOverlay : IDisposable
         bool hasSecond = visiblePaneBounds.TryGetValue(secondZone, out Rect second);
         if (hasFirst && hasSecond && first != second)
         {
-            zones.Add(new(first, firstZone, firstLabel));
-            zones.Add(new(second, secondZone, secondLabel));
+            pendingZones.Add(new(first, firstZone, firstLabel));
+            pendingZones.Add(new(second, secondZone, secondLabel));
             return;
         }
 
@@ -378,14 +395,14 @@ internal sealed class ToggleDockDragOverlay : IDisposable
         if (vertical)
         {
             double half = area.Height / 2;
-            zones.Add(new(new Rect(area.Left, area.Top, area.Width, half), firstZone, firstLabel));
-            zones.Add(new(new Rect(area.Left, area.Top + half, area.Width, half), secondZone, secondLabel));
+            pendingZones.Add(new(new Rect(area.Left, area.Top, area.Width, half), firstZone, firstLabel));
+            pendingZones.Add(new(new Rect(area.Left, area.Top + half, area.Width, half), secondZone, secondLabel));
         }
         else
         {
             double half = area.Width / 2;
-            zones.Add(new(new Rect(area.Left, area.Top, half, area.Height), firstZone, firstLabel));
-            zones.Add(new(new Rect(area.Left + half, area.Top, half, area.Height), secondZone, secondLabel));
+            pendingZones.Add(new(new Rect(area.Left, area.Top, half, area.Height), firstZone, firstLabel));
+            pendingZones.Add(new(new Rect(area.Left + half, area.Top, half, area.Height), secondZone, secondLabel));
         }
     }
     private void AddBar(FrameworkElement? frame, ToggleDockButtonBar? bar)
@@ -401,7 +418,7 @@ internal sealed class ToggleDockDragOverlay : IDisposable
         aligned.Intersect(frameBounds);
         if (!aligned.IsEmpty && aligned.Width > 0 && aligned.Height > 0)
         {
-            zones.Add(new(aligned, bar.Zone, null));
+            pendingZones.Add(new(aligned, bar.Zone, null));
         }
     }
     private void AddSide(FrameworkElement? frame, FrameworkElement? separator, ToggleDockButtonBar? bottom, DockZone topZone, DockZone lowerZone)
@@ -424,8 +441,8 @@ internal sealed class ToggleDockDragOverlay : IDisposable
         double y = separator != null && IsEffectivelyVisible(separator)
             && PlatformServices.Coordinates.TryGetScreenBounds(separator, out Rect split)
             ? Math.Clamp(split.Y + split.Height / 2, area.Top, usableBottom) : area.Y + usableHeight / 2;
-        zones.Add(new(new Rect(area.X, area.Y, area.Width, y - area.Y), topZone, null, y));
-        zones.Add(new(new Rect(area.X, y, area.Width, usableBottom - y), lowerZone, null, y));
+        pendingZones.Add(new(new Rect(area.X, area.Y, area.Width, y - area.Y), topZone, null, y));
+        pendingZones.Add(new(new Rect(area.X, y, area.Width, usableBottom - y), lowerZone, null, y));
     }
     private static bool IsEffectivelyVisible(FrameworkElement element)
     {
@@ -515,5 +532,5 @@ internal sealed class ToggleDockDragOverlay : IDisposable
     private Brush Brush(string key, string fallbackKey) => Resource(key,
         Application.Current.Resources.TryGetValue(fallbackKey, out object? fallback) && fallback is Brush brush
             ? brush : new SolidColorBrush(Microsoft.UI.Colors.Transparent));
-    private sealed record Zone(Rect Bounds, DockZone Target, string? Label, double? Line = null);
+    private readonly record struct Zone(Rect Bounds, DockZone Target, string? Label, double? Line = null);
 }

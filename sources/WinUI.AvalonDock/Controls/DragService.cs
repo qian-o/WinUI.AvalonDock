@@ -2,7 +2,6 @@
 // Upstream: 408dc2896e2f41f3bb79a15207f160edee8a6792.
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using AvalonDock.Layout;
 using AvalonDock.Platforms;
 using Microsoft.UI.Xaml;
@@ -24,6 +23,10 @@ internal class DragService
     private IOverlayWindowHost? currentHost;
     private IOverlayWindow? currentWindow;
     private List<IDropArea> currentWindowAreas = new();
+    private readonly List<IDropArea> availableAreas = new();
+    private readonly HashSet<IDropArea> availableAreaSet = new();
+    private readonly List<IDropArea> areasToRemove = new();
+    private readonly List<IDropArea> areasToAdd = new();
     private IDropTarget? currentDropTarget;
     private bool isDrag;
 
@@ -54,7 +57,15 @@ internal class DragService
             isDrag = true;
         }
 
-        IOverlayWindowHost? newHost = overlayWindowHosts.FirstOrDefault(oh => oh.HitTestScreen(dragPosition) && IsNativeHostVisible(oh, dragPosition));
+        IOverlayWindowHost? newHost = null;
+        foreach (IOverlayWindowHost host in overlayWindowHosts)
+        {
+            if (host.HitTestScreen(dragPosition) && IsNativeHostVisible(host, dragPosition))
+            {
+                newHost = host;
+                break;
+            }
+        }
 
         if (currentHost != null || currentHost != newHost)
         {
@@ -71,8 +82,10 @@ internal class DragService
                 currentDropTarget = null;
 
                 // exit area
-                currentWindowAreas.ForEach(a =>
-                    currentWindow?.DragLeave(a));
+                foreach (IDropArea area in currentWindowAreas)
+                {
+                    currentWindow?.DragLeave(area);
+                }
                 currentWindowAreas.Clear();
 
                 // hide current overlay window
@@ -122,12 +135,25 @@ internal class DragService
             return;
         }
 
-        List<IDropArea> availableAreas = currentHost.GetDropAreas(floatingWindow).ToList();
-        List<IDropArea> areasToRemove = currentWindowAreas.Where(area => !availableAreas.Contains(area)
-            || !area.DetectionRect.Contains(area.TransformToDeviceDPI(dragPosition))).ToList();
+        availableAreas.Clear();
+        availableAreaSet.Clear();
+        foreach (IDropArea area in currentHost.GetDropAreas(floatingWindow))
+        {
+            availableAreas.Add(area);
+            availableAreaSet.Add(area);
+        }
+
+        areasToRemove.Clear();
+        foreach (IDropArea area in currentWindowAreas)
+        {
+            if (!availableAreaSet.Contains(area) || !area.DetectionRect.Contains(area.TransformToDeviceDPI(dragPosition)))
+            {
+                areasToRemove.Add(area);
+            }
+        }
         if (currentDropTarget != null && areasToRemove.Count > 0
             && (currentDropTarget is not DropTargetBase target
-                || areasToRemove.Any(area => ReferenceEquals(OverlayHost.Element(area), target.Target.Area))))
+                || HasTargetAreaLeaving(target)))
         {
             overlay.DragLeave(currentDropTarget);
             currentDropTarget = null;
@@ -138,16 +164,26 @@ internal class DragService
             currentWindowAreas.Remove(area);
         }
 
-        List<IDropArea> areasToAdd = availableAreas.Where(area => !currentWindowAreas.Contains(area)
-            && area.DetectionRect.Contains(area.TransformToDeviceDPI(dragPosition))).ToList();
+        areasToAdd.Clear();
+        foreach (IDropArea area in availableAreas)
+        {
+            if (!currentWindowAreas.Contains(area) && area.DetectionRect.Contains(area.TransformToDeviceDPI(dragPosition)))
+            {
+                areasToAdd.Add(area);
+            }
+        }
 
         currentWindowAreas.AddRange(areasToAdd);
 
-        areasToAdd.ForEach(a =>
-            overlay.DragEnter(a));
+        foreach (IDropArea area in areasToAdd)
+        {
+            overlay.DragEnter(area);
+        }
 
         // Rebuild targets only after old views leave and their replacements enter.
-        RefreshNativeTarget();
+        // 每次位置更新只测量一次目标；旧目标校验和下一次命中共用同一份当前几何。
+        IEnumerable<IDropTarget> targets = overlay.GetTargets();
+        RefreshNativeTarget(targets);
         if (currentDropTarget != null && !currentDropTarget.HitTestScreen(dragPosition))
         {
             overlay.DragLeave(currentDropTarget);
@@ -156,26 +192,22 @@ internal class DragService
 
         if (currentDropTarget == null)
         {
-            currentWindowAreas.ForEach(wa =>
+            foreach (IDropTarget candidate in targets)
             {
-                if (currentDropTarget != null)
+                if (!candidate.HitTestScreen(dragPosition))
                 {
-                    return;
+                    continue;
                 }
 
-                currentDropTarget = overlay.GetTargets().FirstOrDefault(dt => dt.HitTestScreen(dragPosition));
-
-                if (currentDropTarget != null)
+                currentDropTarget = candidate;
+                overlay.DragEnter(candidate);
+                if (overlay is Window overlayWindow)
                 {
-                    overlay.DragEnter(currentDropTarget);
-                    if (overlay is Window overlayWindow)
-                    {
-                        BringWindowToTop2(overlayWindow);
-                    }
-
-                    return;
+                    BringWindowToTop2(overlayWindow);
                 }
-            });
+
+                break;
+            }
         }
     }
 
@@ -204,7 +236,10 @@ internal class DragService
             dropHandled = true;
         }
 
-        currentWindowAreas.ForEach(a => currentWindow?.DragLeave(a));
+        foreach (IDropArea area in currentWindowAreas)
+        {
+            currentWindow?.DragLeave(area);
+        }
 
         if (currentDropTarget != null)
         {
@@ -236,7 +271,10 @@ internal class DragService
         // where there may be no overlay window to leave any more (issue #587).
         if (currentWindow != null)
         {
-            currentWindowAreas.ForEach(a => currentWindow.DragLeave(a));
+            foreach (IDropArea area in currentWindowAreas)
+            {
+                currentWindow.DragLeave(area);
+            }
 
             if (currentDropTarget != null)
             {
@@ -282,7 +320,20 @@ internal class DragService
 
     private void BringWindowToTop2(FrameworkElement element) => PlatformServices.WindowOrder.BringToFront(element);
 
-    private void RefreshNativeTarget()
+    private bool HasTargetAreaLeaving(DropTargetBase target)
+    {
+        foreach (IDropArea area in areasToRemove)
+        {
+            if (ReferenceEquals(OverlayHost.Element(area), target.Target.Area))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private void RefreshNativeTarget(IEnumerable<IDropTarget> targets)
     {
         if (currentDropTarget is not DropTargetBase previous || currentWindow is not OverlayWindow window)
         {
@@ -291,11 +342,13 @@ internal class DragService
         // WinUI template/transform changes can complete after the original target
         // was measured. Reuse its identity only while the actual native glyph still
         // has those bounds and owns the rendered preview.
-        IEnumerable<DropTargetBase> targets = currentWindow.GetTargets().OfType<DropTargetBase>();
-        if (targets.Any(target => target.TabIndex == previous.TabIndex && Equals(target.Target, previous.Target))
-            && window.IsPresenting(previous.Target))
+        foreach (IDropTarget candidate in targets)
         {
-            return;
+            if (candidate is DropTargetBase target && target.TabIndex == previous.TabIndex
+                && Equals(target.Target, previous.Target) && window.IsPresenting(previous.Target))
+            {
+                return;
+            }
         }
 
         currentWindow.DragLeave(currentDropTarget);

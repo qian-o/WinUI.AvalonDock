@@ -7,11 +7,17 @@ namespace AvalonDock.Controls;
 public partial class LayoutDocumentFloatingWindowControl
 {
     private List<IDropArea>? dropAreas;
-    internal void InvalidateDropAreas() => dropAreas = null;
+    private readonly List<IDropArea> documentAreaBuffer = [];
+    internal void InvalidateDropAreas()
+    {
+        dropAreas = null;
+        documentAreaBuffer.Clear();
+    }
 
     public IEnumerable<IDropArea> GetDropAreas(LayoutFloatingWindowControl draggingWindow)
     {
         List<IDropArea> currentAreas = new();
+        documentAreaBuffer.Clear();
         bool dockAsDocument = FloatingDropAreaRules.CanDockAsDocument(draggingWindow);
 
         // A window whose content has already been released offers nothing to drop onto (issue #587).
@@ -21,24 +27,21 @@ public partial class LayoutDocumentFloatingWindowControl
             return dropAreas = currentAreas;
         }
 
-        foreach (LayoutAnchorablePaneControl areaHost in rootVisual.FindVisualChildren<LayoutAnchorablePaneControl>())
+        foreach (FrameworkElement element in rootVisual.FindVisualChildren<FrameworkElement>())
         {
-            if (DropAreaCache.IsConnected(areaHost, Manager, Model))
+            switch (element)
             {
-                currentAreas.Add(DropAreaCache.Reuse(dropAreas, areaHost, DropAreaType.AnchorablePane));
+                case LayoutAnchorablePaneControl toolPane when DropAreaCache.IsConnected(toolPane, Manager, Model):
+                    currentAreas.Add(DropAreaCache.Reuse(dropAreas, toolPane, DropAreaType.AnchorablePane));
+                    break;
+                case LayoutDocumentPaneControl documentPane when dockAsDocument
+                    && DropAreaCache.IsConnected(documentPane, Manager, Model):
+                    documentAreaBuffer.Add(DropAreaCache.Reuse(dropAreas, documentPane, DropAreaType.DocumentPane));
+                    break;
             }
         }
 
-        if (dockAsDocument)
-        {
-            foreach (LayoutDocumentPaneControl areaHost in rootVisual.FindVisualChildren<LayoutDocumentPaneControl>())
-            {
-                if (DropAreaCache.IsConnected(areaHost, Manager, Model))
-                {
-                    currentAreas.Add(DropAreaCache.Reuse(dropAreas, areaHost, DropAreaType.DocumentPane));
-                }
-            }
-        }
+        currentAreas.AddRange(documentAreaBuffer);
 
         dropAreas = currentAreas;
         return dropAreas;

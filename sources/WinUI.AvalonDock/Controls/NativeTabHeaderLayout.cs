@@ -20,6 +20,12 @@ internal sealed class NativeTabHeaderLayout : IDisposable
     private readonly ListView list;
     private readonly bool documents;
     private readonly Dictionary<TabViewItem, Entry> entries = [];
+    private readonly List<TabViewItem> tabsBuffer = [];
+    private readonly HashSet<TabViewItem> currentTabs = [];
+    private readonly List<TabViewItem> removedTabs = [];
+    private readonly List<TabViewItem> visibleTabs = [];
+    private readonly List<double> desiredWidths = [];
+    private readonly List<double> allocatedWidths = [];
     private readonly List<(DependencyProperty Property, long Token)> managerTokens = [];
     private readonly DockingManager? manager;
     private bool queued;
@@ -84,6 +90,12 @@ internal sealed class NativeTabHeaderLayout : IDisposable
         }
 
         entries.Clear();
+        tabsBuffer.Clear();
+        currentTabs.Clear();
+        removedTabs.Clear();
+        visibleTabs.Clear();
+        desiredWidths.Clear();
+        allocatedWidths.Clear();
     }
 
     private void OnLoaded(object? sender, RoutedEventArgs e)
@@ -121,9 +133,12 @@ internal sealed class NativeTabHeaderLayout : IDisposable
     {
         if (e.PropertyName is nameof(LayoutContent.Title) or nameof(LayoutContent.CanClose) or nameof(LayoutAnchorable.CanHide))
         {
-            foreach (Entry? entry in entries.Values.Where(entry => ReferenceEquals(entry.Model, sender)))
+            foreach (Entry entry in entries.Values)
             {
-                entry.NaturalWidth = double.NaN;
+                if (ReferenceEquals(entry.Model, sender))
+                {
+                    entry.NaturalWidth = double.NaN;
+                }
             }
 
             QueueUpdate();
@@ -165,13 +180,33 @@ internal sealed class NativeTabHeaderLayout : IDisposable
         updating = true;
         try
         {
-            TabViewItem[] tabs = owner.TabItems.OfType<TabViewItem>().ToArray();
-            foreach (TabViewItem? tab in entries.Keys.Where(tab => !tabs.Contains(tab)).ToArray())
+            tabsBuffer.Clear();
+            currentTabs.Clear();
+            foreach (object item in owner.TabItems)
+            {
+                if (item is TabViewItem tab)
+                {
+                    tabsBuffer.Add(tab);
+                    currentTabs.Add(tab);
+                }
+            }
+
+            removedTabs.Clear();
+            foreach (TabViewItem tab in entries.Keys)
+            {
+                if (!currentTabs.Contains(tab))
+                {
+                    removedTabs.Add(tab);
+                }
+            }
+
+            foreach (TabViewItem tab in removedTabs)
             {
                 Release(entries[tab]);
                 entries.Remove(tab);
             }
-            foreach (TabViewItem? tab in tabs)
+            removedTabs.Clear();
+            foreach (TabViewItem tab in tabsBuffer)
             {
                 if (!entries.TryGetValue(tab, out Entry? entry))
                 {
@@ -225,23 +260,38 @@ internal sealed class NativeTabHeaderLayout : IDisposable
                     entry.NaturalHeaderHeight = entry.Header?.DesiredSize.Height ?? 0;
                 }
             }
-            TabViewItem[] visible = tabs.Where(tab => tab.Visibility != Visibility.Collapsed).ToArray();
+            visibleTabs.Clear();
+            desiredWidths.Clear();
+            foreach (TabViewItem tab in tabsBuffer)
+            {
+                if (tab.Visibility == Visibility.Collapsed)
+                {
+                    continue;
+                }
+
+                visibleTabs.Add(tab);
+                Entry entry = entries[tab];
+                desiredWidths.Add(documents
+                    ? Math.Max(entry.NaturalWidth, entry.OriginalMinWidth + entry.OriginalMargin.Left + entry.OriginalMargin.Right)
+                    : entry.NaturalWidth);
+            }
             // The document selector occupies its own 28-pixel column and 4-pixel
             // margins on both sides; reserve it before choosing visible tabs.
             double available = Math.Max(0, Math.Min(owner.ActualWidth, list.MaxWidth) - list.Padding.Left - list.Padding.Right - 8
                 - (documents ? 36 : 0));
-            double[] widths = visible.Select(tab => documents
-                ? Math.Max(entries[tab].NaturalWidth, entries[tab].OriginalMinWidth + entries[tab].OriginalMargin.Left + entries[tab].OriginalMargin.Right)
-                : entries[tab].NaturalWidth).ToArray();
-            int count = documents ? TabHeaderLayoutRules.VisibleDocumentCount(widths, available) : visible.Length;
-            double[] toolWidths = documents ? [] : TabHeaderLayoutRules.ToolWidths(widths, available);
-            for (int index = 0; index < visible.Length; index++)
+            int count = documents ? TabHeaderLayoutRules.VisibleDocumentCount(desiredWidths, available) : visibleTabs.Count;
+            if (!documents)
             {
-                TabViewItem tab = visible[index];
+                TabHeaderLayoutRules.FillToolWidths(desiredWidths, available, allocatedWidths);
+            }
+
+            for (int index = 0; index < visibleTabs.Count; index++)
+            {
+                TabViewItem tab = visibleTabs[index];
                 Entry entry = entries[tab];
                 // Upstream panels arrange DesiredSize, which includes the margins.
                 // Native Width is the content box; otherwise the item margin is added twice.
-                double allocated = documents ? widths[index] : toolWidths[index];
+                double allocated = documents ? desiredWidths[index] : allocatedWidths[index];
                 double width = Math.Max(0, allocated - entry.OriginalMargin.Left - entry.OriginalMargin.Right);
                 if (documents)
                 {
@@ -277,7 +327,7 @@ internal sealed class NativeTabHeaderLayout : IDisposable
             }
             ScrollViewer.SetHorizontalScrollBarVisibility(list, ScrollBarVisibility.Disabled);
             ScrollViewer.SetHorizontalScrollMode(list, ScrollMode.Disabled);
-            if (VisualDescendants<ScrollViewer>(list).FirstOrDefault() is { } scroller && scroller.HorizontalOffset != 0)
+            if (FindVisualDescendant<ScrollViewer>(list) is { } scroller && scroller.HorizontalOffset != 0)
             {
                 scroller.ChangeView(0, null, null, true);
             }
@@ -450,21 +500,23 @@ internal sealed class NativeTabHeaderLayout : IDisposable
         entry.HeaderSizeChanged = null;
     }
 
-    private static IEnumerable<T> VisualDescendants<T>(DependencyObject root) where T : DependencyObject
+    private static T? FindVisualDescendant<T>(DependencyObject root) where T : DependencyObject
     {
         for (int index = 0; index < VisualTreeHelper.GetChildrenCount(root); index++)
         {
             DependencyObject child = VisualTreeHelper.GetChild(root, index);
             if (child is T value)
             {
-                yield return value;
+                return value;
             }
 
-            foreach (T nested in VisualDescendants<T>(child))
+            if (FindVisualDescendant<T>(child) is { } nested)
             {
-                yield return nested;
+                return nested;
             }
         }
+
+        return null;
     }
 
     private sealed class Entry(TabViewItem tab, LayoutContent? model)

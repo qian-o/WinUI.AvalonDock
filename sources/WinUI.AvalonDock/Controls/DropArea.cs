@@ -70,8 +70,27 @@ internal static class FloatingDropAreaRules
             return true;
         }
 
-        LayoutAnchorable[] anchorables = tools.RootPanel?.Descendents().OfType<LayoutAnchorable>().ToArray() ?? [];
-        return anchorables.Length > 0 && anchorables.All(item => item.CanDockAsTabbedDocument);
+        if (tools.RootPanel == null)
+        {
+            return false;
+        }
+
+        bool hasAnchorable = false;
+        foreach (ILayoutElement element in tools.RootPanel.Descendents())
+        {
+            if (element is not LayoutAnchorable anchorable)
+            {
+                continue;
+            }
+
+            hasAnchorable = true;
+            if (!anchorable.CanDockAsTabbedDocument)
+            {
+                return false;
+            }
+        }
+
+        return hasAnchorable;
     }
 
     internal static bool IsDocumentDropTarget(DropTargetType type) => type is

@@ -29,4 +29,8 @@
 
 ## 构建与工作树
 
-本轮修复后解决方案 Debug 构建为 0 警告、0 错误；Classic、ToggleDocking、Mvvm 三个实际窗口 smoke 均通过。自定义模板、Toggle 优先级及 MVVM 策略的新增真实窗口 smoke 也分别通过；新增代码后完整解决方案再次构建为 0 警告、0 错误，`dotnet format whitespace --verify-no-changes` 与 `git diff --check` 通过。验收截图、日志和上游可执行文件都保存在仓库外的临时目录。当前修改均留在工作树，未提交、推送或发布。
+功能验收基线之上，正在进行封板前的代码整理。拖拽路径合并每帧目标测量并复用区域/覆盖层工作缓冲，窗格与标签布局减少重复遍历和资源字典加载；调整尺寸时跳过相同预览矩形的原生窗口更新；Toggle 图标和区域覆盖层避免无变化时重复重建。`LayoutItem`、Windows 窗口宿主和 Toggle 管理器按职责拆分，公共接口、事件顺序和停靠规则保持。样式提取共用 Setter，并对照展开后的有效样式与模板树。
+
+最终职责拆分后的解决方案 Debug 构建为 0 警告、0 错误；Classic、ToggleDocking、Mvvm 三个实际 WinUI 窗口 smoke 分别 57、17、18 条通过，报告无失败项。Classic 再次覆盖 24 条目标、纵横分组变化、空文档组及目标门控；Toggle 覆盖六区、三种布局优先级；MVVM 覆盖内容集合、窗口策略与 XML 恢复。`dotnet format whitespace --verify-no-changes` 和 `git diff --check` 均通过。日志位于仓库外 `%TEMP%/WinUI.AvalonDock-optimization-20260928/`。代码未提交、推送或发布。
+
+仍有按实时几何要求执行的覆盖层 `Measure/Arrange/UpdateLayout` 和每帧目标快照分配；本轮没有可比的前后帧率数据，不宣称量化的流畅度提升。后续若要进一步压缩这两处成本，应先记录拖拽期间的帧时间及目标变化，再保留动态布局的正确性做针对性修改。

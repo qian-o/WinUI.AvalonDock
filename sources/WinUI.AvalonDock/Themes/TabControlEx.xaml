@@ -100,18 +100,20 @@
             </Setter.Value>
         </Setter>
     </Style>
-    <Style x:Key="AvalonDockTabControlExStyle" TargetType="controls:TabControlEx">
+    <Style x:Key="AvalonDockPaneTabControlBaseStyle" TargetType="controls:TabControlEx">
         <Setter Property="VerticalAlignment" Value="Stretch" />
         <Setter Property="FontSize" Value="12" />
         <Setter Property="BorderBrush" Value="{ThemeResource CardStrokeColorDefaultBrush}" />
         <Setter Property="BorderThickness" Value="1" />
         <Setter Property="CornerRadius" Value="4" />
+        <Setter Property="IsTabStop" Value="False" />
+        <Setter Property="KeyboardAcceleratorPlacementMode" Value="Hidden" />
+    </Style>
+    <Style x:Key="AvalonDockTabControlExStyle" TargetType="controls:TabControlEx" BasedOn="{StaticResource AvalonDockPaneTabControlBaseStyle}">
         <!-- Native outer/scroll rails (2+2) and ItemsPresenter header (4) supply
              eight units of WPFUI's twelve-unit leading tab-strip inset. -->
         <Setter Property="Padding" Value="4,6,0,0" />
-        <Setter Property="IsTabStop" Value="False" />
         <Setter Property="Background" Value="{ThemeResource DockDocumentSurfaceBrush}" />
-        <Setter Property="KeyboardAcceleratorPlacementMode" Value="Hidden" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="controls:TabControlEx">
@@ -172,16 +174,9 @@
             </Setter.Value>
         </Setter>
     </Style>
-    <Style x:Key="AvalonDockToggleTabControlExStyle" TargetType="controls:TabControlEx">
-        <Setter Property="VerticalAlignment" Value="Stretch" />
-        <Setter Property="FontSize" Value="12" />
-        <Setter Property="BorderBrush" Value="{ThemeResource CardStrokeColorDefaultBrush}" />
-        <Setter Property="BorderThickness" Value="1" />
-        <Setter Property="CornerRadius" Value="4" />
+    <Style x:Key="AvalonDockToggleTabControlExStyle" TargetType="controls:TabControlEx" BasedOn="{StaticResource AvalonDockPaneTabControlBaseStyle}">
         <Setter Property="Padding" Value="4,0,4,6" />
-        <Setter Property="IsTabStop" Value="False" />
         <Setter Property="Background" Value="{ThemeResource SolidBackgroundFillColorTertiaryBrush}" />
-        <Setter Property="KeyboardAcceleratorPlacementMode" Value="Hidden" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="controls:TabControlEx">

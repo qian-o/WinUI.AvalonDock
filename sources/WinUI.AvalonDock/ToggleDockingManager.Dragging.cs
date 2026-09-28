@@ -76,8 +76,8 @@ public partial class ToggleDockingManager
             MoveAnchorableToZone(tool, zone.Value);
         }
     }
-    private bool IsZoneSourceValid() => !IsDisposed && IsLoaded && zoneSource?.Root?.Manager == this && !IsDetached(zoneSource)
-        && !zoneSource.IsHidden && Layout.Descendents().Contains(zoneSource);
+    private bool IsZoneSourceValid() => !IsDisposed && IsLoaded && zoneSource != null
+        && ReferenceEquals(zoneSource.Root, Layout) && !IsDetached(zoneSource) && !zoneSource.IsHidden;
     private void OnZoneLayoutUpdated(object? sender, object args)
     {
         if (zoneInput == null)

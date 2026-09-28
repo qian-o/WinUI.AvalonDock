@@ -4,6 +4,7 @@ using System.Runtime.CompilerServices;
 using System.Windows.Input;
 using AvalonDock.Converters;
 using AvalonDock.Layout;
+using Microsoft.UI.Dispatching;
 using Microsoft.UI.Input;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation;
@@ -19,8 +20,10 @@ internal sealed class LayoutPanePresenter : IDisposable
 {
     private static readonly PointerEventHandler documentTabPointerPressed = OnDocumentTabPointerPressed;
     private static readonly ConditionalWeakTable<ILayoutRoot, ConditionalWeakTable<ILayoutElement, WeakReference<LayoutContent?>>> NativeSelections = new();
+    private static readonly ConditionalWeakTable<DispatcherQueue, PaneStyles> StylesByDispatcher = new();
     private readonly TabControlEx tabs;
     private readonly ILayoutElement pane;
+    private readonly PaneStyles styles;
     private readonly List<(LayoutContent Model, TabViewItem Tab, Control Header, Control Content)> items = [];
     private readonly List<(DependencyProperty Property, long Token)> managerSubscriptions = [];
     private DockingManager? manager;
@@ -29,13 +32,11 @@ internal sealed class LayoutPanePresenter : IDisposable
     private bool attached;
     private bool disposed;
     private readonly WeakReference<LayoutContent?> nativeSelectedContent;
-    private readonly ResourceDictionary contentStyles = new() { Source = new Uri("ms-appx:///WinUI.AvalonDock/Themes/AnchorableContent.xaml") };
-    private readonly ResourceDictionary tabStyles = new() { Source = new Uri("ms-appx:///WinUI.AvalonDock/Themes/TabItem.xaml") };
-
     internal LayoutPanePresenter(TabControlEx tabs, ILayoutElement pane)
     {
         this.tabs = tabs;
         this.pane = pane;
+        styles = StylesByDispatcher.GetValue(tabs.DispatcherQueue, static _ => new PaneStyles());
         nativeSelectedContent = pane.Root == null ? new WeakReference<LayoutContent?>(null)
             : NativeSelections.GetValue(pane.Root, _ => new()).GetValue(pane, _ => new(null));
         tabs.NativeSelectionChanged = OnSelectionChanged;
@@ -163,9 +164,10 @@ internal sealed class LayoutPanePresenter : IDisposable
         try
         {
             LayoutContent[] contents = ((ILayoutContainer)pane).Children.OfType<LayoutContent>().ToArray();
+            HashSet<LayoutContent> currentModels = new(contents, System.Collections.Generic.ReferenceEqualityComparer.Instance);
             foreach ((LayoutContent Model, TabViewItem Tab, Control Header, Control Content) entry in items.ToArray())
             {
-                if (contents.Any(model => ReferenceEquals(model, entry.Model)))
+                if (currentModels.Contains(entry.Model))
                 {
                     continue;
                 }
@@ -173,6 +175,12 @@ internal sealed class LayoutPanePresenter : IDisposable
                 ReleaseItem(entry);
                 tabs.TabItems.Remove(entry.Tab);
                 items.Remove(entry);
+            }
+            Dictionary<LayoutContent, (LayoutContent Model, TabViewItem Tab, Control Header, Control Content)> entriesByModel =
+                new(System.Collections.Generic.ReferenceEqualityComparer.Instance);
+            foreach ((LayoutContent Model, TabViewItem Tab, Control Header, Control Content) entry in items)
+            {
+                entriesByModel.Add(entry.Model, entry);
             }
             for (int index = 0; index < contents.Length; index++)
             {
@@ -183,68 +191,18 @@ internal sealed class LayoutPanePresenter : IDisposable
                     continue;
                 }
 
-                (LayoutContent Model, TabViewItem Tab, Control Header, Control Content) entry = items.FirstOrDefault(entry => ReferenceEquals(entry.Model, model));
-                if (entry.Model == null)
+                if (!entriesByModel.TryGetValue(model, out (LayoutContent Model, TabViewItem Tab, Control Header, Control Content) entry))
                 {
-                    Control header = pane is LayoutAnchorablePane
-                        ? new LayoutAnchorableTabItem { Model = model }
-                        : new LayoutDocumentTabItem { Model = model };
-                    ApplyHeaderTemplate(header, model);
-                    Control content = pane is LayoutAnchorablePane && model is LayoutAnchorable tool
-                        ? new LayoutAnchorableControl { Model = tool }
-                        : new LayoutDocumentControl { Model = model };
-                    if (content is LayoutAnchorableControl && manager is ToggleDockingManager)
-                    {
-                        content.Style = (Style)contentStyles["DockToggleAnchorableContentStyle"];
-                    }
-
-                    TabViewItem tab = new()
-                    {
-                        Header = header,
-                        Content = content,
-                        Tag = model,
-                        IsClosable = pane is LayoutDocumentPane && (model.CanClose || model is LayoutAnchorable { CanHide: true })
-                    };
-                    tab.SetBinding(Control.IsEnabledProperty, new Binding
-                    {
-                        Source = model,
-                        Path = new PropertyPath(nameof(LayoutContent.IsEnabled)),
-                        Mode = BindingMode.OneWay
-                    });
-                    tab.SetBinding(AutomationProperties.NameProperty, new Binding
-                    {
-                        Source = model,
-                        Path = new PropertyPath(nameof(LayoutContent.Title)),
-                        Mode = BindingMode.OneWay
-                    });
-                    if (pane is LayoutDocumentPane && model is LayoutDocument)
-                    {
-                        tab.SetBinding(UIElement.VisibilityProperty, new Binding
-                        {
-                            Source = model,
-                            Path = new PropertyPath(nameof(LayoutDocument.IsVisible)),
-                            Converter = new BoolToVisibilityConverter(),
-                            Mode = BindingMode.OneWay
-                        });
-                    }
-                    // Original ItemContainerStyle belongs to the pane. Keep that style identity
-                    // while native list reordering briefly removes the container from its resource scope.
-                    tab.Style = (Style)tabStyles[pane is LayoutAnchorablePane ? "AvalonDockReferenceToolTabItemStyle" : "AvalonDockReferenceTabItemStyle"];
-                    tab.Loaded += OnTabLoaded;
-                    if (pane is LayoutDocumentPane)
-                    {
-                        tab.AddHandler(UIElement.PointerPressedEvent, documentTabPointerPressed, true);
-                    }
-                    model.PropertyChanged += OnContentPropertyChanged;
-                    entry = (model, tab, header, content);
+                    entry = CreateItem(model);
                     items.Add(entry);
+                    entriesByModel.Add(model, entry);
                 }
-                int currentIndex = tabs.TabItems.IndexOf(entry.Tab);
-                if (currentIndex == index)
+                if (index < tabs.TabItems.Count && ReferenceEquals(tabs.TabItems[index], entry.Tab))
                 {
                     continue;
                 }
 
+                int currentIndex = tabs.TabItems.IndexOf(entry.Tab);
                 if (currentIndex >= 0)
                 {
                     tabs.TabItems.RemoveAt(currentIndex);
@@ -268,6 +226,72 @@ internal sealed class LayoutPanePresenter : IDisposable
             tabs.EndItemsUpdate();
             synchronizing = false;
         }
+    }
+
+    private (LayoutContent Model, TabViewItem Tab, Control Header, Control Content) CreateItem(LayoutContent model)
+    {
+        Control header = pane is LayoutAnchorablePane
+            ? new LayoutAnchorableTabItem { Model = model }
+            : new LayoutDocumentTabItem { Model = model };
+        ApplyHeaderTemplate(header, model);
+        Control content = pane is LayoutAnchorablePane && model is LayoutAnchorable tool
+            ? new LayoutAnchorableControl { Model = tool }
+            : new LayoutDocumentControl { Model = model };
+        if (content is LayoutAnchorableControl && manager is ToggleDockingManager)
+        {
+            content.Style = styles.ToggleContent;
+        }
+
+        TabViewItem tab = new()
+        {
+            Header = header,
+            Content = content,
+            Tag = model,
+            IsClosable = pane is LayoutDocumentPane && (model.CanClose || model is LayoutAnchorable { CanHide: true })
+        };
+        tab.SetBinding(Control.IsEnabledProperty, new Binding
+        {
+            Source = model,
+            Path = new PropertyPath(nameof(LayoutContent.IsEnabled)),
+            Mode = BindingMode.OneWay
+        });
+        tab.SetBinding(AutomationProperties.NameProperty, new Binding
+        {
+            Source = model,
+            Path = new PropertyPath(nameof(LayoutContent.Title)),
+            Mode = BindingMode.OneWay
+        });
+        if (pane is LayoutDocumentPane && model is LayoutDocument)
+        {
+            tab.SetBinding(UIElement.VisibilityProperty, new Binding
+            {
+                Source = model,
+                Path = new PropertyPath(nameof(LayoutDocument.IsVisible)),
+                Converter = new BoolToVisibilityConverter(),
+                Mode = BindingMode.OneWay
+            });
+        }
+        // A pane owns its tab style even while native reordering detaches the container.
+        tab.Style = pane is LayoutAnchorablePane ? styles.ToolTab : styles.DocumentTab;
+        tab.Loaded += OnTabLoaded;
+        if (pane is LayoutDocumentPane)
+        {
+            tab.AddHandler(UIElement.PointerPressedEvent, documentTabPointerPressed, true);
+        }
+        model.PropertyChanged += OnContentPropertyChanged;
+        return (model, tab, header, content);
+    }
+
+    private sealed class PaneStyles
+    {
+        // One dictionary pair per UI dispatcher avoids reparsing both XAML files for
+        // every pane constructed while content moves between docked and floating hosts.
+        private readonly ResourceDictionary content = new() { Source = new Uri("ms-appx:///WinUI.AvalonDock/Themes/AnchorableContent.xaml") };
+        private readonly ResourceDictionary tabs = new() { Source = new Uri("ms-appx:///WinUI.AvalonDock/Themes/TabItem.xaml") };
+
+        internal Style ToggleContent => (Style)content["DockToggleAnchorableContentStyle"];
+        internal Style ToolTab => (Style)tabs["AvalonDockReferenceToolTabItemStyle"];
+        internal Style DocumentTab => (Style)tabs["AvalonDockReferenceTabItemStyle"];
     }
 
     private static void ApplyHeaderTemplate(Control headerControl, LayoutContent model)

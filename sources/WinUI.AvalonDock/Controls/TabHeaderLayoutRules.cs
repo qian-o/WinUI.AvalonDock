@@ -20,18 +20,20 @@ internal static class TabHeaderLayoutRules
         return count;
     }
 
-    internal static double[] ToolWidths(IReadOnlyList<double> desired, double available)
+    internal static void FillToolWidths(IReadOnlyList<double> desired, double available, List<double> output)
     {
-        if (desired.Count == 0)
+        output.Clear();
+        double sum = 0;
+        for (int index = 0; index < desired.Count; index++)
         {
-            return [];
+            sum += desired[index];
         }
 
-        if (desired.Sum() <= available)
+        bool fit = sum <= available;
+        double compressedWidth = desired.Count == 0 ? 0 : available / desired.Count;
+        for (int index = 0; index < desired.Count; index++)
         {
-            return desired.ToArray();
+            output.Add(fit ? desired[index] : compressedWidth);
         }
-
-        return Enumerable.Repeat(available / desired.Count, desired.Count).ToArray();
     }
 }

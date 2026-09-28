@@ -9,6 +9,8 @@ namespace AvalonDock.Controls;
 
 public partial class OverlayWindow
 {
+    private readonly List<LayoutContent> duplicateTargetContents = [];
+    private readonly List<LayoutContent> duplicateSourceContents = [];
     private Grid? gridDockingManagerDropTargets;
     private Grid? gridAnchorablePaneDropTargets;
     private Grid? gridDocumentPaneDropTargets;
@@ -583,11 +585,24 @@ public partial class OverlayWindow
         }
 
         Rect localBounds = GetNativeAreaBounds(area);
-        Canvas.SetLeft(areaElement, localBounds.Left);
-        Canvas.SetTop(areaElement, localBounds.Top);
-        areaElement.Width = localBounds.Width;
-        areaElement.Height = localBounds.Height;
-        areaElement.Visibility = Visibility.Visible;
+        if (Canvas.GetLeft(areaElement) != localBounds.Left)
+        {
+            Canvas.SetLeft(areaElement, localBounds.Left);
+        }
+        if (Canvas.GetTop(areaElement) != localBounds.Top)
+        {
+            Canvas.SetTop(areaElement, localBounds.Top);
+        }
+        if (areaElement.Width != localBounds.Width)
+        {
+            areaElement.Width = localBounds.Width;
+        }
+        if (areaElement.Height != localBounds.Height)
+        {
+            areaElement.Height = localBounds.Height;
+        }
+        SetNativeTargetVisibility(areaElement, Visibility.Visible);
+        preparedGroups.Add(areaElement);
     }
     private void SetDropTargetIntoVisibility(ILayoutPositionableElement? positionableElement)
     {
@@ -606,17 +621,26 @@ public partial class OverlayWindow
         }
 
         // Find all content layouts in the anchorable pane (object to drop on)
-        List<LayoutContent> contentLayoutsOnPositionableElementPane = GetAllLayoutContents(positionableElement);
+        duplicateTargetContents.Clear();
+        GetAllLayoutContents(positionableElement, duplicateTargetContents);
 
         // Find all content layouts in the floating window (object to drop)
-        List<LayoutContent> contentLayoutsOnFloatingWindow = GetAllLayoutContents(floatingWindow.Model);
+        duplicateSourceContents.Clear();
+        GetAllLayoutContents(floatingWindow.Model, duplicateSourceContents);
 
         // If any of the content layouts is present in the drop area, then disable the DropTargetInto button.
-        foreach (LayoutContent content in contentLayoutsOnFloatingWindow)
+        foreach (LayoutContent content in duplicateSourceContents)
         {
-            if (!contentLayoutsOnPositionableElementPane.Any(item =>
-                item.Title == content.Title &&
-                item.ContentId == content.ContentId))
+            bool duplicate = false;
+            foreach (LayoutContent existing in duplicateTargetContents)
+            {
+                if (existing.Title == content.Title && existing.ContentId == content.ContentId)
+                {
+                    duplicate = true;
+                    break;
+                }
+            }
+            if (!duplicate)
             {
                 continue;
             }
@@ -633,68 +657,19 @@ public partial class OverlayWindow
             break;
         }
     }
-    private List<LayoutContent> GetAllLayoutContents(object source)
+    private static void GetAllLayoutContents(object source, List<LayoutContent> result)
     {
-        List<LayoutContent> result = new();
-
-        if (source is LayoutDocumentFloatingWindow documentFloatingWindow)
+        if (source is LayoutContent content)
         {
-            foreach (ILayoutElement layoutElement in documentFloatingWindow.Children)
+            result.Add(content);
+        }
+        else if (source is LayoutDocumentFloatingWindow or LayoutAnchorableFloatingWindow
+            or LayoutDocumentPaneGroup or LayoutAnchorablePaneGroup or LayoutDocumentPane or LayoutAnchorablePane)
+        {
+            foreach (ILayoutElement child in ((ILayoutContainer)source).Children)
             {
-                result.AddRange(GetAllLayoutContents(layoutElement));
+                GetAllLayoutContents(child, result);
             }
         }
-
-        if (source is LayoutAnchorableFloatingWindow anchorableFloatingWindow)
-        {
-            foreach (ILayoutElement layoutElement in anchorableFloatingWindow.Children)
-            {
-                result.AddRange(GetAllLayoutContents(layoutElement));
-            }
-        }
-
-        if (source is LayoutDocumentPaneGroup documentPaneGroup)
-        {
-            foreach (ILayoutDocumentPane layoutDocumentPane in documentPaneGroup.Children)
-            {
-                result.AddRange(GetAllLayoutContents(layoutDocumentPane));
-            }
-        }
-
-        if (source is LayoutAnchorablePaneGroup anchorablePaneGroup)
-        {
-            foreach (ILayoutAnchorablePane layoutDocumentPane in anchorablePaneGroup.Children)
-            {
-                result.AddRange(GetAllLayoutContents(layoutDocumentPane));
-            }
-        }
-
-        if (source is LayoutDocumentPane documentPane)
-        {
-            foreach (LayoutContent layoutContent in documentPane.Children)
-            {
-                result.Add(layoutContent);
-            }
-        }
-
-        if (source is LayoutAnchorablePane anchorablePane)
-        {
-            foreach (LayoutAnchorable layoutContent in anchorablePane.Children)
-            {
-                result.Add(layoutContent);
-            }
-        }
-
-        if (source is LayoutDocument document)
-        {
-            result.Add(document);
-        }
-
-        if (source is LayoutAnchorable anchorable)
-        {
-            result.Add(anchorable);
-        }
-
-        return result;
     }
 }
