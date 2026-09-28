@@ -2,7 +2,7 @@
 
 WinUI.AvalonDock 是将 [Dirkster.AvalonDock v5.0.0](https://github.com/Dirkster99/AvalonDock/tree/408dc2896e2f41f3bb79a15207f160edee8a6792) 迁移到 WinUI 3 的非官方项目。目标是让 WinUI 应用沿用 AvalonDock 的布局树、停靠逻辑和常用接入方式，创建带文档、工具窗格、浮动窗口和可保存布局的桌面工作区。
 
-项目直接使用 `Dirkster.AvalonDock.Core`，并以 [AvalonDock.Themes.WPFUI](https://github.com/qian-o/AvalonDock.Themes.WPFUI/tree/ffff79aefd2139c34a3a87a0f1059bb036f1a0dc) 作为默认外观参考。WPF 控件和窗口机制由 WinUI 3 的控件及 Windows 窗口能力承载。
+项目直接使用 `Dirkster.AvalonDock.Core`，并以 [AvalonDock.Themes.WPFUI](https://github.com/qian-o/AvalonDock.Themes.WPFUI/tree/fc0592716eb6e3de2c2becdbc48e67de6e331474) 作为默认外观参考。WPF 控件和窗口机制由 WinUI 3 的控件及 Windows 窗口能力承载。
 
 当前运行目标是 Windows；平台接口已为以后接入 Uno 留出位置，现阶段不提供 Uno 实现。共享停靠逻辑只依赖 `IPlatformServices`、`IKeyboardInputService` 和 `IChildWindowHostOwner` 等语义接口；Win32、HWND、窗口 subclass、DesktopWindowXamlSource、坐标转换和原生键盘状态集中在 `Platforms/Windows` provider。宿主永久移除 `DockingManager` 时应在 UI 线程调用 `Dispose()`；临时视觉树卸载不需要调用它。
 

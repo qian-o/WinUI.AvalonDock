@@ -61,7 +61,7 @@ SOFTWARE.
 
 ## AvalonDock.Themes.WPFUI 外观
 
-`sources/WinUI.AvalonDock/Themes/` 下的停靠资源、窗格和标签模板、自动隐藏、导航器、浮动窗口与覆盖层，以及 `Controls/DockPaneSurface.cs` 和 `Controls/ToggleDockDragOverlay.cs`，改编了 [固定版本的 AvalonDock.Themes.WPFUI](https://github.com/qian-o/AvalonDock.Themes.WPFUI/tree/ffff79aefd2139c34a3a87a0f1059bb036f1a0dc) 的视觉结构、尺寸和部分图形路径。WinUI 原生状态和控件机制替代 WPF 专用的触发器与绘制接口。改编部分适用下列 MIT 许可。
+`sources/WinUI.AvalonDock/Themes/` 下的停靠资源、窗格和标签模板、自动隐藏、导航器、浮动窗口与覆盖层，以及 `Controls/DockPaneSurface.cs` 和 `Controls/ToggleDockDragOverlay.cs`，改编了 [固定版本的 AvalonDock.Themes.WPFUI](https://github.com/qian-o/AvalonDock.Themes.WPFUI/tree/fc0592716eb6e3de2c2becdbc48e67de6e331474) 的视觉结构、尺寸和部分图形路径。WinUI 原生状态和控件机制替代 WPF 专用的触发器与绘制接口。改编部分适用下列 MIT 许可。
 
 MIT License
 

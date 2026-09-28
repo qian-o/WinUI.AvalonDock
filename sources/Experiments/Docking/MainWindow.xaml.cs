@@ -329,6 +329,60 @@ public sealed partial class MainWindow : Window
         SampleChecks.Require(!floatingTool.IsFloating && !Manager.IsDetached(floatingTool), "工具菜单可将标准浮动工具停靠回原布局。");
         checks.Record("Classic 工具菜单标准浮动和停靠通过。");
 
+        LayoutAnchorable[] pairedTools = Manager.Layout.Descendents().OfType<LayoutAnchorable>().ToArray();
+        SampleChecks.Require(pairedTools.Length == 2 && ReferenceEquals(pairedTools[0].Parent, pairedTools[1].Parent),
+            "Classic 两个初始工具共享一个窗格。");
+        LayoutAnchorablePane homePane = (LayoutAnchorablePane)pairedTools[0].Parent!;
+        LayoutAnchorableFloatingWindowControl pairedFloating = Manager.CreateFloatingWindow(pairedTools[0], false)
+            as LayoutAnchorableFloatingWindowControl
+            ?? throw new InvalidOperationException("Classic 工具浮动窗口未创建。");
+        LayoutAnchorablePane floatingPane = (pairedFloating.Model as LayoutAnchorableFloatingWindow)?.SinglePane as LayoutAnchorablePane
+            ?? throw new InvalidOperationException("Classic 工具浮动窗口没有窗格。");
+        floatingPane.Children.Add(pairedTools[1]);
+        pairedFloating.Show();
+        SampleChecks.Require((pairedFloating.Model as LayoutAnchorableFloatingWindow)?.SinglePane is LayoutAnchorablePane { ChildrenCount: 2 },
+            "Classic 两个工具共处同一浮动窗格。");
+        await SampleChecks.SettleAsync();
+        FrameworkElement? floatingRoot = pairedFloating.Content?.GetType().GetProperty("Content")?
+            .GetValue(pairedFloating.Content) as FrameworkElement;
+        LayoutAnchorablePaneControl? floatingTabs = floatingRoot
+            .FindVisualChildren<LayoutAnchorablePaneControl>().FirstOrDefault();
+        FrameworkElement? paneFill = floatingTabs?.FindVisualChildren<FrameworkElement>()
+            .FirstOrDefault(surface => surface.Name == "PaneFill");
+        FrameworkElement? paneOutline = floatingTabs?.FindVisualChildren<FrameworkElement>()
+            .FirstOrDefault(surface => surface.Name == "PaneBorder");
+        FrameworkElement? tabStrip = floatingTabs?.FindVisualChildren<FrameworkElement>()
+            .FirstOrDefault(element => element.Name == "TabContainerGrid");
+        global::Microsoft.UI.Xaml.Shapes.Path? fillPath = paneFill?.FindVisualChildren<global::Microsoft.UI.Xaml.Shapes.Path>().FirstOrDefault();
+        global::Microsoft.UI.Xaml.Shapes.Path? outlinePath = paneOutline?.FindVisualChildren<global::Microsoft.UI.Xaml.Shapes.Path>().FirstOrDefault();
+        SampleChecks.Require(floatingTabs is not null && floatingTabs.TabItems.Count == 2
+            && floatingTabs.Model is LayoutAnchorablePane { IsDirectlyHostedInFloatingWindow: true, ChildrenCount: 2 }
+            && tabStrip?.Visibility == Visibility.Visible && paneFill is not null && paneOutline is not null
+            && paneFill is Grid { CornerRadius: { TopLeft: > 0 } }
+            && paneOutline is Grid { CornerRadius: { TopLeft: > 0 } }
+            && fillPath?.Fill is not null && fillPath.Stroke is null && outlinePath?.Fill is null
+            && outlinePath?.Stroke is not null
+            && Canvas.GetZIndex(paneOutline) > Canvas.GetZIndex(paneFill),
+            "Classic 双工具浮动窗格保留两标签、圆角描边和上层轮廓。");
+        pairedTools[0].IsActive = true;
+        await SampleChecks.SettleAsync();
+        SampleChecks.Require(outlinePath!.Stroke is SolidColorBrush activeStroke && activeStroke.Color.A > 0
+            && floatingTabs!.BorderBrush is SolidColorBrush inactiveStroke && activeStroke.Color != inactiveStroke.Color,
+            "Classic 双工具浮动窗格的活动描边可见。");
+        checks.Record("Classic 双工具共用浮动窗格外观通过。");
+        homePane.Children.Add(pairedTools[1]);
+        await SampleChecks.SettleAsync();
+        SampleChecks.Require(floatingPane.ChildrenCount == 1 && floatingTabs!.TabItems.Count == 1
+            && tabStrip!.Visibility == Visibility.Collapsed
+            && paneOutline is Grid { CornerRadius: { TopLeft: 0 } }
+            && paneFill is Grid { CornerRadius: { TopLeft: 0 } }
+            && outlinePath.Stroke is SolidColorBrush singleStroke && singleStroke.Color.A == 0,
+            "Classic 双工具浮动窗格缩回单工具时隐藏标签与轮廓。");
+        pairedTools[0].Dock();
+        await SampleChecks.SettleAsync();
+        SampleChecks.Require(pairedTools.All(tool => !tool.IsFloating) && Manager.Layout.Descendents().OfType<LayoutAnchorable>().Count() == 2,
+            "Classic 双工具浮动后可停靠回主布局。");
+
         AddDocument_Click(this, new RoutedEventArgs());
         await SampleChecks.SettleAsync();
         SampleChecks.Require(documents.Count == 3, "DocumentsSource Add 已生效。");

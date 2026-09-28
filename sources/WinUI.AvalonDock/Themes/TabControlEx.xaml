@@ -201,9 +201,9 @@
                                     <Setter Target="TabContainerGrid.Visibility" Value="Collapsed" />
                                 </VisualState.Setters></VisualState>
                             </VisualStateGroup>
-                            <VisualStateGroup x:Name="ToolHostStates">
-                                <VisualState x:Name="DockedTool" />
-                                <VisualState x:Name="FloatingTool"><VisualState.Setters>
+                            <VisualStateGroup x:Name="ToolOutlineStates">
+                                <VisualState x:Name="OutlinedToolPane" />
+                                <VisualState x:Name="SingleFloatingToolPane"><VisualState.Setters>
                                     <Setter Target="PaneBorder.Stroke" Value="Transparent" />
                                     <Setter Target="PaneBorder.CornerRadius" Value="0" />
                                 </VisualState.Setters></VisualState>
@@ -224,7 +224,10 @@
                                 </VisualState>
                             </VisualStateGroup>
                         </VisualStateManager.VisualStateGroups>
-                        <controls:DockPaneSurface x:Name="PaneBorder" Grid.RowSpan="3" Fill="{TemplateBinding Background}" Stroke="{TemplateBinding BorderBrush}" />
+                        <controls:DockPaneSurface x:Name="PaneFill" Grid.RowSpan="3" Fill="{TemplateBinding Background}"
+                                                  CornerRadius="{Binding CornerRadius, ElementName=PaneBorder}" />
+                        <controls:DockPaneSurface x:Name="PaneBorder" Grid.RowSpan="3" Canvas.ZIndex="1"
+                                                  Stroke="{TemplateBinding BorderBrush}" />
                         <Grid Grid.Row="2" x:Name="TabContainerGrid" Background="Transparent" XYFocusKeyboardNavigation="Enabled">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto" MinWidth="2" x:Name="LeftContentColumn" />

@@ -161,6 +161,10 @@ public class TabControlEx : TabView
             nativeList.ContainerContentChanging -= OnContainerContentChanging;
         }
         base.OnApplyTemplate();
+        if (GetTemplateChild("PaneFill") is DockPaneSurface fill)
+        {
+            fill.Attach(this, GetTemplateChild("ContentPanel") as FrameworkElement);
+        }
         if (GetTemplateChild("PaneBorder") is DockPaneSurface surface)
         {
             surface.Attach(this, GetTemplateChild("ContentPanel") as FrameworkElement);
@@ -184,11 +188,16 @@ public class TabControlEx : TabView
     internal void UpdatePaneActiveState()
     {
         LayoutAnchorablePane? tool = (this as LayoutAnchorablePaneControl)?.Model as LayoutAnchorablePane;
+        bool singleFloatingTool = tool?.IsDirectlyHostedInFloatingWindow == true && tool.ChildrenCount == 1;
         VisualStateManager.GoToState(this, SelectedItem is TabViewItem { Tag: LayoutContent { IsActive: true } }
-            && tool?.IsDirectlyHostedInFloatingWindow != true ? "PaneActive" : "PaneInactive", false);
+            && !singleFloatingTool ? "PaneActive" : "PaneInactive", false);
         VisualStateManager.GoToState(this, tool?.ChildrenCount == 0 ? "EmptyTool"
             : tool?.ChildrenCount == 1 ? "SingleTool" : "MultipleTools", false);
-        VisualStateManager.GoToState(this, tool?.IsDirectlyHostedInFloatingWindow == true ? "FloatingTool" : "DockedTool", false);
+        if (GetTemplateChild("PaneFrame") is not null)
+        {
+            VisualStateManager.GoToState(this, tool?.IsDirectlyHostedInFloatingWindow == true ? "FloatingTool" : "DockedTool", false);
+        }
+        VisualStateManager.GoToState(this, singleFloatingTool ? "SingleFloatingToolPane" : "OutlinedToolPane", false);
     }
     internal bool IsTabStripCollapsed => GetTemplateChild("TabContainerGrid") is FrameworkElement { Visibility: Visibility.Collapsed };
     private void AttachDocumentMenu()
