@@ -256,14 +256,16 @@
                               </VisualState>
                           </VisualStateGroup>
                       </VisualStateManager.VisualStateGroups>
-                      <ContentPresenter x:Name="HeaderContent"
-                        Content="{TemplateBinding Content}"
-                        ContentTemplate="{TemplateBinding ContentTemplate}"
-                        ContentTemplateSelector="{TemplateBinding ContentTemplateSelector}"
-                        HorizontalAlignment="Stretch"
-                        VerticalAlignment="Stretch"
-                        HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
-                        VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}" />
+                      <Grid Background="Transparent" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+                          <ContentPresenter x:Name="HeaderContent"
+                            Content="{TemplateBinding Content}"
+                            ContentTemplate="{TemplateBinding ContentTemplate}"
+                            ContentTemplateSelector="{TemplateBinding ContentTemplateSelector}"
+                            HorizontalAlignment="Stretch"
+                            VerticalAlignment="Stretch"
+                            HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                            VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}" />
+                      </Grid>
                     </controls:DropDownControlArea>
                 </ControlTemplate>
             </Setter.Value>

@@ -12,28 +12,18 @@ namespace AvalonDock.Controls;
 /// <typeparam name="T">The framework element that presents the region.</typeparam>
 public class DropArea<T> : IDropArea where T : FrameworkElement
 {
+    private readonly Rect capturedDetectionRect;
+
     internal DropArea(T areaElement, DropAreaType type)
     {
         AreaElement = areaElement;
         Type = type;
-        if (PlatformServices.Coordinates.TryGetScreenBounds(areaElement, out Rect physicalBounds))
-        {
-            Point topLeft = TransformToDeviceDPI(new Point(physicalBounds.Left, physicalBounds.Top));
-            Point bottomRight = TransformToDeviceDPI(new Point(physicalBounds.Right, physicalBounds.Bottom));
-            DetectionRect = new Rect(topLeft, bottomRight);
-        }
-        else
-        {
-            // Upstream uses the measured extent at the origin before presentation is connected.
-            DetectionRect = new Rect(0, 0, areaElement.ActualWidth, areaElement.ActualHeight);
-        }
+        // Retain the original fallback for an area not yet connected to a host.
+        capturedDetectionRect = GetCurrentDetectionRect() ?? new Rect(0, 0, areaElement.ActualWidth, areaElement.ActualHeight);
     }
 
     /// <inheritdoc/>
-    public Rect DetectionRect
-    {
-        get;
-    }
+    public Rect DetectionRect => GetCurrentDetectionRect() ?? capturedDetectionRect;
 
     /// <inheritdoc/>
     public DropAreaType Type
@@ -53,6 +43,18 @@ public class DropArea<T> : IDropArea where T : FrameworkElement
     public T AreaElement
     {
         get;
+    }
+
+    private Rect? GetCurrentDetectionRect()
+    {
+        if (!AreaElement.IsLoaded || !PlatformServices.Coordinates.TryGetScreenBounds(AreaElement, out Rect physicalBounds))
+        {
+            return null;
+        }
+
+        Point topLeft = TransformToDeviceDPI(new Point(physicalBounds.Left, physicalBounds.Top));
+        Point bottomRight = TransformToDeviceDPI(new Point(physicalBounds.Right, physicalBounds.Bottom));
+        return new Rect(topLeft, bottomRight);
     }
 }
 

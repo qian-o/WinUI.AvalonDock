@@ -123,16 +123,8 @@ public partial class ToggleDockingManager
         {
             Text = "View Mode"
         };
-        modes.Items.Add(MenuItem("Float", () =>
-        {
-            ReattachAnchorable(anchorable);
-            if (anchorable.IsAutoHidden)
-            {
-                anchorable.ToggleSingleAutoHide();
-            }
-
-            GetLayoutItemFromModel(anchorable)?.FloatCommand?.Execute(null);
-        }, AllowFloatingWindows));
+        modes.Items.Add(MenuItem("Float", () => FloatAnchorableFromMenu(anchorable),
+            AllowFloatingWindows && GetLayoutItemFromModel(anchorable)?.FloatCommand?.CanExecute(null) == true));
         // The pinned WPF MenuItem sets IsChecked but leaves IsCheckable=false, so
         // invoking it must not toggle its checked state before the Click handler.
         MenuFlyoutItem separate = new()
@@ -168,9 +160,39 @@ public partial class ToggleDockingManager
                 ToggleAnchorable(anchorable, GetAnchorableZone(anchorable));
             }
         }));
-        modes.Items.Add(MenuItem("Hidden", () => { ReattachAnchorable(anchorable); (GetLayoutItemFromModel(anchorable) as LayoutAnchorableItem)?.HideCommand?.Execute(null); }));
+        modes.Items.Add(MenuItem("Hidden", () => HideAnchorableFromMenu(anchorable),
+            (GetLayoutItemFromModel(anchorable) as LayoutAnchorableItem)?.HideCommand?.CanExecute(null) == true));
         menu.Items.Add(modes);
         return menu;
+    }
+    internal void FloatAnchorableFromMenu(LayoutAnchorable anchorable)
+    {
+        ICommand? command = GetLayoutItemFromModel(anchorable)?.FloatCommand;
+        if (command?.CanExecute(null) == true)
+        {
+            command.Execute(null);
+        }
+    }
+    internal void HideAnchorableFromMenu(LayoutAnchorable? anchorable)
+    {
+        if (anchorable == null)
+        {
+            return;
+        }
+
+        ICommand? command = (GetLayoutItemFromModel(anchorable) as LayoutAnchorableItem)?.HideCommand;
+        if (command?.CanExecute(null) != true)
+        {
+            return;
+        }
+
+        // The command handles detached windows after cancellation checks. Keep the
+        // sidebar button when a hide or close request was canceled.
+        command.Execute(null);
+        if (anchorable.IsHidden || !ReferenceEquals(anchorable.Root, Layout))
+        {
+            RemoveFromAllBars(anchorable);
+        }
     }
     private static MenuFlyoutItem MenuItem(string? text, Action action, bool enabled = true)
     {

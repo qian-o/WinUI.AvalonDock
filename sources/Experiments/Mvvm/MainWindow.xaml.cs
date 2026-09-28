@@ -19,6 +19,7 @@ public sealed partial class MainWindow : Window
         Closed += OnClosed;
         Manager.LayoutItemContainerStyleSelector = SampleStyles.CreateItemStyleSelector();
         Manager.DocumentClosing += OnDocumentClosing;
+        Manager.DocumentClosed += OnDocumentClosed;
         SampleChecks.RunWhenLoaded(this, RunScenarioChecksAsync);
     }
 
@@ -75,6 +76,14 @@ public sealed partial class MainWindow : Window
         }
     }
 
+    private void OnDocumentClosed(object? sender, DocumentClosedEventArgs e)
+    {
+        if (e.Document.Content is WorkspaceDocument document)
+        {
+            ViewModel.OnDocumentClosed(document);
+        }
+    }
+
     private void OnClosed(object sender, WindowEventArgs args)
     {
         Manager.Dispose();
@@ -104,6 +113,18 @@ public sealed partial class MainWindow : Window
         await SampleChecks.SettleAsync();
         SampleChecks.Require(!ViewModel.Documents.Contains(opened), "保存后文档可以被命令关闭。");
         checks.Record("IsModified 保存与关闭命令通过。");
+
+        WorkspaceDocument closedFromTab = ViewModel.Documents.First();
+        LayoutDocument tabDocument = Manager.Layout.Descendents().OfType<LayoutDocument>()
+            .First(item => ReferenceEquals(item.Content, closedFromTab));
+        Manager.GetLayoutItemFromModel(tabDocument)?.CloseCommand?.Execute(null);
+        await SampleChecks.SettleAsync();
+        SampleChecks.Require(!ViewModel.Documents.Contains(closedFromTab) && !HasContent(closedFromTab),
+            "通过文档标签关闭后，MVVM 文档列表和布局树均移除同一模型。");
+        ViewModel.NextCommand.Execute(null);
+        SampleChecks.Require(ViewModel.ActiveDocument is { } active && ViewModel.Documents.Contains(active) && HasContent(active),
+            "标签关闭后下一个文档命令仍指向布局内文档。");
+        checks.Record("文档标签关闭与下一个文档模型同步通过。");
 
         ViewModel.NextCommand.Execute(null);
         WorkspaceDocument? beforeReplace = ViewModel.ActiveDocument;

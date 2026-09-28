@@ -61,8 +61,8 @@ public partial class OverlayWindow
 
     private Rect GetNativeAreaBounds(IDropArea area)
     {
-        // Original area entry uses the captured DetectionRect, including an empty
-        // pane hidden after its parent group became the visible destination.
+        // The area can resize during a drag as another pane leaves the layout.
+        // DetectionRect also retains the initial bounds for a hidden empty pane.
         double scale = OverlayHost.Element(area)?.XamlRoot?.RasterizationScale ?? destination.XamlRoot.RasterizationScale;
         Rect rectangle = area.DetectionRect;
         return GetPreviewBounds(new Rect(rectangle.X * scale, rectangle.Y * scale, rectangle.Width * scale, rectangle.Height * scale));

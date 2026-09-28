@@ -143,7 +143,16 @@ public sealed class WorkspaceViewModel : INotifyPropertyChanged
     public void CloseDocument(WorkspaceDocument document)
     {
         LayoutService.CloseDocument(document);
-        Documents.Remove(document);
+        OnDocumentClosed(document);
+    }
+
+    public void OnDocumentClosed(WorkspaceDocument document)
+    {
+        if (!Documents.Remove(document))
+        {
+            return;
+        }
+
         SetStatus($"已关闭 {document.Title}，文档模型数 {Documents.Count}。");
         OnPropertyChanged(nameof(ActiveDocument));
     }

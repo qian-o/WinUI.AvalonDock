@@ -215,6 +215,7 @@ internal sealed class NativeTabHeaderLayout : IDisposable
                 }
                 if (double.IsNaN(entry.NaturalWidth))
                 {
+                    tab.MinWidth = entry.OriginalMinWidth;
                     tab.MaxWidth = entry.OriginalMaxWidth;
                     tab.Width = double.NaN;
                     tab.Margin = entry.OriginalMargin;
@@ -229,7 +230,9 @@ internal sealed class NativeTabHeaderLayout : IDisposable
             // margins on both sides; reserve it before choosing visible tabs.
             double available = Math.Max(0, Math.Min(owner.ActualWidth, list.MaxWidth) - list.Padding.Left - list.Padding.Right - 8
                 - (documents ? 36 : 0));
-            double[] widths = visible.Select(tab => entries[tab].NaturalWidth).ToArray();
+            double[] widths = visible.Select(tab => documents
+                ? Math.Max(entries[tab].NaturalWidth, entries[tab].OriginalMinWidth + entries[tab].OriginalMargin.Left + entries[tab].OriginalMargin.Right)
+                : entries[tab].NaturalWidth).ToArray();
             int count = documents ? TabHeaderLayoutRules.VisibleDocumentCount(widths, available) : visible.Length;
             double[] toolWidths = documents ? [] : TabHeaderLayoutRules.ToolWidths(widths, available);
             for (int index = 0; index < visible.Length; index++)
@@ -238,9 +241,13 @@ internal sealed class NativeTabHeaderLayout : IDisposable
                 Entry entry = entries[tab];
                 // Upstream panels arrange DesiredSize, which includes the margins.
                 // Native Width is the content box; otherwise the item margin is added twice.
-                double allocated = documents ? entry.NaturalWidth : toolWidths[index];
+                double allocated = documents ? widths[index] : toolWidths[index];
                 double width = Math.Max(0, allocated - entry.OriginalMargin.Left - entry.OriginalMargin.Right);
-                if (tab.MinWidth > width)
+                if (documents)
+                {
+                    width = Math.Clamp(width, entry.OriginalMinWidth, entry.OriginalMaxWidth);
+                }
+                else if (width < entry.OriginalMinWidth)
                 {
                     tab.MinWidth = 0;
                 }
@@ -253,6 +260,10 @@ internal sealed class NativeTabHeaderLayout : IDisposable
                 if (index < count)
                 {
                     entry.AllocatedWidth = width;
+                    if (documents || width >= entry.OriginalMinWidth)
+                    {
+                        tab.MinWidth = entry.OriginalMinWidth;
+                    }
                     if (tab.Width != width)
                     {
                         tab.Width = width;
@@ -320,6 +331,7 @@ internal sealed class NativeTabHeaderLayout : IDisposable
         entry.Tab.Opacity = entry.Opacity;
         entry.Tab.IsHitTestVisible = entry.HitTest;
         entry.Tab.IsTabStop = entry.TabStop;
+        entry.Tab.MinWidth = entry.OriginalMinWidth;
         entry.Tab.Margin = entry.OriginalMargin;
         AutomationProperties.SetAccessibilityView(entry.Tab, entry.Accessibility);
     }

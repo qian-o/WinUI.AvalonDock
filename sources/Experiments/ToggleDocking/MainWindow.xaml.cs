@@ -1,3 +1,5 @@
+using System.Collections;
+using System.Reflection;
 using AvalonDock;
 using AvalonDock.Controls;
 using AvalonDock.Core;
@@ -125,7 +127,7 @@ public sealed partial class MainWindow : Window
 
         if (Manager.IsDetached(tool))
         {
-            Manager.ReattachAllDetachedAnchorables();
+            Manager.ReattachAnchorable(tool);
             StatusText.Text = $"已附回 {tool.Title}。";
         }
         else
@@ -240,6 +242,8 @@ public sealed partial class MainWindow : Window
         SampleChecks.Require(lightSurface != darkSurface, "Toggle 导航框响应 Light/Dark 主题资源切换。");
         checks.Record("Toggle WPFUI 专用管理器、侧栏和窗格模板通过。");
 
+        await CheckZonePreviewGeometryAsync(checks);
+
         LayoutAnchorable selectedTool = Manager.Layout.Descendents().OfType<LayoutAnchorable>().FirstOrDefault()
             ?? throw new InvalidOperationException("Toggle 不存在可操作工具。");
         WorkspaceTool model = selectedTool.Content as WorkspaceTool
@@ -269,6 +273,82 @@ public sealed partial class MainWindow : Window
         SampleChecks.Require(!Manager.Layout.Hidden.Contains(selectedTool), "Toggle 隐藏工具可以恢复。");
         checks.Record("Toggle 隐藏和恢复通过。");
 
+        MethodInfo hideFromMenu = typeof(ToggleDockingManager).GetMethod("HideAnchorableFromMenu", BindingFlags.Instance | BindingFlags.NonPublic)
+            ?? throw new InvalidOperationException("找不到 Toggle 菜单隐藏入口。");
+        int canceledHides = 0;
+        EventHandler<AnchorableHidingEventArgs> cancelHide = (_, args) =>
+        {
+            canceledHides++;
+            args.Cancel = true;
+        };
+        Manager.AnchorableHiding += cancelHide;
+        try
+        {
+            hideFromMenu.Invoke(Manager, [selectedTool]);
+            await SampleChecks.SettleAsync();
+            SampleChecks.Require(canceledHides == 1 && !selectedTool.IsHidden
+                && PageRoot.FindVisualChildren<ToggleDockButton>().Any(button => ReferenceEquals(button.Anchorable, selectedTool)),
+                "Toggle 取消隐藏后保留原侧栏按钮。");
+
+            Manager.DetachAnchorableToWindow(selectedTool);
+            await SampleChecks.SettleAsync();
+            SampleChecks.Require(Manager.IsDetached(selectedTool), "Toggle 工具已进入独立窗口。");
+            hideFromMenu.Invoke(Manager, [selectedTool]);
+            await SampleChecks.SettleAsync();
+            SampleChecks.Require(canceledHides == 2 && Manager.IsDetached(selectedTool) && !selectedTool.IsHidden,
+                "Toggle 取消隐藏后保留独立窗口。");
+
+            MethodInfo floatFromMenu = typeof(ToggleDockingManager).GetMethod("FloatAnchorableFromMenu", BindingFlags.Instance | BindingFlags.NonPublic)
+                ?? throw new InvalidOperationException("找不到 Toggle 菜单浮动入口。");
+            int canceledFloats = 0;
+            EventHandler<ContentFloatingEventArgs> cancelFloat = (_, args) =>
+            {
+                canceledFloats++;
+                args.Cancel = true;
+            };
+            Manager.ContentFloating += cancelFloat;
+            try
+            {
+                floatFromMenu.Invoke(Manager, [selectedTool]);
+                await SampleChecks.SettleAsync();
+                SampleChecks.Require(canceledFloats == 1 && Manager.IsDetached(selectedTool) && !selectedTool.IsFloating,
+                    "Toggle 取消浮动后保留独立窗口。");
+            }
+            finally
+            {
+                Manager.ContentFloating -= cancelFloat;
+            }
+        }
+        finally
+        {
+            Manager.AnchorableHiding -= cancelHide;
+            Manager.ReattachAnchorable(selectedTool);
+        }
+        await SampleChecks.SettleAsync();
+        checks.Record("Toggle 菜单隐藏与浮动取消时保留侧栏按钮和独立窗口。");
+
+        LayoutAnchorable secondTool = Manager.Layout.Descendents().OfType<LayoutAnchorable>()
+            .First(tool => !ReferenceEquals(tool, selectedTool));
+        try
+        {
+            Manager.DetachAnchorableToWindow(selectedTool);
+            Manager.DetachAnchorableToWindow(secondTool);
+            await SampleChecks.SettleAsync();
+            SampleChecks.Require(Manager.IsDetached(selectedTool) && Manager.IsDetached(secondTool),
+                "Toggle 两个工具可同时使用独立窗口。");
+            selectedTool.IsActive = true;
+            DetachTool_Click(this, new RoutedEventArgs());
+            await SampleChecks.SettleAsync();
+            SampleChecks.Require(!Manager.IsDetached(selectedTool) && Manager.IsDetached(secondTool),
+                "Toggle 附回当前工具不会附回其他独立窗口。");
+        }
+        finally
+        {
+            Manager.ReattachAnchorable(selectedTool);
+            Manager.ReattachAnchorable(secondTool);
+        }
+        checks.Record("Toggle 当前工具附回仅影响选中工具。");
+
         bool originalFloating = Manager.AllowDetachedWindows;
         Manager.AllowDetachedWindows = false;
         Manager.AllowFloatingWindows = false;
@@ -276,6 +356,121 @@ public sealed partial class MainWindow : Window
         Manager.AllowDetachedWindows = originalFloating;
         Manager.AllowFloatingWindows = originalFloating;
         checks.Record("Toggle 窗口策略通过。");
+    }
+
+    private async Task CheckZonePreviewGeometryAsync(SampleChecks checks)
+    {
+        Dictionary<DockZone, LayoutAnchorable> tools = Manager.Layout.Descendents().OfType<LayoutAnchorable>()
+            .Where(tool => tool.Content is WorkspaceTool)
+            .ToDictionary(tool => ((WorkspaceTool)tool.Content!).Zone);
+        Type overlayType = typeof(ToggleDockingManager).Assembly.GetType("AvalonDock.Controls.ToggleDockDragOverlay")
+            ?? throw new InvalidOperationException("找不到 Toggle 拖动指示层。");
+        ConstructorInfo constructor = overlayType.GetConstructors(BindingFlags.Instance | BindingFlags.NonPublic)
+            .Single();
+        using IDisposable overlay = (IDisposable)constructor.Invoke([Manager, tools[DockZone.LeftTop]]);
+        MethodInfo update = overlayType.GetMethod("Update", BindingFlags.Instance | BindingFlags.NonPublic)
+            ?? throw new InvalidOperationException("找不到 Toggle 指示层更新入口。");
+        MethodInfo hit = overlayType.GetMethod("Hit", BindingFlags.Instance | BindingFlags.NonPublic)
+            ?? throw new InvalidOperationException("找不到 Toggle 指示层命中入口。");
+        FieldInfo zones = overlayType.GetField("zones", BindingFlags.Instance | BindingFlags.NonPublic)
+            ?? throw new InvalidOperationException("找不到 Toggle 指示区域。");
+        PropertyInfo failure = overlayType.GetProperty("Failure", BindingFlags.Instance | BindingFlags.NonPublic)
+            ?? throw new InvalidOperationException("找不到 Toggle 指示层故障状态。");
+
+        (DockZone First, DockZone Second)[] pairs =
+        [
+            (DockZone.LeftTop, DockZone.LeftBottom),
+            (DockZone.RightTop, DockZone.RightBottom),
+            (DockZone.BottomLeft, DockZone.BottomRight)
+        ];
+        foreach ((DockZone first, DockZone second) in pairs)
+        {
+            VerifyPair(first, second, splitEvenly: false);
+
+            Manager.ToggleAnchorable(tools[first], first);
+            await SampleChecks.SettleAsync();
+            SampleChecks.Require(tools[first].IsAutoHidden && !tools[second].IsAutoHidden,
+                $"Toggle {first} 收起后仅 {second} 展开。");
+            VerifyPair(first, second, splitEvenly: true);
+
+            Manager.ToggleAnchorable(tools[first], first);
+            Manager.ToggleAnchorable(tools[second], second);
+            await SampleChecks.SettleAsync();
+            SampleChecks.Require(!tools[first].IsAutoHidden && tools[second].IsAutoHidden,
+                $"Toggle {second} 收起后仅 {first} 展开。");
+            VerifyPair(first, second, splitEvenly: true);
+
+            Manager.ToggleAnchorable(tools[first], first);
+            await SampleChecks.SettleAsync();
+            SampleChecks.Require(tools[first].IsAutoHidden && tools[second].IsAutoHidden,
+                $"Toggle {first}/{second} 均已收起。");
+            VerifyPair(first, second, splitEvenly: true);
+
+            Manager.ToggleAnchorable(tools[first], first);
+            Manager.ToggleAnchorable(tools[second], second);
+            await SampleChecks.SettleAsync();
+        }
+
+        SampleChecks.Require(failure.GetValue(overlay) == null, "Toggle 拖动指示层正常绘制。");
+        checks.Record("Toggle 六区指示在双窗格、单窗格和空白分组时正确切分并命中。");
+
+        void VerifyPair(DockZone first, DockZone second, bool splitEvenly)
+        {
+            update.Invoke(overlay, [new Point(0, 0), true]);
+            IEnumerable entries = (IEnumerable)(zones.GetValue(overlay)
+                ?? throw new InvalidOperationException("Toggle 指示区域尚未生成。"));
+            Dictionary<DockZone, Rect> bounds = [];
+            foreach (object entry in entries)
+            {
+                Type zoneType = entry.GetType();
+                if (zoneType.GetProperty("Label")?.GetValue(entry) == null)
+                {
+                    continue;
+                }
+
+                DockZone target = (DockZone)(zoneType.GetProperty("Target")?.GetValue(entry)
+                    ?? throw new InvalidOperationException("Toggle 指示区域缺少目标。"));
+                Rect rectangle = (Rect)(zoneType.GetProperty("Bounds")?.GetValue(entry)
+                    ?? throw new InvalidOperationException("Toggle 指示区域缺少边界。"));
+                bounds.Add(target, rectangle);
+            }
+
+            Rect firstBounds = bounds[first];
+            Rect secondBounds = bounds[second];
+            SampleChecks.Require(firstBounds.Width > 0 && firstBounds.Height > 0
+                && secondBounds.Width > 0 && secondBounds.Height > 0,
+                $"Toggle {first}/{second} 指示区域均非空。");
+            Rect overlap = firstBounds;
+            overlap.Intersect(secondBounds);
+            SampleChecks.Require(overlap.IsEmpty || overlap.Width <= 0.5 || overlap.Height <= 0.5,
+                $"Toggle {first}/{second} 指示区域不重叠。");
+
+            if (splitEvenly)
+            {
+                if (first is DockZone.BottomLeft)
+                {
+                    SampleChecks.Require(Math.Abs(firstBounds.Width - secondBounds.Width) <= 1.5
+                        && Math.Abs(firstBounds.Right - secondBounds.Left) <= 1.5
+                        && Math.Abs(firstBounds.Top - secondBounds.Top) <= 1.5
+                        && Math.Abs(firstBounds.Height - secondBounds.Height) <= 1.5,
+                        "Toggle 底部空白分组沿水平方向均分。");
+                }
+                else
+                {
+                    SampleChecks.Require(Math.Abs(firstBounds.Height - secondBounds.Height) <= 1.5
+                        && Math.Abs(firstBounds.Bottom - secondBounds.Top) <= 1.5
+                        && Math.Abs(firstBounds.Left - secondBounds.Left) <= 1.5
+                        && Math.Abs(firstBounds.Width - secondBounds.Width) <= 1.5,
+                        $"Toggle {first}/{second} 空白分组沿垂直方向均分。");
+                }
+            }
+
+            Point firstCenter = new(firstBounds.X + firstBounds.Width / 2, firstBounds.Y + firstBounds.Height / 2);
+            Point secondCenter = new(secondBounds.X + secondBounds.Width / 2, secondBounds.Y + secondBounds.Height / 2);
+            SampleChecks.Require((DockZone?)hit.Invoke(overlay, [firstCenter]) == first
+                && (DockZone?)hit.Invoke(overlay, [secondCenter]) == second,
+                $"Toggle {first}/{second} 指示区域的中心命中正确。");
+        }
     }
 
     private void OnClosed(object sender, WindowEventArgs args)

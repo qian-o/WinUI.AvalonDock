@@ -107,15 +107,23 @@ public partial class DockingManager
             Size threshold = PlatformServices.PointerGestures.GetDragThreshold(dragOrigin!);
             dragStarted = Math.Abs(point.X - dragStart.X) > threshold.Width || Math.Abs(point.Y - dragStart.Y) > threshold.Height;
             // WPF's document tab resets its pending press on MouseLeave. Native HWND
-            // capture can suppress PointerExited, so observe the same header boundary
+            // capture can suppress PointerExited, so observe the full tab boundary
             // on the captured pointer update before the threshold has been crossed.
             if (!dragStarted && update.Kind == DragInputUpdateKind.Moved && content is LayoutDocument
-                && dragOrigin is LayoutDocumentTabItem header
-                && PlatformServices.Coordinates.TryGetScreenBounds(header, out Rect headerBounds)
-                && !headerBounds.Contains(point))
+                && dragOrigin is LayoutDocumentTabItem or TabViewItem { Header: LayoutDocumentTabItem })
             {
-                EndContentDrag();
-                return;
+                FrameworkElement boundary = dragOrigin;
+                if (dragOrigin is LayoutDocumentTabItem header
+                    && header.FindVisualAncestor<TabViewItem>() is { } tab)
+                {
+                    boundary = tab;
+                }
+                if (PlatformServices.Coordinates.TryGetScreenBounds(boundary, out Rect tabBounds)
+                    && !tabBounds.Contains(point))
+                {
+                    EndContentDrag();
+                    return;
+                }
             }
         }
         if (dragStarted)

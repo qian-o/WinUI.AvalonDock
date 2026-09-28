@@ -29,6 +29,7 @@ public abstract partial class LayoutItem
         }
         else
         {
+            modelValues.Remove(dp);
             base.SetValue(dp, value);
         }
     }
@@ -36,6 +37,7 @@ public abstract partial class LayoutItem
     {
         if (dp != StyleProperty)
         {
+            modelValues.Remove(dp);
             base.ClearValue(dp);
             return;
         }
@@ -88,6 +90,15 @@ public abstract partial class LayoutItem
                 }
             }
 
+            foreach (Setter? setter in setters)
+            {
+                if (modelValues.Remove(setter.Property, out object? value) && Equals(ReadLocalValue(setter.Property), value))
+                {
+                    // Release a model seed so the style setter can take precedence.
+                    ClearValue(setter.Property);
+                }
+            }
+
             if (style is { } appliedStyle && setters.Any(setter => SetterBinding(setter) != null))
             {
                 // Native style application can unbox a Binding as the target value type
@@ -134,7 +145,7 @@ public abstract partial class LayoutItem
             return;
         }
 
-        SetValue(property, value);
+        base.SetValue(property, value);
         modelValues[property] = value;
     }
     private void ReleaseStyleBindings()

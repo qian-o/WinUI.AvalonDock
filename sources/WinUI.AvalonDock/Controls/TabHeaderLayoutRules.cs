@@ -9,7 +9,7 @@ internal static class TabHeaderLayoutRules
         int count = 0;
         foreach (double width in widths)
         {
-            if (used + width > available)
+            if (count > 0 && used + width > available)
             {
                 break;
             }
@@ -27,7 +27,7 @@ internal static class TabHeaderLayoutRules
             return [];
         }
 
-        if (desired.Sum() < available)
+        if (desired.Sum() <= available)
         {
             return desired.ToArray();
         }

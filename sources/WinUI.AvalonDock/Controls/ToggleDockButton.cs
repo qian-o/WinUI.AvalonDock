@@ -189,9 +189,10 @@ public class ToggleDockButton : ToggleButton
         MenuFlyout menu = manager.BuildToggleContextMenu(Anchorable);
         MenuFlyoutItem hide = new()
         {
-            Text = "Hide"
+            Text = "Hide",
+            IsEnabled = (manager.GetLayoutItemFromModel(Anchorable) as LayoutAnchorableItem)?.HideCommand?.CanExecute(null) == true
         };
-        hide.Click += (_, _) => { (manager.GetLayoutItemFromModel(Anchorable) as LayoutAnchorableItem)?.HideCommand?.Execute(null); manager.RemoveButtonFromAllBars(Anchorable); };
+        hide.Click += (_, _) => manager.HideAnchorableFromMenu(Anchorable);
         menu.Items.Insert(0, hide);
         menu.Items.Insert(1, new MenuFlyoutSeparator());
         menu.ShowAt(this);

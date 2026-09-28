@@ -1,4 +1,6 @@
 using System.Collections.ObjectModel;
+using System.Reflection;
+using System.Windows.Input;
 using AvalonDock;
 using AvalonDock.Controls;
 using AvalonDock.Core;
@@ -314,7 +316,32 @@ public sealed partial class MainWindow : Window
             "Classic 首次加载的工具标签标题已完成测量并可见。");
         checks.Record("Classic 首次加载工具标签呈现通过。");
 
+        LayoutAnchorable styleTool = Manager.Layout.Descendents().OfType<LayoutAnchorable>().First();
+        LayoutAnchorableItem styleItem = Manager.GetLayoutItemFromModel(styleTool) as LayoutAnchorableItem
+            ?? throw new InvalidOperationException("Classic 工具布局项未创建。");
+        SampleChecks.Require(!styleTool.CanClose, "Classic 工具默认不可关闭。");
+        Style closeStyle = new(typeof(LayoutItem));
+        closeStyle.Setters.Add(new Setter(LayoutItem.CanCloseProperty, true));
+        Manager.LayoutItemContainerStyle = closeStyle;
+        SampleChecks.Require(styleItem.CanClose && styleTool.CanClose,
+            "Classic 布局项样式的 CanClose 设置优先于模型初始值。");
+        styleItem.CanClose = false;
+        Style nextCloseStyle = new(typeof(LayoutItem));
+        nextCloseStyle.Setters.Add(new Setter(LayoutItem.CanCloseProperty, true));
+        Manager.LayoutItemContainerStyle = nextCloseStyle;
+        SampleChecks.Require(!styleItem.CanClose && !styleTool.CanClose,
+            "Classic 消费者显式设置的本地值优先于后续样式。");
+        styleItem.ClearValue(LayoutItem.CanCloseProperty);
+        SampleChecks.Require(styleItem.CanClose && styleTool.CanClose,
+            "Classic 清除本地值后重新采用样式的关闭策略。");
+        Manager.LayoutItemContainerStyle = null;
+        styleItem.CanClose = false;
+        SampleChecks.Require(!styleItem.CanClose && !styleTool.CanClose, "Classic 移除样式后工具可恢复关闭策略。");
+        checks.Record("Classic 布局项样式可覆盖初始模型值并恢复。");
+
+        await CheckDocumentTabLayoutAsync(checks);
         await CheckDocumentChromeAsync(checks);
+        await CheckDocumentDropAreaAfterFloatAsync(checks);
 
         LayoutAnchorable floatingTool = Manager.Layout.Descendents().OfType<LayoutAnchorable>().First();
         floatingTool.IsActive = true;
@@ -436,6 +463,112 @@ public sealed partial class MainWindow : Window
         ToggleWindowPolicy_Click(this, new RoutedEventArgs());
         SampleChecks.Require(Manager.AllowFloatingWindows == originalFloating, "Classic 浮动策略可恢复。");
         checks.Record("Classic 窗口策略通过。");
+    }
+
+    private async Task CheckDocumentTabLayoutAsync(SampleChecks checks)
+    {
+        LayoutDocumentPaneControl pane = PageRoot.FindVisualChildren<LayoutDocumentPaneControl>().First();
+        VerifyTabs("首次加载");
+
+        LayoutDocument document = Manager.Layout.Descendents().OfType<LayoutDocument>().First();
+        document.Float();
+        await SampleChecks.SettleAsync();
+        document.Dock();
+        await SampleChecks.SettleAsync();
+        VerifyTabs("浮动后回停");
+
+        WorkspaceDocument longDocument = new()
+        {
+            Id = "classic-wide-tab-check",
+            Title = "这是一个明显比普通文档标题更长的标签名称",
+            Text = "检查文档标签的内容宽度。"
+        };
+        documents.Add(longDocument);
+        await SampleChecks.SettleAsync();
+        TabViewItem longTab = pane.TabItems.OfType<TabViewItem>().First(tab => ReferenceEquals(((LayoutContent)tab.Tag).Content, longDocument));
+        SampleChecks.Require(longTab.ActualWidth > 100 && longTab.ActualWidth <= 240,
+            "Classic 长文档标签按内容增长并受 240 像素上限约束。");
+        documents.Remove(longDocument);
+        await SampleChecks.SettleAsync();
+        checks.Record("Classic 文档标签宽度及非按钮空白命中在首次加载、浮动回停后保持一致。");
+
+        void VerifyTabs(string stage)
+        {
+            TabViewItem[] tabs = pane.TabItems.OfType<TabViewItem>().ToArray();
+            SampleChecks.Require(tabs.Length == 2, $"Classic {stage}保留两个文档标签。");
+            foreach (TabViewItem tab in tabs)
+            {
+                LayoutDocumentTabItem header = (LayoutDocumentTabItem)tab.Header;
+                Button? closeButton = tab.FindVisualChildren<Button>().FirstOrDefault(button => button.Name == "CloseButton");
+                double headerRight = header.TransformToVisual(tab).TransformBounds(new Rect(0, 0, header.ActualWidth, header.ActualHeight)).Right;
+                double closeLeft = closeButton?.TransformToVisual(tab).TransformPoint(new Point(0, 0)).X ?? -1;
+                SampleChecks.Require(Math.Abs(tab.ActualWidth - 100) < 1 && Math.Abs(tab.MinWidth - 100) < 0.1,
+                    $"Classic {stage}短文档标签保持 100 像素下限。");
+                SampleChecks.Require(closeButton is not null && closeLeft - headerRight >= 3,
+                    $"Classic {stage}标题与关闭按钮之间存在可检查的空白。");
+                Point blank = tab.TransformToVisual(PageRoot).TransformPoint(new Point((headerRight + closeLeft) / 2, 14));
+                IReadOnlyList<UIElement> hits = VisualTreeHelper.FindElementsInHostCoordinates(blank, PageRoot).ToArray();
+                SampleChecks.Require(hits.Contains(tab) && !hits.Contains(closeButton!),
+                    $"Classic {stage}标题与关闭按钮之间由文档标签命中。");
+            }
+        }
+    }
+
+    private async Task CheckDocumentDropAreaAfterFloatAsync(SampleChecks checks)
+    {
+        LayoutDocument[] layoutDocuments = Manager.Layout.Descendents().OfType<LayoutDocument>().ToArray();
+        SampleChecks.Require(layoutDocuments.Length == 2, "Classic 分组前保留两个初始文档。");
+        LayoutDocument upperDocument = layoutDocuments.First(document => ReferenceEquals(document.Content, documents[0]));
+        LayoutDocument lowerDocument = layoutDocuments.First(document => ReferenceEquals(document.Content, documents[1]));
+        LayoutDocumentItem item = Manager.GetLayoutItemFromModel(lowerDocument) as LayoutDocumentItem
+            ?? throw new InvalidOperationException("Classic 下方文档布局项未创建。");
+        ICommand splitCommand = item.NewHorizontalTabGroupCommand
+            ?? throw new InvalidOperationException("Classic 文档分组命令未创建。");
+        SampleChecks.Require(splitCommand.CanExecute(null),
+            "Classic 可将第二个文档分到下方标签组。");
+        splitCommand.Execute(null);
+        await SampleChecks.SettleAsync();
+
+        LayoutDocumentPane upperModel = upperDocument.Parent as LayoutDocumentPane
+            ?? throw new InvalidOperationException("Classic 上方文档窗格不存在。");
+        LayoutDocumentPaneControl upperPane = PageRoot.FindVisualChildren<LayoutDocumentPaneControl>()
+            .Single(pane => ReferenceEquals(pane.Model, upperModel));
+        SampleChecks.Require(upperPane.IsLoaded && upperPane.ActualHeight > 100
+            && lowerDocument.Parent is LayoutDocumentPane lowerModel
+            && !ReferenceEquals(lowerModel, upperModel),
+            "Classic 上下两个文档窗格已完成布局。");
+
+        DropArea<LayoutDocumentPaneControl> area = (DropArea<LayoutDocumentPaneControl>)(Activator.CreateInstance(
+            typeof(DropArea<LayoutDocumentPaneControl>), BindingFlags.Instance | BindingFlags.NonPublic,
+            null, [upperPane, DropAreaType.DocumentPane], null)
+            ?? throw new InvalidOperationException("Classic 文档停靠区域未创建。"));
+        Rect splitBounds = area.DetectionRect;
+        lowerDocument.Float();
+        await SampleChecks.SettleAsync();
+        try
+        {
+            Rect expandedBounds = area.DetectionRect;
+            SampleChecks.Require(lowerDocument.IsFloating && upperPane.IsLoaded
+                && expandedBounds.Height > splitBounds.Height + 30
+                && expandedBounds.Bottom > splitBounds.Bottom + 30
+                && Math.Abs(expandedBounds.Height - upperPane.ActualHeight) < 2,
+                "Classic 下方文档浮出后，原停靠区域跟随上方窗格扩展。");
+            Point formerLowerHalf = new(expandedBounds.X + expandedBounds.Width / 2,
+                (splitBounds.Bottom + expandedBounds.Bottom) / 2);
+            SampleChecks.Require(!splitBounds.Contains(formerLowerHalf) && expandedBounds.Contains(formerLowerHalf),
+                "Classic 原下半区可命中新扩展的文档停靠区域。");
+            checks.Record("Classic 上下分组后浮出下方文档，中央停靠区域随剩余窗格扩展。");
+        }
+        finally
+        {
+            if (lowerDocument.IsFloating)
+            {
+                lowerDocument.Dock();
+                await SampleChecks.SettleAsync();
+            }
+        }
+        SampleChecks.Require(!lowerDocument.IsFloating && documents.Count == 2,
+            "Classic 几何检查后恢复两个停靠文档。");
     }
 
     private async Task CheckDocumentChromeAsync(SampleChecks checks)

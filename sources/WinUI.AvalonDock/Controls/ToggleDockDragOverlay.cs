@@ -302,12 +302,28 @@ internal sealed class ToggleDockDragOverlay : IDisposable
         double rightWidth = content.Width * .25;
         double bottomHeight = content.Height * .25;
         double sideBottom = double.NaN;
+        Dictionary<DockZone, Rect> visiblePaneBounds = [];
         foreach (LayoutAnchorablePaneControl pane in ToggleDockingManager.Visuals<LayoutAnchorablePaneControl>(manager))
         {
             if (pane.Model is not LayoutAnchorablePane model || !model.Children.Any(tool => !tool.IsAutoHidden)
                 || !IsEffectivelyVisible(pane) || !PlatformServices.Coordinates.TryGetScreenBounds(pane, out Rect measured))
             {
                 continue;
+            }
+
+            measured.Intersect(content);
+            if (measured.IsEmpty || measured.Width <= 0 || measured.Height <= 0)
+            {
+                continue;
+            }
+
+            // 已展开区域使用窗格实测边界，避开分隔条和非均分布局造成的预览偏差。
+            foreach (ToggleDockButtonBar bar in manager.Bars)
+            {
+                if (model.Children.Any(bar.ContainsAnchorable))
+                {
+                    visiblePaneBounds[bar.Zone] = measured;
+                }
             }
 
             switch (model.GetSide())
@@ -330,13 +346,13 @@ internal sealed class ToggleDockDragOverlay : IDisposable
         bottomHeight = Math.Clamp(bottomHeight, 0, content.Height);
         double bottomTop = content.Bottom - bottomHeight;
         double sideEnd = double.IsNaN(sideBottom) ? bottomTop : Math.Clamp(sideBottom, content.Top, content.Bottom);
-        double halfSideHeight = Math.Max(0, sideEnd - content.Top) / 2;
-        zones.Add(new(new Rect(content.Left, content.Top, leftWidth, halfSideHeight), DockZone.LeftTop, "Left Top"));
-        zones.Add(new(new Rect(content.Left, content.Top + halfSideHeight, leftWidth, halfSideHeight), DockZone.LeftBottom, "Left Bottom"));
-        zones.Add(new(new Rect(content.Right - rightWidth, content.Top, rightWidth, halfSideHeight), DockZone.RightTop, "Right Top"));
-        zones.Add(new(new Rect(content.Right - rightWidth, content.Top + halfSideHeight, rightWidth, halfSideHeight), DockZone.RightBottom, "Right Bottom"));
-        zones.Add(new(new Rect(content.Left, bottomTop, content.Width / 2, bottomHeight), DockZone.BottomLeft, "Bottom Left"));
-        zones.Add(new(new Rect(content.Left + content.Width / 2, bottomTop, content.Width / 2, bottomHeight), DockZone.BottomRight, "Bottom Right"));
+        double sideHeight = Math.Max(0, sideEnd - content.Top);
+        AddContentPair(visiblePaneBounds, new Rect(content.Left, content.Top, leftWidth, sideHeight),
+            DockZone.LeftTop, "Left Top", DockZone.LeftBottom, "Left Bottom", vertical: true);
+        AddContentPair(visiblePaneBounds, new Rect(content.Right - rightWidth, content.Top, rightWidth, sideHeight),
+            DockZone.RightTop, "Right Top", DockZone.RightBottom, "Right Bottom", vertical: true);
+        AddContentPair(visiblePaneBounds, new Rect(content.Left, bottomTop, content.Width, bottomHeight),
+            DockZone.BottomLeft, "Bottom Left", DockZone.BottomRight, "Bottom Right", vertical: false);
 
         FrameworkElement? leftFrame = leftNavigationFrame ?? manager.injectedLeftDockPanel;
         FrameworkElement? rightFrame = rightNavigationFrame ?? manager.injectedRightDockPanel;
@@ -344,6 +360,33 @@ internal sealed class ToggleDockDragOverlay : IDisposable
         AddSide(rightFrame, manager.rightSeparator, manager.bottomRightBar, DockZone.RightTop, DockZone.RightBottom);
         AddBar(leftFrame, manager.bottomLeftBar);
         AddBar(rightFrame, manager.bottomRightBar);
+    }
+    private void AddContentPair(Dictionary<DockZone, Rect> visiblePaneBounds, Rect fallback,
+        DockZone firstZone, string firstLabel, DockZone secondZone, string secondLabel, bool vertical)
+    {
+        bool hasFirst = visiblePaneBounds.TryGetValue(firstZone, out Rect first);
+        bool hasSecond = visiblePaneBounds.TryGetValue(secondZone, out Rect second);
+        if (hasFirst && hasSecond && first != second)
+        {
+            zones.Add(new(first, firstZone, firstLabel));
+            zones.Add(new(second, secondZone, secondLabel));
+            return;
+        }
+
+        // 单个展开窗格虽占满分组，拖动时仍需把实测分组对半划成两个停靠区。
+        Rect area = hasFirst ? first : hasSecond ? second : fallback;
+        if (vertical)
+        {
+            double half = area.Height / 2;
+            zones.Add(new(new Rect(area.Left, area.Top, area.Width, half), firstZone, firstLabel));
+            zones.Add(new(new Rect(area.Left, area.Top + half, area.Width, half), secondZone, secondLabel));
+        }
+        else
+        {
+            double half = area.Width / 2;
+            zones.Add(new(new Rect(area.Left, area.Top, half, area.Height), firstZone, firstLabel));
+            zones.Add(new(new Rect(area.Left + half, area.Top, half, area.Height), secondZone, secondLabel));
+        }
     }
     private void AddBar(FrameworkElement? frame, ToggleDockButtonBar? bar)
     {

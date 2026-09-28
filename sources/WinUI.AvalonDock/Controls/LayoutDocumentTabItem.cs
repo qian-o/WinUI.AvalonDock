@@ -98,6 +98,11 @@ public class LayoutDocumentTabItem : ContentControl
 
     /// <summary>Activates the document and starts tracking through the shared native drag service.</summary>
     protected virtual void OnMouseLeftButtonDown(PointerRoutedEventArgs e)
+        => BeginDrag(this);
+
+    internal void BeginDragFromTab(TabViewItem tab) => BeginDrag(tab);
+
+    private void BeginDrag(FrameworkElement origin)
     {
         if (!IsLoaded)
         {
@@ -118,7 +123,7 @@ public class LayoutDocumentTabItem : ContentControl
                 return;
             }
 
-            model.Root?.Manager?.BeginContentDrag(model, this);
+            model.Root?.Manager?.BeginContentDrag(model, origin);
         }
     }
 

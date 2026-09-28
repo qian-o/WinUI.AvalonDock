@@ -4,15 +4,20 @@ using System.Runtime.CompilerServices;
 using System.Windows.Input;
 using AvalonDock.Converters;
 using AvalonDock.Layout;
+using Microsoft.UI.Input;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Automation;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Data;
+using Microsoft.UI.Xaml.Input;
+using Microsoft.UI.Xaml.Media;
 
 namespace AvalonDock.Controls;
 
 internal sealed class LayoutPanePresenter : IDisposable
 {
+    private static readonly PointerEventHandler documentTabPointerPressed = OnDocumentTabPointerPressed;
     private static readonly ConditionalWeakTable<ILayoutRoot, ConditionalWeakTable<ILayoutElement, WeakReference<LayoutContent?>>> NativeSelections = new();
     private readonly TabControlEx tabs;
     private readonly ILayoutElement pane;
@@ -226,6 +231,10 @@ internal sealed class LayoutPanePresenter : IDisposable
                     // while native list reordering briefly removes the container from its resource scope.
                     tab.Style = (Style)tabStyles[pane is LayoutAnchorablePane ? "AvalonDockReferenceToolTabItemStyle" : "AvalonDockReferenceTabItemStyle"];
                     tab.Loaded += OnTabLoaded;
+                    if (pane is LayoutDocumentPane)
+                    {
+                        tab.AddHandler(UIElement.PointerPressedEvent, documentTabPointerPressed, true);
+                    }
                     model.PropertyChanged += OnContentPropertyChanged;
                     entry = (model, tab, header, content);
                     items.Add(entry);
@@ -467,6 +476,29 @@ internal sealed class LayoutPanePresenter : IDisposable
         UpdateTabClosePolicy(tab);
     }
 
+    private static void OnDocumentTabPointerPressed(object? sender, PointerRoutedEventArgs args)
+    {
+        if (sender is not TabViewItem { Header: LayoutDocumentTabItem header } tab
+            || args.GetCurrentPoint(tab).Properties.PointerUpdateKind != PointerUpdateKind.LeftButtonPressed)
+        {
+            return;
+        }
+
+        // The native close button and the document header handle their own presses.
+        // Only the small surrounding tab surface needs this fallback.
+        for (DependencyObject? current = args.OriginalSource as DependencyObject;
+             current != null && !ReferenceEquals(current, tab);
+             current = VisualTreeHelper.GetParent(current))
+        {
+            if (ReferenceEquals(current, header) || current is ButtonBase)
+            {
+                return;
+            }
+        }
+
+        header.BeginDragFromTab(tab);
+    }
+
     private static void UpdateToolTabPlacement(TabViewItem tab, bool selected) =>
         VisualStateManager.GoToState(tab, selected ? "ToolTabSelected" : "ToolTab", false);
 
@@ -508,6 +540,10 @@ internal sealed class LayoutPanePresenter : IDisposable
     private void ReleaseItem((LayoutContent Model, TabViewItem Tab, Control Header, Control Content) entry)
     {
         entry.Tab.Loaded -= OnTabLoaded;
+        if (pane is LayoutDocumentPane)
+        {
+            entry.Tab.RemoveHandler(UIElement.PointerPressedEvent, documentTabPointerPressed);
+        }
         entry.Model.PropertyChanged -= OnContentPropertyChanged;
         if (entry.Header is LayoutDocumentTabItem documentHeader)
         {
