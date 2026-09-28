@@ -430,34 +430,65 @@ public sealed partial class MainWindow : Window
         ];
         foreach ((DockZone first, DockZone second) in pairs)
         {
+            Manager.ActiveContent = tools[second].Content;
+            await SampleChecks.SettleAsync();
+            VerifyIndicators(first, second);
             VerifyPair(first, second, splitEvenly: false);
 
             Manager.ToggleAnchorable(tools[first], first);
             await SampleChecks.SettleAsync();
             SampleChecks.Require(tools[first].IsAutoHidden && !tools[second].IsAutoHidden,
                 $"Toggle {first} 收起后仅 {second} 展开。");
+            VerifyIndicators(first, second);
             VerifyPair(first, second, splitEvenly: true);
 
             Manager.ToggleAnchorable(tools[first], first);
+            await SampleChecks.SettleAsync();
+            SampleChecks.Require(!tools[first].IsAutoHidden && !tools[second].IsAutoHidden,
+                $"Toggle {first} 重新展开后两侧工具均已展开。");
+            VerifyIndicators(first, second);
+            Manager.ActiveContent = tools[second].Content;
+            await SampleChecks.SettleAsync();
+            VerifyIndicators(first, second);
             Manager.ToggleAnchorable(tools[second], second);
             await SampleChecks.SettleAsync();
             SampleChecks.Require(!tools[first].IsAutoHidden && tools[second].IsAutoHidden,
                 $"Toggle {second} 收起后仅 {first} 展开。");
+            VerifyIndicators(first, second);
             VerifyPair(first, second, splitEvenly: true);
 
             Manager.ToggleAnchorable(tools[first], first);
             await SampleChecks.SettleAsync();
             SampleChecks.Require(tools[first].IsAutoHidden && tools[second].IsAutoHidden,
                 $"Toggle {first}/{second} 均已收起。");
+            VerifyIndicators(first, second);
             VerifyPair(first, second, splitEvenly: true);
 
             Manager.ToggleAnchorable(tools[first], first);
             Manager.ToggleAnchorable(tools[second], second);
             await SampleChecks.SettleAsync();
+            VerifyIndicators(first, second);
         }
 
         SampleChecks.Require(failure.GetValue(overlay) == null, "Toggle 拖动指示层正常绘制。");
         checks.Record("Toggle 六区指示在双窗格、单窗格和空白分组时正确切分并命中。");
+        checks.Record("Toggle 同侧工具反复收起、展开及切换活动内容后，展开按钮的选中标识仍可见，收起按钮的标识隐藏。");
+
+        void VerifyIndicators(DockZone first, DockZone second)
+        {
+            foreach (DockZone zone in new[] { first, second })
+            {
+                LayoutAnchorable tool = tools[zone];
+                ToggleDockButton button = PageRoot.FindVisualChildren<ToggleDockButton>()
+                    .Single(candidate => ReferenceEquals(candidate.Anchorable, tool));
+                Border indicator = button.FindVisualChildren<Border>().Single(border => border.Name == "Indicator");
+                bool expanded = !tool.IsAutoHidden;
+                SampleChecks.Require(button.IsChecked == expanded
+                    && indicator.Visibility == (expanded ? Visibility.Visible : Visibility.Collapsed)
+                    && (!expanded || indicator.ActualWidth > 0 && indicator.ActualHeight > 0),
+                    $"Toggle {zone} 按钮的实际选中标识与工具展开状态一致。");
+            }
+        }
 
         void VerifyPair(DockZone first, DockZone second, bool splitEvenly)
         {

@@ -188,9 +188,11 @@ public class TabControlEx : TabView
     internal void UpdatePaneActiveState()
     {
         LayoutAnchorablePane? tool = (this as LayoutAnchorablePaneControl)?.Model as LayoutAnchorablePane;
+        LayoutDocumentPane? document = (this as LayoutDocumentPaneControl)?.Model as LayoutDocumentPane;
         bool singleFloatingTool = tool?.IsDirectlyHostedInFloatingWindow == true && tool.ChildrenCount == 1;
-        VisualStateManager.GoToState(this, SelectedItem is TabViewItem { Tag: LayoutContent { IsActive: true } }
-            && !singleFloatingTool ? "PaneActive" : "PaneInactive", false);
+        bool showActiveOutline = SelectedItem is TabViewItem { Tag: LayoutContent { IsActive: true } }
+            && !singleFloatingTool && document?.IsDirectlyHostedInFloatingWindow != true;
+        VisualStateManager.GoToState(this, showActiveOutline ? "PaneActive" : "PaneInactive", false);
         VisualStateManager.GoToState(this, tool?.ChildrenCount == 0 ? "EmptyTool"
             : tool?.ChildrenCount == 1 ? "SingleTool" : "MultipleTools", false);
         if (GetTemplateChild("PaneFrame") is not null)

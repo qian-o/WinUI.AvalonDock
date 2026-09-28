@@ -16,6 +16,8 @@ internal sealed partial class WindowsWindowHostService
 {
     private sealed partial class WindowHost
     {
+        private int? nativeBorderColor;
+
         public WindowCaptionMetrics GetCaptionMetrics()
         {
             if (clientCaptionButtons)
@@ -54,11 +56,13 @@ internal sealed partial class WindowsWindowHostService
                 if (clientCaptionButtons && appWindow.Presenter is OverlappedPresenter standard)
                 {
                     standard.SetBorderAndTitleBar(true, true);
+                    nativeBorderColor = null;
                 }
 
                 clientCaptionButtons = false;
                 ResetCaptionColors();
                 window.ExtendsContentIntoTitleBar = false;
+                SetNativeBorderColor(false);
                 return;
             }
             if (!customCaption)
@@ -74,6 +78,7 @@ internal sealed partial class WindowsWindowHostService
                 if (appWindow.Presenter is OverlappedPresenter presenter)
                 {
                     presenter.SetBorderAndTitleBar(true, !clientCaptionButtons);
+                    nativeBorderColor = null;
                 }
             }
             double scale = GetWindowScale(handle);
@@ -83,7 +88,8 @@ internal sealed partial class WindowsWindowHostService
             Rect drag = layout.DragRegion;
             drag.X += metrics.LeftInset;
             drag.Width = Math.Max(0, drag.Width - metrics.LeftInset - metrics.RightInset);
-            if (clientCaptionButtons || new global::Windows.UI.ViewManagement.AccessibilitySettings().HighContrast)
+            bool highContrast = new global::Windows.UI.ViewManagement.AccessibilitySettings().HighContrast;
+            if (clientCaptionButtons || highContrast)
             {
                 ResetCaptionColors();
             }
@@ -99,6 +105,7 @@ internal sealed partial class WindowsWindowHostService
                 appWindow.TitleBar.ButtonHoverBackgroundColor = global::Windows.UI.Color.FromArgb(30, foreground.R, foreground.G, foreground.B);
                 appWindow.TitleBar.ButtonPressedBackgroundColor = global::Windows.UI.Color.FromArgb(50, foreground.R, foreground.G, foreground.B);
             }
+            SetNativeBorderColor(layout.IsDark && !highContrast);
             EnforceMinimumSize();
             // Native title-bar appearance updates can replace the non-client regions.
             // Install measured caption/input rectangles after those updates.
@@ -153,6 +160,26 @@ internal sealed partial class WindowsWindowHostService
             appWindow.TitleBar.ButtonHoverBackgroundColor = null;
             appWindow.TitleBar.ButtonPressedBackgroundColor = null;
         }
+
+        private void SetNativeBorderColor(bool dark)
+        {
+            // 原生外框与默认深色浮窗表面保持同色，保留系统的尺寸调整边框。
+            // 浅色和高对比度呈现恢复系统默认颜色；只缓存设置成功的颜色。
+            const int borderColorAttribute = 34; // DWMWA_BORDER_COLOR
+            int color = dark ? 0x00282828 : unchecked((int)0xFFFFFFFF);
+            if (nativeBorderColor == color)
+            {
+                return;
+            }
+
+            if (DwmSetWindowAttribute(handle, borderColorAttribute, ref color, sizeof(int)) >= 0)
+            {
+                nativeBorderColor = color;
+            }
+        }
+
+        [DllImport("dwmapi.dll", ExactSpelling = true)]
+        private static extern int DwmSetWindowAttribute(nint window, int attribute, ref int value, int size);
 
         private nint? HitTestClientCaption(nint position)
         {

@@ -3,7 +3,9 @@ using AvalonDock.Controls;
 using AvalonDock.Layout;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Media;
 using WinUI.AvalonDock.Experiments.Shared;
+using Path = Microsoft.UI.Xaml.Shapes.Path;
 
 namespace WinUI.AvalonDock.Experiments.Docking;
 
@@ -63,6 +65,7 @@ internal static class DockingTemplateChecks
             () => $"标题根：{DescribeMarks(toolWindowRoot)} 内容根：{DescribeMarks(toolContentRoot)}",
             "Classic 双工具浮窗没有同时显示自定义标签、内容和标题模板。");
         checks.Record("Classic 自定义模板在文档和双工具真实浮窗的标签、内容及标题栏可见。");
+        await VerifyFloatingBorderThemeAsync(mainRoot, document, documentWindow, toolWindow, checks);
 
         saveLayout();
         restoreLayout();
@@ -121,6 +124,90 @@ internal static class DockingTemplateChecks
     private static FrameworkElement ContentRoot(LayoutFloatingWindowControl window)
         => window.Content?.GetType().GetProperty("RootVisual")?.GetValue(window.Content) as FrameworkElement
             ?? throw new InvalidOperationException("Classic 模板验收浮窗子 XAML 根尚未连接。");
+
+    private static async Task VerifyFloatingBorderThemeAsync(FrameworkElement mainRoot,
+        LayoutDocument document, LayoutFloatingWindowControl documentWindow,
+        LayoutFloatingWindowControl toolWindow, SampleChecks checks)
+    {
+        LayoutFloatingWindowControl[] windows = [documentWindow, toolWindow];
+        ElementTheme originalTheme = mainRoot.RequestedTheme;
+        try
+        {
+            foreach (ElementTheme theme in new[] { ElementTheme.Dark, ElementTheme.Light })
+            {
+                mainRoot.RequestedTheme = theme;
+                await DockingDragChecks.WaitUntilAsync(() => windows.All(window => WindowRoot(window).ActualTheme == theme
+                    && ContentRoot(window).ActualTheme == theme),
+                    $"Classic 浮窗未切换到{(theme == ElementTheme.Dark ? "深色" : "浅色")}主题。");
+                if (theme == ElementTheme.Dark)
+                {
+                    document.IsSelected = true;
+                    document.IsActive = true;
+                    await DockingDragChecks.WaitUntilAsync(() => document.IsActive && windows.All(window =>
+                        WindowRoot(window).FindVisualChildren<Border>().Any(border => border.Name == "WindowBorder"
+                            && border.IsLoaded && border.Visibility == Visibility.Visible
+                            && border.ActualWidth > 0 && border.ActualHeight > 0))
+                        && ContentRoot(documentWindow).FindVisualChildren<LayoutDocumentPaneControl>()
+                            .Any(control => control.Model is LayoutDocumentPane { IsDirectlyHostedInFloatingWindow: true }
+                                && control.SelectedItem is TabViewItem { Tag: LayoutDocument { IsActive: true } })
+                        && DocumentPaneOutline(ContentRoot(documentWindow)) is
+                        {
+                            IsLoaded: true, Data: not null,
+                            ActualWidth: > 0, ActualHeight: > 0
+                        },
+                        "Classic 深色浮窗外框或活动文档描边未加载。");
+
+                    foreach (LayoutFloatingWindowControl window in windows)
+                    {
+                        Border border = WindowRoot(window).FindVisualChildren<Border>()
+                            .Single(element => element.Name == "WindowBorder");
+                        SampleChecks.Require(IsLowContrastDarkStroke(border.BorderBrush, border.Background),
+                            "Classic 深色浮窗 XAML 外框仍呈亮色。");
+                    }
+
+                    LayoutDocumentPaneControl pane = ContentRoot(documentWindow)
+                        .FindVisualChildren<LayoutDocumentPaneControl>()
+                        .Single(control => control.Model is LayoutDocumentPane { IsDirectlyHostedInFloatingWindow: true });
+                    Path outline = DocumentPaneOutline(ContentRoot(documentWindow))!;
+                    SampleChecks.Require(IsLowContrastDarkStroke(outline.Stroke, pane.Background, outline.Opacity),
+                        "Classic 深色浮窗内活动文档窗格仍有高对比亮色描边。");
+                }
+            }
+            checks.Record("Classic 文档和工具真实浮窗深浅主题切换正常；深色 XAML 外框与活动文档描边均为低对比暗色。");
+        }
+        finally
+        {
+            mainRoot.RequestedTheme = originalTheme;
+            await SampleChecks.SettleAsync();
+        }
+    }
+
+    private static Path? DocumentPaneOutline(FrameworkElement root)
+        => root.FindVisualChildren<LayoutDocumentPaneControl>()
+            .FirstOrDefault(control => control.Model is LayoutDocumentPane { IsDirectlyHostedInFloatingWindow: true })?
+            .FindVisualChildren<Grid>().FirstOrDefault(grid => grid.Name == "PaneBorder")?
+            .FindVisualChildren<Path>().FirstOrDefault();
+
+    private static bool IsLowContrastDarkStroke(Brush? stroke, Brush? background, double elementOpacity = 1)
+    {
+        if (stroke is not SolidColorBrush line || background is not SolidColorBrush surface)
+        {
+            return false;
+        }
+
+        if (surface.Color.A != 255 || surface.Opacity < 0.99)
+        {
+            return false;
+        }
+
+        double alpha = line.Color.A / 255d * line.Opacity * elementOpacity;
+        double red = surface.Color.R + (line.Color.R - surface.Color.R) * alpha;
+        double green = surface.Color.G + (line.Color.G - surface.Color.G) * alpha;
+        double blue = surface.Color.B + (line.Color.B - surface.Color.B) * alpha;
+        return Math.Max(red, Math.Max(green, blue)) < 112
+            && Math.Max(Math.Abs(red - surface.Color.R), Math.Max(Math.Abs(green - surface.Color.G),
+                Math.Abs(blue - surface.Color.B))) < 72;
+    }
 
     private static async Task WaitForMarksAsync(FrameworkElement root, WorkspaceDocument document,
         WorkspaceTool tool, string stage)
