@@ -7,6 +7,7 @@ using Microsoft.UI.Input;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
+using Windows.Foundation;
 using ReadOnlyPropertyGuard = AvalonDock.Compatibility.ReadOnlyPropertyGuard;
 
 namespace AvalonDock.Controls;
@@ -98,11 +99,12 @@ public class LayoutDocumentTabItem : ContentControl
 
     /// <summary>Activates the document and starts tracking through the shared native drag service.</summary>
     protected virtual void OnMouseLeftButtonDown(PointerRoutedEventArgs e)
-        => BeginDrag(this);
+        => BeginDrag(this, e.GetCurrentPoint(this).Position);
 
-    internal void BeginDragFromTab(TabViewItem tab) => BeginDrag(tab);
+    internal void BeginDragFromTab(TabViewItem tab, PointerRoutedEventArgs e)
+        => BeginDrag(tab, e.GetCurrentPoint(tab).Position);
 
-    private void BeginDrag(FrameworkElement origin)
+    private void BeginDrag(FrameworkElement origin, Point pressPosition)
     {
         if (!IsLoaded)
         {
@@ -123,7 +125,7 @@ public class LayoutDocumentTabItem : ContentControl
                 return;
             }
 
-            model.Root?.Manager?.BeginContentDrag(model, origin);
+            model.Root?.Manager?.BeginContentDrag(model, origin, pressPosition);
         }
     }
 

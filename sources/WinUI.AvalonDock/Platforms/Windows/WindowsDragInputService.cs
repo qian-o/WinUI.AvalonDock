@@ -3,6 +3,8 @@ using System.Runtime.InteropServices;
 using Microsoft.UI;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
+using Windows.Foundation;
+using Windows.Graphics;
 
 namespace AvalonDock.Platforms.Windows;
 
@@ -12,7 +14,7 @@ namespace AvalonDock.Platforms.Windows;
 /// </summary>
 internal sealed class WindowsDragInputService(FrameworkElement origin) : IDragInputService
 {
-    public IDragInputSession? TryBegin(Action<DragInputUpdate> onUpdate)
+    public IDragInputSession? TryBegin(Action<DragInputUpdate> onUpdate, Point? pressPosition = null)
     {
         ArgumentNullException.ThrowIfNull(onUpdate);
         if (!origin.DispatcherQueue.HasThreadAccess)
@@ -36,7 +38,14 @@ internal sealed class WindowsDragInputService(FrameworkElement origin) : IDragIn
         origin.ReleasePointerCaptures();
         try
         {
-            return Session.TryCreate(window, origin.DispatcherQueue, onUpdate);
+            DragInputPosition? initialPosition = null;
+            if (pressPosition is Point localPoint)
+            {
+                Point rootPoint = origin.TransformToVisual(null).TransformPoint(localPoint);
+                PointInt32 screenPoint = xamlRoot.CoordinateConverter.ConvertLocalToScreen(rootPoint);
+                initialPosition = new DragInputPosition(screenPoint.X, screenPoint.Y, DragCoordinateSpace.DesktopPhysicalPixels);
+            }
+            return Session.TryCreate(window, origin.DispatcherQueue, onUpdate, initialPosition);
         }
         catch (EntryPointNotFoundException exception)
         {
@@ -93,10 +102,20 @@ internal sealed class WindowsDragInputService(FrameworkElement origin) : IDragIn
             get; private set;
         }
 
-        public static Session? TryCreate(nint window, DispatcherQueue dispatcher, Action<DragInputUpdate> onUpdate)
+        public static Session? TryCreate(nint window, DispatcherQueue dispatcher, Action<DragInputUpdate> onUpdate,
+            DragInputPosition? initialPosition)
         {
-            if (!TryGetPosition(out DragInputPosition position) ||
-                NativeMethods.GetWindowSubclass(window, WindowProcedure, SubclassId, out _))
+            if (NativeMethods.GetWindowSubclass(window, WindowProcedure, SubclassId, out _))
+            {
+                return null;
+            }
+
+            DragInputPosition position;
+            if (initialPosition.HasValue)
+            {
+                position = initialPosition.Value;
+            }
+            else if (!TryGetPosition(out position))
             {
                 return null;
             }

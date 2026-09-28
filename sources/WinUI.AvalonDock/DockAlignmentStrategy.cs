@@ -32,6 +32,15 @@ public sealed class DockAlignmentStrategy : ILayoutUpdateStrategy
             return false;
         }
 
+        // Show() 已经记住仍在当前树中的原容器时沿用该位置。数据源导入新工具也会
+        // 传入一个建议窗格，但它并非历史原位，仍须按 MVVM 的区域映射插入。
+        if (destinationContainer is ILayoutGroup rememberedContainer
+            && ReferenceEquals(((ILayoutPreviousContainer)anchorableToShow).PreviousContainer, rememberedContainer)
+            && ReferenceEquals(rememberedContainer.Root, layout))
+        {
+            return false;
+        }
+
         if (!contentToSide.TryGetValue(anchorableToShow.Content, out AnchorSide side))
         {
             return false;

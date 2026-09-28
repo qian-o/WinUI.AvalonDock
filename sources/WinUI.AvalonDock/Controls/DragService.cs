@@ -122,35 +122,37 @@ internal class DragService
             return;
         }
 
-        RefreshNativeTarget();
-        if (currentDropTarget != null &&
-            !currentDropTarget.HitTestScreen(dragPosition))
+        List<IDropArea> availableAreas = currentHost.GetDropAreas(floatingWindow).ToList();
+        List<IDropArea> areasToRemove = currentWindowAreas.Where(area => !availableAreas.Contains(area)
+            || !area.DetectionRect.Contains(area.TransformToDeviceDPI(dragPosition))).ToList();
+        if (currentDropTarget != null && areasToRemove.Count > 0
+            && (currentDropTarget is not DropTargetBase target
+                || areasToRemove.Any(area => ReferenceEquals(OverlayHost.Element(area), target.Target.Area))))
         {
             overlay.DragLeave(currentDropTarget);
             currentDropTarget = null;
         }
-
-        List<IDropArea> areasToRemove = new();
-        currentWindowAreas.ForEach(a =>
+        foreach (IDropArea area in areasToRemove)
         {
-            // is mouse still inside this area?
-            if (!a.DetectionRect.Contains(a.TransformToDeviceDPI(dragPosition)))
-            {
-                overlay.DragLeave(a);
-                areasToRemove.Add(a);
-            }
-        });
+            overlay.DragLeave(area);
+            currentWindowAreas.Remove(area);
+        }
 
-        areasToRemove.ForEach(a =>
-            currentWindowAreas.Remove(a));
-
-        List<IDropArea> areasToAdd =
-            currentHost.GetDropAreas(floatingWindow).Where(cw => !currentWindowAreas.Contains(cw) && cw.DetectionRect.Contains(cw.TransformToDeviceDPI(dragPosition))).ToList();
+        List<IDropArea> areasToAdd = availableAreas.Where(area => !currentWindowAreas.Contains(area)
+            && area.DetectionRect.Contains(area.TransformToDeviceDPI(dragPosition))).ToList();
 
         currentWindowAreas.AddRange(areasToAdd);
 
         areasToAdd.ForEach(a =>
             overlay.DragEnter(a));
+
+        // Rebuild targets only after old views leave and their replacements enter.
+        RefreshNativeTarget();
+        if (currentDropTarget != null && !currentDropTarget.HitTestScreen(dragPosition))
+        {
+            overlay.DragLeave(currentDropTarget);
+            currentDropTarget = null;
+        }
 
         if (currentDropTarget == null)
         {
@@ -216,6 +218,8 @@ internal class DragService
 
         currentWindow = null;
         currentHost = null;
+        currentWindowAreas.Clear();
+        currentDropTarget = null;
         isDrag = false;
 
         // The host tracked above is not necessarily the only one that has been asked to show an

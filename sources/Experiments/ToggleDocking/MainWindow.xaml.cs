@@ -52,6 +52,7 @@ public sealed partial class MainWindow : Window
         Manager.LayoutItemContainerStyleSelector = SampleStyles.CreateItemStyleSelector();
         Manager.DockLayout = layoutService.Layout;
         Manager.ActiveContentChanged += OnActiveContentChanged;
+        PageRoot.LayoutUpdated += OnRootLayoutUpdated;
         SampleChecks.RunWhenLoaded(this, RunScenarioChecksAsync);
     }
 
@@ -98,8 +99,7 @@ public sealed partial class MainWindow : Window
             return;
         }
 
-        DockZone zone = tool.Content is WorkspaceTool model ? model.Zone : DockZone.LeftTop;
-        Manager.ToggleAnchorable(tool, zone);
+        Manager.ToggleAnchorable(tool, GetToolZone(tool));
         StatusText.Text = $"已切换 {tool.Title} 的展开状态。";
     }
 
@@ -196,8 +196,33 @@ public sealed partial class MainWindow : Window
             return;
         }
 
-        StatusText.Text = $"当前工具：{model.Title}（{model.Zone}）。";
+        StatusText.Text = GetActiveToolStatus(model);
     }
+
+    private void OnRootLayoutUpdated(object? sender, object args)
+    {
+        if (StatusText.Text.StartsWith("当前工具：", StringComparison.Ordinal)
+            && Manager.ActiveContent is WorkspaceTool model)
+        {
+            string status = GetActiveToolStatus(model);
+            if (StatusText.Text != status)
+            {
+                StatusText.Text = status;
+            }
+        }
+    }
+
+    private string GetActiveToolStatus(WorkspaceTool model)
+    {
+        LayoutAnchorable? tool = Manager.Layout?.Descendents().OfType<LayoutAnchorable>()
+            .FirstOrDefault(item => ReferenceEquals(item.Content, model));
+        DockZone zone = tool is null ? model.Zone : GetToolZone(tool);
+        return $"当前工具：{model.Title}（{zone}）。";
+    }
+
+    private DockZone GetToolZone(LayoutAnchorable tool) => PageRoot.FindVisualChildren<ToggleDockButton>()
+        .FirstOrDefault(button => ReferenceEquals(button.Anchorable, tool))?.Zone
+        ?? (tool.Content as WorkspaceTool)?.Zone ?? DockZone.LeftTop;
 
     public async Task RunScenarioChecksAsync(SampleChecks checks)
     {
@@ -264,6 +289,24 @@ public sealed partial class MainWindow : Window
             && Math.Abs((indicatorBounds.Top + indicatorBounds.Bottom) / 2 - movedButton.ActualHeight / 2) < 0.5,
             "Toggle 工具移动到右侧区域后，指示条精确贴合按钮右边并保持垂直居中。");
         checks.Record($"Toggle 工具区域移动通过（{originalZone} -> {model.Zone}）。");
+
+        StatusText.Text = GetActiveToolStatus(model);
+        Manager.MoveAnchorableToZone(selectedTool, DockZone.BottomRight);
+        await SampleChecks.SettleAsync();
+        SampleChecks.Require(model.Zone == DockZone.RightBottom
+            && StatusText.Text == $"当前工具：{model.Title}（BottomRight）。",
+            "Toggle 拖动路径改变实际区域后，状态栏使用侧栏按钮当前区域而非模型初始 Zone。");
+        ToggleTool_Click(this, new RoutedEventArgs());
+        await SampleChecks.SettleAsync();
+        SampleChecks.Require(selectedTool.IsAutoHidden && selectedTool.FindParent<LayoutAnchorSide>()?.Side == AnchorSide.Bottom,
+            "Toggle 拖动后菜单收起当前工具仍保留实际底部区域。");
+        ToggleTool_Click(this, new RoutedEventArgs());
+        await SampleChecks.SettleAsync();
+        SampleChecks.Require(!selectedTool.IsAutoHidden && GetToolZone(selectedTool) == DockZone.BottomRight,
+            "Toggle 拖动后菜单再次展开当前工具仍使用实际区域。");
+        Manager.MoveAnchorableToZone(selectedTool, DockZone.RightBottom);
+        await SampleChecks.SettleAsync();
+        checks.Record("Toggle 实际区域变化后状态栏同步通过。");
 
         selectedTool.Hide();
         await SampleChecks.SettleAsync();
@@ -356,6 +399,8 @@ public sealed partial class MainWindow : Window
         Manager.AllowDetachedWindows = originalFloating;
         Manager.AllowFloatingWindows = originalFloating;
         checks.Record("Toggle 窗口策略通过。");
+
+        await CheckLayoutPrioritiesAsync(checks);
     }
 
     private async Task CheckZonePreviewGeometryAsync(SampleChecks checks)
@@ -475,6 +520,7 @@ public sealed partial class MainWindow : Window
 
     private void OnClosed(object sender, WindowEventArgs args)
     {
+        PageRoot.LayoutUpdated -= OnRootLayoutUpdated;
         Manager.Dispose();
     }
 }

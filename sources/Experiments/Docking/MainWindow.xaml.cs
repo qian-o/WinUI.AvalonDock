@@ -66,7 +66,19 @@ public sealed partial class MainWindow : Window
             Zone = DockZone.LeftBottom,
             Text = "同一个 AnchorablesSource 可以提供多个工具模型。"
         });
+        Manager.Loaded += InitializeSampleAutoHideSizes;
         SampleChecks.RunWhenLoaded(this, RunScenarioChecksAsync);
+    }
+
+    private void InitializeSampleAutoHideSizes(object sender, RoutedEventArgs e)
+    {
+        Manager.Loaded -= InitializeSampleAutoHideSizes;
+        foreach (LayoutAnchorable tool in Manager.Layout.Descendents().OfType<LayoutAnchorable>()
+            .Where(item => item.Content is WorkspaceTool))
+        {
+            tool.AutoHideWidth = 280;
+            tool.AutoHideHeight = 180;
+        }
     }
 
     private LayoutContent? ActiveLayoutContent =>
@@ -314,6 +326,10 @@ public sealed partial class MainWindow : Window
         SampleChecks.Require(initialToolTabs.All(tab => tab.Header is LayoutAnchorableTabItem { ActualWidth: > 0 } header
             && header.FindVisualChildren<TextBlock>().Any(text => text.Visibility == Visibility.Visible && text.ActualWidth > 0)),
             "Classic 首次加载的工具标签标题已完成测量并可见。");
+        SampleChecks.Require(Manager.Layout.Descendents().OfType<LayoutAnchorable>()
+            .Where(tool => tool.Content is WorkspaceTool)
+            .All(tool => tool.AutoHideWidth == 280 && tool.AutoHideHeight == 180),
+            "Classic 首次加载为来源工具设置适合示例内容的自动隐藏弹窗尺寸。");
         checks.Record("Classic 首次加载工具标签呈现通过。");
 
         LayoutAnchorable styleTool = Manager.Layout.Descendents().OfType<LayoutAnchorable>().First();
@@ -342,6 +358,9 @@ public sealed partial class MainWindow : Window
         await CheckDocumentTabLayoutAsync(checks);
         await CheckDocumentChromeAsync(checks);
         await CheckDocumentDropAreaAfterFloatAsync(checks);
+        await CheckContentOperationEventsAsync(checks);
+        await DockingTargetChecks.RunAsync(Manager, PageRoot, documents[1], tools[1], checks,
+            new Point(AppWindow.Position.X, AppWindow.Position.Y));
 
         LayoutAnchorable floatingTool = Manager.Layout.Descendents().OfType<LayoutAnchorable>().First();
         floatingTool.IsActive = true;
@@ -463,6 +482,161 @@ public sealed partial class MainWindow : Window
         ToggleWindowPolicy_Click(this, new RoutedEventArgs());
         SampleChecks.Require(Manager.AllowFloatingWindows == originalFloating, "Classic 浮动策略可恢复。");
         checks.Record("Classic 窗口策略通过。");
+
+        await CheckRightAutoHidePopupAsync(checks);
+        await DockingTemplateChecks.RunAsync(Manager, PageRoot, documents.Single(), tools[0], tools[1],
+            () => SaveLayout_Click(this, new RoutedEventArgs()),
+            () => RestoreLayout_Click(this, new RoutedEventArgs()), checks);
+    }
+
+    private async Task CheckRightAutoHidePopupAsync(SampleChecks checks)
+    {
+        LayoutAnchorable tool = Manager.Layout.Descendents().OfType<LayoutAnchorable>()
+            .Single(item => item.Content is WorkspaceTool { Id: "classic-properties" });
+        LayoutAnchorablePane rightPane = new()
+        {
+            DockWidth = new GridLength(280)
+        };
+        rightPane.Children.Add(tool);
+        Manager.LayoutEngine.InsertPane(Manager.Layout, rightPane, AnchorSide.Right);
+        await SampleChecks.SettleAsync();
+        SampleChecks.Require(ReferenceEquals(tool.Parent, rightPane) && rightPane.GetSide() == AnchorSide.Right,
+            "Classic 属性工具已进入真实右侧窗格。");
+
+        tool.ToggleAutoHide();
+        await SampleChecks.SettleAsync();
+        SampleChecks.Require(tool.IsAutoHidden && tool.FindParent<LayoutAnchorSide>()?.Side == AnchorSide.Right,
+            "Classic 右侧工具切换到自动隐藏侧栏。");
+        LayoutAnchorControl anchor = PageRoot.FindVisualChildren<LayoutAnchorControl>()
+            .Single(item => ReferenceEquals(item.Model, tool));
+        SampleChecks.Require(anchor.IsLoaded, "Classic 右侧自动隐藏标签已加载到真实主窗口。");
+        tool.IsSelected = false;
+        tool.IsSelected = true;
+        await SampleChecks.SettleAsync();
+        LayoutAutoHideWindowControl popup = Manager.AutoHideWindow
+            ?? throw new InvalidOperationException("Classic 自动隐藏弹窗未创建。");
+        SampleChecks.Require(ReferenceEquals(popup.Model, tool) && popup.Visibility == Visibility.Visible
+            && Math.Abs(popup.ActualWidth - (tool.AutoHideWidth + Manager.GridSplitterWidth)) < 3,
+            $"Classic 右侧自动隐藏真实弹窗使用 280 像素内容宽度，实际宽度 {popup.ActualWidth}。");
+
+        LayoutAnchorableItem item = Manager.GetLayoutItemFromModel(tool) as LayoutAnchorableItem
+            ?? throw new InvalidOperationException("Classic 属性工具布局项未创建。");
+        SampleChecks.Require(item.AutoHideCommand?.CanExecute(null) == true,
+            "Classic 右侧自动隐藏工具的固定命令可用。");
+        item.AutoHideCommand!.Execute(null);
+        await SampleChecks.SettleAsync();
+        SampleChecks.Require(!tool.IsAutoHidden && ReferenceEquals(tool.Parent, rightPane)
+            && rightPane.GetSide() == AnchorSide.Right,
+            "Classic 属性工具固定后返回原右侧窗格。");
+        checks.Record("Classic 来源工具自动隐藏宽度、右侧真实弹窗尺寸与固定返回通过。");
+    }
+
+    private async Task CheckContentOperationEventsAsync(SampleChecks checks)
+    {
+        foreach (LayoutContent source in new LayoutContent[]
+        {
+            Manager.Layout.Descendents().OfType<LayoutDocument>().First(),
+            Manager.Layout.Descendents().OfType<LayoutAnchorable>().First(),
+        })
+        {
+            string label = source is LayoutDocument ? "文档" : "工具";
+            ILayoutContainer? originalParent = source.Parent;
+            int floating = 0;
+            int floated = 0;
+            int docking = 0;
+            int docked = 0;
+            bool cancelFloat = true;
+            bool cancelDock = true;
+            EventHandler<ContentFloatingEventArgs> onFloating = (_, args) =>
+            {
+                if (ReferenceEquals(args.Content, source))
+                {
+                    floating++;
+                    args.Cancel = cancelFloat;
+                }
+            };
+            EventHandler<ContentFloatedEventArgs> onFloated = (_, args) =>
+            {
+                if (ReferenceEquals(args.Content, source))
+                {
+                    floated++;
+                }
+            };
+            EventHandler<ContentDockingEventArgs> onDocking = (_, args) =>
+            {
+                if (ReferenceEquals(args.Content, source))
+                {
+                    docking++;
+                    args.Cancel = cancelDock;
+                }
+            };
+            EventHandler<ContentDockedEventArgs> onDocked = (_, args) =>
+            {
+                if (ReferenceEquals(args.Content, source))
+                {
+                    docked++;
+                }
+            };
+            Manager.ContentFloating += onFloating;
+            Manager.ContentFloated += onFloated;
+            Manager.ContentDocking += onDocking;
+            Manager.ContentDocked += onDocked;
+            try
+            {
+                LayoutItem item = Manager.GetLayoutItemFromModel(source)
+                    ?? throw new InvalidOperationException("事件检查的布局项未建立。");
+                SampleChecks.Require(item.FloatCommand?.CanExecute(null) == true, $"Classic {label}允许正常浮动。");
+                item.FloatCommand!.Execute(null);
+                await SampleChecks.SettleAsync();
+                SampleChecks.Require(floating == 1 && floated == 0 && !source.IsFloating
+                    && ReferenceEquals(source.Parent, originalParent), $"Classic {label}取消浮动不改变布局或发送完成事件。");
+                cancelFloat = false;
+                item.FloatCommand.Execute(null);
+                await SampleChecks.SettleAsync();
+                SampleChecks.Require(floating == 2 && floated == 1 && source.IsFloating,
+                    $"Classic {label}成功浮动只发送一次完成事件。");
+                LayoutFloatingWindowControl window = Manager.FloatingWindows.Single(host => host.Model.Descendents().Contains(source));
+                window.Width = 160;
+                window.Height = 120;
+                window.Left = AppWindow.Position.X;
+                window.Top = AppWindow.Position.Y;
+                await SampleChecks.SettleAsync();
+                FrameworkElement pane = PageRoot.FindVisualChildren<FrameworkElement>().Single(element =>
+                    element is ILayoutControl control && ReferenceEquals(control.Model, originalParent)
+                    && element is LayoutDocumentPaneControl or LayoutAnchorablePaneControl);
+                for (int attempt = 0; attempt < 2; attempt++)
+                {
+                    using DockingDragChecks session = new(window);
+                    session.Update(DockingDragChecks.Center(DockingDragChecks.ScreenBounds(pane)));
+                    string glyphName = source is LayoutDocument ? "PART_DocumentPaneDropTargetInto" : "PART_AnchorablePaneDropTargetInto";
+                    await DockingDragChecks.WaitUntilAsync(() => session.Targets().Any(target =>
+                        ReferenceEquals(DockingDragChecks.TargetArea(target), pane)), "事件检查目标未出现。");
+                    Point release = DockingDragChecks.Center(session.GlyphBounds(glyphName));
+                    session.Update(release);
+                    session.Drop(release);
+                    await SampleChecks.SettleAsync();
+                    if (attempt == 0)
+                    {
+                        SampleChecks.Require(docking == 1 && docked == 0 && source.IsFloating,
+                            $"Classic {label}取消停靠后保留浮窗且不发送完成事件。");
+                        cancelDock = false;
+                    }
+                    else
+                    {
+                        SampleChecks.Require(docking == 2 && docked == 1 && !source.IsFloating
+                            && ReferenceEquals(source.Parent, originalParent), $"Classic {label}成功停靠只发送一次完成事件并返回目标窗格。");
+                    }
+                }
+                checks.Record($"Classic {label}浮动/停靠事件取消保持布局，成功完成各通知一次通过。");
+            }
+            finally
+            {
+                Manager.ContentFloating -= onFloating;
+                Manager.ContentFloated -= onFloated;
+                Manager.ContentDocking -= onDocking;
+                Manager.ContentDocked -= onDocked;
+            }
+        }
     }
 
     private async Task CheckDocumentTabLayoutAsync(SampleChecks checks)
@@ -516,59 +690,166 @@ public sealed partial class MainWindow : Window
 
     private async Task CheckDocumentDropAreaAfterFloatAsync(SampleChecks checks)
     {
-        LayoutDocument[] layoutDocuments = Manager.Layout.Descendents().OfType<LayoutDocument>().ToArray();
-        SampleChecks.Require(layoutDocuments.Length == 2, "Classic 分组前保留两个初始文档。");
-        LayoutDocument upperDocument = layoutDocuments.First(document => ReferenceEquals(document.Content, documents[0]));
-        LayoutDocument lowerDocument = layoutDocuments.First(document => ReferenceEquals(document.Content, documents[1]));
-        LayoutDocumentItem item = Manager.GetLayoutItemFromModel(lowerDocument) as LayoutDocumentItem
-            ?? throw new InvalidOperationException("Classic 下方文档布局项未创建。");
-        ICommand splitCommand = item.NewHorizontalTabGroupCommand
-            ?? throw new InvalidOperationException("Classic 文档分组命令未创建。");
-        SampleChecks.Require(splitCommand.CanExecute(null),
-            "Classic 可将第二个文档分到下方标签组。");
-        splitCommand.Execute(null);
-        await SampleChecks.SettleAsync();
-
-        LayoutDocumentPane upperModel = upperDocument.Parent as LayoutDocumentPane
-            ?? throw new InvalidOperationException("Classic 上方文档窗格不存在。");
-        LayoutDocumentPaneControl upperPane = PageRoot.FindVisualChildren<LayoutDocumentPaneControl>()
-            .Single(pane => ReferenceEquals(pane.Model, upperModel));
-        SampleChecks.Require(upperPane.IsLoaded && upperPane.ActualHeight > 100
-            && lowerDocument.Parent is LayoutDocumentPane lowerModel
-            && !ReferenceEquals(lowerModel, upperModel),
-            "Classic 上下两个文档窗格已完成布局。");
-
-        DropArea<LayoutDocumentPaneControl> area = (DropArea<LayoutDocumentPaneControl>)(Activator.CreateInstance(
-            typeof(DropArea<LayoutDocumentPaneControl>), BindingFlags.Instance | BindingFlags.NonPublic,
-            null, [upperPane, DropAreaType.DocumentPane], null)
-            ?? throw new InvalidOperationException("Classic 文档停靠区域未创建。"));
-        Rect splitBounds = area.DetectionRect;
-        lowerDocument.Float();
-        await SampleChecks.SettleAsync();
-        try
+        foreach (Orientation orientation in new[] { Orientation.Vertical, Orientation.Horizontal })
         {
-            Rect expandedBounds = area.DetectionRect;
-            SampleChecks.Require(lowerDocument.IsFloating && upperPane.IsLoaded
-                && expandedBounds.Height > splitBounds.Height + 30
-                && expandedBounds.Bottom > splitBounds.Bottom + 30
-                && Math.Abs(expandedBounds.Height - upperPane.ActualHeight) < 2,
-                "Classic 下方文档浮出后，原停靠区域跟随上方窗格扩展。");
-            Point formerLowerHalf = new(expandedBounds.X + expandedBounds.Width / 2,
-                (splitBounds.Bottom + expandedBounds.Bottom) / 2);
-            SampleChecks.Require(!splitBounds.Contains(formerLowerHalf) && expandedBounds.Contains(formerLowerHalf),
-                "Classic 原下半区可命中新扩展的文档停靠区域。");
-            checks.Record("Classic 上下分组后浮出下方文档，中央停靠区域随剩余窗格扩展。");
-        }
-        finally
-        {
-            if (lowerDocument.IsFloating)
+            string direction = orientation == Orientation.Vertical ? "上下" : "左右";
+            LayoutDocument[] layoutDocuments = Manager.Layout.Descendents().OfType<LayoutDocument>().ToArray();
+            SampleChecks.Require(layoutDocuments.Length == 2, $"Classic {direction}分组前保留两个初始文档。");
+            LayoutDocument remainingDocument = layoutDocuments.Single(document => ReferenceEquals(document.Content, documents[0]));
+            LayoutDocument floatedDocument = layoutDocuments.Single(document => ReferenceEquals(document.Content, documents[1]));
+            LayoutDocumentItem item = Manager.GetLayoutItemFromModel(floatedDocument) as LayoutDocumentItem
+                ?? throw new InvalidOperationException("Classic 分组文档布局项未创建。");
+            ICommand splitCommand = (orientation == Orientation.Vertical ? item.NewHorizontalTabGroupCommand : item.NewVerticalTabGroupCommand)
+                ?? throw new InvalidOperationException("Classic 文档分组命令未创建。");
+            SampleChecks.Require(splitCommand.CanExecute(null), $"Classic 可创建{direction}标签组。");
+            splitCommand.Execute(null);
+            await SampleChecks.SettleAsync();
+            LayoutDocumentPane remainingModel = remainingDocument.Parent as LayoutDocumentPane
+                ?? throw new InvalidOperationException("Classic 剩余文档窗格不存在。");
+            SampleChecks.Require(remainingModel.Parent is LayoutDocumentPaneGroup group && group.Orientation == orientation
+                && !ReferenceEquals(remainingDocument.Parent, floatedDocument.Parent), $"Classic {direction}分组方向正确。");
+
+            WorkspaceDocument dragModel = new()
             {
-                lowerDocument.Dock();
+                Id = "classic-active-drag-check",
+                Title = "会话检查文档",
+                Text = "在已经显示停靠指示器的同一会话中改变布局。"
+            };
+            documents.Add(dragModel);
+            await SampleChecks.SettleAsync();
+            LayoutDocument dragDocument = Manager.Layout.Descendents().OfType<LayoutDocument>()
+                .Single(document => ReferenceEquals(document.Content, dragModel));
+            try
+            {
+                dragDocument.Float();
+                await SampleChecks.SettleAsync();
+                LayoutFloatingWindowControl draggingWindow = WindowFor(dragDocument);
+                ParkWindow(draggingWindow);
+                LayoutDocumentPaneControl pane = PaneFor(remainingModel);
+                Rect splitBounds = DockingDragChecks.ScreenBounds(pane);
+                using DockingDragChecks session = new(draggingWindow);
+                Point originalCenter = DockingDragChecks.Center(splitBounds);
+                session.Update(originalCenter);
+                await DockingDragChecks.WaitUntilAsync(() => session.Targets().Any(target => IsCenter(target, pane)),
+                    "实际会话未生成主文档窗格的中央目标。");
+                DropArea<LayoutDocumentPaneControl> capturedArea = session.HostAreas(Manager)
+                    .Single(area => ReferenceEquals(area.AreaElement, pane));
+                SampleChecks.Require(session.ContainsArea(capturedArea)
+                    && session.HostAreas(Manager).Any(area => ReferenceEquals(area, capturedArea)),
+                    "Classic 初始目标来自实际宿主缓存并已进入拖动会话。");
+                session.Update(DockingDragChecks.Center(session.GlyphBounds("PART_DocumentPaneDropTargetInto")));
+                await session.WaitForFrameAsync(0, "初始中央指示器与预览未实际呈现。");
+                SampleChecks.Require(DockingDragChecks.Centered(session.GlyphBounds("PART_DocumentPaneDropTargetInto"), splitBounds)
+                    && DockingDragChecks.Near(session.PreviewBounds(), splitBounds),
+                    $"Classic {direction}分组的实际指示器居中且预览覆盖当前窗格。");
+                OverlayWindow originalOverlay = session.Overlay;
+                int splitFrames = session.Frames;
+
+                floatedDocument.Float();
+                ParkWindow(WindowFor(floatedDocument));
+                await DockingDragChecks.WaitUntilAsync(() =>
+                {
+                    LayoutDocumentPaneControl? currentPane = PageRoot.FindVisualChildren<LayoutDocumentPaneControl>()
+                        .FirstOrDefault(current => ReferenceEquals(current.Model, remainingModel));
+                    if (currentPane is not { IsLoaded: true })
+                    {
+                        return false;
+                    }
+                    Rect currentBounds = DockingDragChecks.ScreenBounds(currentPane);
+                    return orientation == Orientation.Vertical ? currentBounds.Height > splitBounds.Height + 30
+                        : currentBounds.Width > splitBounds.Width + 30;
+                }, "浮出另一文档后，剩余窗格未完成扩展。");
+                pane = PaneFor(remainingModel);
+                Rect expandedBounds = DockingDragChecks.ScreenBounds(pane);
+                session.Update(originalCenter);
+                await session.WaitForFrameAsync(splitFrames, "同一拖动会话没有呈现扩展后的指示器。");
+                SampleChecks.Require(ReferenceEquals(session.Overlay, originalOverlay), "Classic 布局变化后继续使用同一实际覆盖层会话。");
+                DropArea<LayoutDocumentPaneControl> currentArea = session.HostAreas(Manager)
+                    .Single(area => ReferenceEquals(area.AreaElement, pane));
+                Point formerOtherHalf = orientation == Orientation.Vertical
+                    ? new Point(expandedBounds.X + expandedBounds.Width / 2, (splitBounds.Bottom + expandedBounds.Bottom) / 2)
+                    : new Point((splitBounds.Right + expandedBounds.Right) / 2, expandedBounds.Y + expandedBounds.Height / 2);
+                session.Update(formerOtherHalf);
+                SampleChecks.Require(!splitBounds.Contains(formerOtherHalf) && session.ContainsArea(currentArea)
+                    && currentArea.DetectionRect.Contains(currentArea.TransformToDeviceDPI(formerOtherHalf)),
+                    $"Classic {direction}分组原另一半区命中实际会话中的扩展窗格。");
+                object centerTarget = session.Targets().Single(target => IsCenter(target, pane));
+                Rect glyphBounds = session.GlyphBounds("PART_DocumentPaneDropTargetInto");
+                SampleChecks.Require(DockingDragChecks.Centered(glyphBounds, expandedBounds)
+                    && DockingDragChecks.Near(DockingDragChecks.TargetBounds(centerTarget), glyphBounds),
+                    $"Classic {direction}分组浮出后，实际指示器及停靠目标的中心误差不超过 2 物理像素。");
+                int expandedFrames = session.Frames;
+                session.Update(DockingDragChecks.Center(glyphBounds));
+                await session.WaitForFrameAsync(expandedFrames, "扩展窗格中央目标的预览未实际呈现。");
+                SampleChecks.Require(session.ActiveTarget is { } active && IsCenter(active, pane)
+                    && DockingDragChecks.Near(session.PreviewBounds(), expandedBounds),
+                    "Classic 中央命中和实际预览共同覆盖扩展后的窗格。");
+
+                Thickness originalMargin = pane.Margin;
+                object? originalTarget = session.ActiveTarget;
+                try
+                {
+                    int marginFrames = session.Frames;
+                    pane.Margin = new Thickness(originalMargin.Left + 12, originalMargin.Top + 12,
+                        originalMargin.Right + 12, originalMargin.Bottom + 12);
+                    PageRoot.UpdateLayout();
+                    await DockingDragChecks.WaitUntilAsync(() => DockingDragChecks.ScreenBounds(pane).Width < expandedBounds.Width - 16,
+                        "对称内缩后实际窗格边界未改变。");
+                    Rect insetBounds = DockingDragChecks.ScreenBounds(pane);
+                    session.Update(DockingDragChecks.Center(glyphBounds));
+                    await session.WaitForFrameAsync(marginFrames, "中央目标位置不变时，预览未跟随窗格边界重新呈现。");
+                    SampleChecks.Require(ReferenceEquals(session.ActiveTarget, originalTarget)
+                        && DockingDragChecks.Centered(session.GlyphBounds("PART_DocumentPaneDropTargetInto"), glyphBounds)
+                        && DockingDragChecks.Near(session.PreviewBounds(), insetBounds),
+                        "Classic 同一中央目标保持位置时，实际预览仍跟随窗格边界变化。");
+                }
+                finally
+                {
+                    int restoreFrames = session.Frames;
+                    pane.Margin = originalMargin;
+                    PageRoot.UpdateLayout();
+                    session.Update(DockingDragChecks.Center(glyphBounds));
+                    await session.WaitForFrameAsync(restoreFrames, "恢复窗格边界后预览未重新呈现。");
+                }
+                SampleChecks.Require(DockingDragChecks.Near(session.PreviewBounds(), DockingDragChecks.ScreenBounds(pane)),
+                    "Classic 恢复后的实际中央预览覆盖当前窗格。");
+                SampleChecks.Require(session.Drop(DockingDragChecks.Center(session.GlyphBounds("PART_DocumentPaneDropTargetInto"))),
+                    "Classic 实际拖动会话提交了中央停靠目标。");
+                await DockingDragChecks.WaitUntilAsync(() => !dragDocument.IsFloating
+                    && ReferenceEquals(dragDocument.Parent, remainingDocument.Parent), "中央释放后文档未合并到实际目标窗格。");
+                SampleChecks.Require(remainingModel.Children.Contains(dragDocument)
+                    && PageRoot.FindVisualChildren<LayoutDocumentPaneControl>().Any(current => ReferenceEquals(current.Model, remainingModel)
+                        && current.TabItems.OfType<TabViewItem>().Any(tab => tab.Tag is LayoutContent content && ReferenceEquals(content.Content, dragModel))),
+                    "Classic 中央释放后的布局树和可见标签均包含同一文档内容。");
+                checks.Record($"Classic {direction}分组动态变化的实际 DragService、目标、指示器、预览、绘制帧和中央释放通过。");
+            }
+            finally
+            {
+                if (floatedDocument.IsFloating)
+                {
+                    remainingModel.Children.Add(floatedDocument);
+                    Manager.Layout.CollectGarbage();
+                }
+                documents.Remove(dragModel);
                 await SampleChecks.SettleAsync();
             }
+            SampleChecks.Require(documents.Count == 2 && !floatedDocument.IsFloating
+                && ReferenceEquals(remainingDocument.Parent, floatedDocument.Parent), "Classic 会话检查后恢复两个同组停靠文档。");
         }
-        SampleChecks.Require(!lowerDocument.IsFloating && documents.Count == 2,
-            "Classic 几何检查后恢复两个停靠文档。");
+
+        LayoutDocumentPaneControl PaneFor(LayoutDocumentPane model) => PageRoot.FindVisualChildren<LayoutDocumentPaneControl>()
+            .Single(pane => ReferenceEquals(pane.Model, model));
+        LayoutFloatingWindowControl WindowFor(LayoutDocument document) => Manager.FloatingWindows
+            .Single(window => window.Model.Descendents().OfType<LayoutDocument>().Any(current => ReferenceEquals(current, document)));
+        static bool IsCenter(object target, LayoutDocumentPaneControl pane) => DockingDragChecks.TargetType(target) == DropTargetType.DocumentPaneDockInside
+            && DockingDragChecks.TabIndex(target) == -1 && ReferenceEquals(DockingDragChecks.TargetArea(target), pane);
+        void ParkWindow(LayoutFloatingWindowControl window)
+        {
+            window.Width = 160;
+            window.Height = 120;
+            window.Left = AppWindow.Position.X;
+            window.Top = AppWindow.Position.Y;
+        }
     }
 
     private async Task CheckDocumentChromeAsync(SampleChecks checks)
@@ -737,14 +1018,15 @@ public sealed partial class MainWindow : Window
         object[] expected = models.Cast<object>().ToArray();
         object[] actual = Manager.Layout.Descendents().OfType<LayoutContent>()
             .Select(item => item.Content)
-            .Where(content => content is not null)
+            .Where(content => content is T)
             .Cast<object>()
             .ToArray();
-        foreach (object model in expected)
-        {
-            SampleChecks.Require(actual.Any(content => ReferenceEquals(content, model)), $"{label}内容已在布局中找到。");
-        }
-        checks.Record($"{label}引用同步通过（{expected.Length}）。");
+        SampleChecks.Require(actual.Length == expected.Length
+            && actual.Distinct(System.Collections.Generic.ReferenceEqualityComparer.Instance).Count() == actual.Length
+            && expected.Distinct(System.Collections.Generic.ReferenceEqualityComparer.Instance).Count() == expected.Length
+            && expected.All(model => actual.Any(content => ReferenceEquals(content, model))),
+            $"{label}内容身份集合准确，没有残留旧项或重复模型。");
+        checks.Record($"{label}精确引用集合与重复检查通过（{expected.Length}）。");
     }
 
     private void OnClosed(object sender, WindowEventArgs args)

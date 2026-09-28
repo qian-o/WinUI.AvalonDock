@@ -13,6 +13,42 @@
                     <TextBlock Text="{Binding Text}" TextWrapping="Wrap" />
                 </Grid>
             </DataTemplate>
+            <DataTemplate x:Key="SmokeDocumentHeaderTemplate">
+                <StackPanel Orientation="Horizontal" Spacing="4">
+                    <TextBlock x:Name="SmokeDocumentHeaderMark" Text="D-H" Tag="{Binding Title}" />
+                    <TextBlock Text="{Binding Title}" />
+                </StackPanel>
+            </DataTemplate>
+            <DataTemplate x:Key="SmokeAnchorableHeaderTemplate">
+                <StackPanel Orientation="Horizontal" Spacing="4">
+                    <TextBlock x:Name="SmokeAnchorableHeaderMark" Text="T-H" Tag="{Binding Title}" />
+                    <TextBlock Text="{Binding Title}" />
+                </StackPanel>
+            </DataTemplate>
+            <DataTemplate x:Key="SmokeDocumentContentTemplate">
+                <StackPanel Padding="8" Spacing="4">
+                    <TextBlock x:Name="SmokeDocumentContentMark" Text="D-C" Tag="{Binding Id}" />
+                    <TextBlock Text="{Binding Text}" TextWrapping="Wrap" />
+                </StackPanel>
+            </DataTemplate>
+            <DataTemplate x:Key="SmokeAnchorableContentTemplate">
+                <StackPanel Padding="8" Spacing="4">
+                    <TextBlock x:Name="SmokeAnchorableContentMark" Text="T-C" Tag="{Binding Id}" />
+                    <TextBlock Text="{Binding Text}" TextWrapping="Wrap" />
+                </StackPanel>
+            </DataTemplate>
+            <DataTemplate x:Key="SmokeDocumentTitleTemplate">
+                <StackPanel Orientation="Horizontal" Spacing="4">
+                    <TextBlock x:Name="SmokeDocumentTitleMark" Text="D-T" Tag="{Binding Title}" />
+                    <TextBlock Text="{Binding Title}" />
+                </StackPanel>
+            </DataTemplate>
+            <DataTemplate x:Key="SmokeAnchorableTitleTemplate">
+                <StackPanel Orientation="Horizontal" Spacing="4">
+                    <TextBlock x:Name="SmokeAnchorableTitleMark" Text="T-T" Tag="{Binding Title}" />
+                    <TextBlock Text="{Binding Title}" />
+                </StackPanel>
+            </DataTemplate>
         </ResourceDictionary>
     </Application.Resources>
 </Application>

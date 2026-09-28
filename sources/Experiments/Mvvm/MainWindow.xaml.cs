@@ -163,6 +163,8 @@ public sealed partial class MainWindow : Window
         await SampleChecks.SettleAsync();
         CheckContentCount(checks, ViewModel.Documents, "恢复后文档");
         checks.Record("MVVM XML 布局恢复通过。");
+
+        await WorkspacePersistenceChecks.RunAsync(Manager, ViewModel, checks);
     }
 
     private bool HasContent(object content)
@@ -173,11 +175,15 @@ public sealed partial class MainWindow : Window
     private void CheckContentCount<T>(SampleChecks checks, IEnumerable<T> models, string label)
     {
         object[] expected = models.Cast<object>().ToArray();
-        object[] actual = Manager.Layout.Descendents().OfType<LayoutContent>()
+        IEnumerable<LayoutContent> contents = typeof(T) == typeof(WorkspaceDocument)
+            ? Manager.Layout.Descendents().OfType<LayoutDocument>()
+            : Manager.Layout.Descendents().OfType<LayoutAnchorable>();
+        object[] actual = contents
             .Select(item => item.Content)
             .Where(content => content is not null)
             .Cast<object>()
             .ToArray();
+        SampleChecks.Require(actual.Length == expected.Length, $"{label}布局节点数量与模型集合一致，没有额外或重复项。");
         foreach (object model in expected)
         {
             SampleChecks.Require(actual.Any(content => ReferenceEquals(content, model)), $"{label}模型已在布局中找到。");

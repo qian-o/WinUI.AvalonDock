@@ -1,6 +1,7 @@
 // Adapted from Dirkster.AvalonDock v5.0.0 (MS-PL), Controls/OverlayWindow.cs.
 using AvalonDock.Layout;
 using Microsoft.UI.Xaml;
+using Windows.Foundation;
 
 namespace AvalonDock.Controls;
 
@@ -10,6 +11,7 @@ public partial class OverlayWindow : IOverlayWindow
     private readonly List<IDropArea> visibleAreas = [];
     private LayoutFloatingWindowControl? floatingWindow;
     private IDropTarget? currentDropTarget;
+    private Rect currentPreviewAreaBounds;
 
     internal OverlayWindow(IOverlayWindowHost host) : this(OverlayHost.Element(host)
         ?? throw new ArgumentException("The overlay host has no connected content.", nameof(host)), host is LayoutFloatingWindowControl)
@@ -23,6 +25,7 @@ public partial class OverlayWindow : IOverlayWindow
     {
         currentDropTarget?.DragLeave();
         currentDropTarget = null;
+        currentPreviewAreaBounds = Rect.Empty;
         visibleAreas.Clear();
         // Upstream HideOverlay retains the dragged window until the drop and leave calls finish.
     }
@@ -119,6 +122,14 @@ public partial class OverlayWindow : IOverlayWindow
             Invalidate();
         }
 
+        // The glyph may stay at the same position while its pane grows around it.
+        // Its preview still needs to follow the pane's current bounds.
+        if (currentDropTarget is DropTargetBase active && result.Any(target =>
+            target.TabIndex == active.TabIndex && Equals(target.Target, active.Target)))
+        {
+            UpdateTargetPreview(active, source, false);
+        }
+
         return result;
     }
     void IOverlayWindow.DragEnter(IDropTarget target)
@@ -132,15 +143,29 @@ public partial class OverlayWindow : IOverlayWindow
         currentDropTarget = target;
         target.DragEnter();
         SetActive((target as DropTargetBase)?.Target);
-        if (preview != null && target.GetPreviewPath(this, source) is { } geometry)
+        currentPreviewAreaBounds = Rect.Empty;
+        UpdateTargetPreview(target, source, true);
+    }
+    private void UpdateTargetPreview(IDropTarget target, LayoutFloatingWindow source, bool force)
+    {
+        if (preview == null || target is not DropTargetBase nativeTarget)
         {
-            preview.Data = geometry;
-            preview.Width = view.Width;
-            preview.Height = view.Height;
-            preview.Stretch = Microsoft.UI.Xaml.Media.Stretch.None;
-            preview.Visibility = Microsoft.UI.Xaml.Visibility.Visible;
-            Invalidate();
+            return;
         }
+
+        Rect areaBounds = GetPreviewBounds(nativeTarget.Target.Area);
+        if (!force && currentPreviewAreaBounds == areaBounds)
+        {
+            return;
+        }
+
+        currentPreviewAreaBounds = areaBounds;
+        preview.Data = target.GetPreviewPath(this, source);
+        preview.Width = view.Width;
+        preview.Height = view.Height;
+        preview.Stretch = Microsoft.UI.Xaml.Media.Stretch.None;
+        preview.Visibility = preview.Data == null ? Visibility.Collapsed : Visibility.Visible;
+        Invalidate();
     }
     void IOverlayWindow.DragLeave(IDropTarget target)
     {
@@ -158,6 +183,7 @@ public partial class OverlayWindow : IOverlayWindow
         }
 
         currentDropTarget = null;
+        currentPreviewAreaBounds = Rect.Empty;
         SetActive(null);
     }
     void IOverlayWindow.DragDrop(IDropTarget target)

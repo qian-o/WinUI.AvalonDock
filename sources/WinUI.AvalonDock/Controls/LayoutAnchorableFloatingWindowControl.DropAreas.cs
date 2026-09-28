@@ -13,34 +13,39 @@ public partial class LayoutAnchorableFloatingWindowControl
 
     IEnumerable<IDropArea> IOverlayWindowHost.GetDropAreas(LayoutFloatingWindowControl draggingWindow)
     {
-        if (dropAreas != null)
-        {
-            return dropAreas;
-        }
-
-        dropAreas = new List<IDropArea>();
+        List<IDropArea> currentAreas = new();
         if (draggingWindow.Model is LayoutDocumentFloatingWindow)
         {
-            return dropAreas;
+            return dropAreas = currentAreas;
         }
 
         // A window whose content has already been released offers nothing to drop onto (issue #587).
         UIElement? rootVisual = (Content as FloatingWindowContentHost)?.RootVisual;
         if (rootVisual == null)
         {
-            return dropAreas;
+            return dropAreas = currentAreas;
         }
 
         foreach (LayoutAnchorablePaneControl areaHost in rootVisual.FindVisualChildren<LayoutAnchorablePaneControl>())
         {
-            dropAreas.Add(new DropArea<LayoutAnchorablePaneControl>(areaHost, DropAreaType.AnchorablePane));
+            if (DropAreaCache.IsConnected(areaHost, Manager, Model))
+            {
+                currentAreas.Add(DropAreaCache.Reuse(dropAreas, areaHost, DropAreaType.AnchorablePane));
+            }
         }
 
-        foreach (LayoutDocumentPaneControl areaHost in rootVisual.FindVisualChildren<LayoutDocumentPaneControl>())
+        if (FloatingDropAreaRules.CanDockAsDocument(draggingWindow))
         {
-            dropAreas.Add(new DropArea<LayoutDocumentPaneControl>(areaHost, DropAreaType.DocumentPane));
+            foreach (LayoutDocumentPaneControl areaHost in rootVisual.FindVisualChildren<LayoutDocumentPaneControl>())
+            {
+                if (DropAreaCache.IsConnected(areaHost, Manager, Model))
+                {
+                    currentAreas.Add(DropAreaCache.Reuse(dropAreas, areaHost, DropAreaType.DocumentPane));
+                }
+            }
         }
 
+        dropAreas = currentAreas;
         return dropAreas;
     }
 }

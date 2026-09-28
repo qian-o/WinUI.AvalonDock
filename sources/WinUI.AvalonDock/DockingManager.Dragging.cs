@@ -42,11 +42,11 @@ public partial class DockingManager
         dockingOverlay.Hide();
     }
 
-    internal void BeginContentDrag(LayoutContent content, FrameworkElement origin)
+    internal void BeginContentDrag(LayoutContent content, FrameworkElement origin, Point? pressPosition = null)
     {
         if (this is ToggleDockingManager toggle && content is LayoutAnchorable tool && tool.CanMove && !IsDetached(tool))
         {
-            toggle.BeginZoneDrag(tool, origin, waitForLeave: true);
+            toggle.BeginZoneDrag(tool, origin, waitForLeave: true, pressPosition: pressPosition);
             return;
         }
         if (dragInput is not null || chromeDragHost != null || content.Root?.Manager != this)
@@ -60,7 +60,7 @@ public partial class DockingManager
         draggedContent = content;
         dragOrigin = origin;
         dragStarted = false;
-        dragInput = PlatformServices.CreateDragInputService(origin).TryBegin(OnDragInput);
+        dragInput = PlatformServices.CreateDragInputService(origin).TryBegin(OnDragInput, pressPosition);
         if (dragInput is null)
         {
             draggedContent = null;

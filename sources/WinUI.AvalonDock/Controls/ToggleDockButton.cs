@@ -161,7 +161,7 @@ public class ToggleDockButton : ToggleButton
 
         if (Anchorable?.Root?.Manager is ToggleDockingManager manager)
         {
-            manager.BeginZoneDrag(Anchorable, this);
+            manager.BeginZoneDrag(Anchorable, this, pressPosition: pressPoint);
         }
     }
     internal static T? FindParent<T>(DependencyObject child) where T : DependencyObject

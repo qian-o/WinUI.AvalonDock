@@ -129,11 +129,11 @@ public class AnchorablePaneTitle : Control
         {
             if (current is LayoutAnchorablePaneControl { Model: LayoutAnchorablePane pane })
             {
-                pane.Root?.Manager?.BeginPaneDrag(pane, this);
+                pane.Root?.Manager?.BeginPaneDrag(pane, this, e.GetCurrentPoint(this).Position);
                 return;
             }
         }
-        Model.Root?.Manager?.BeginContentDrag(Model, this);
+        Model.Root?.Manager?.BeginContentDrag(Model, this, e.GetCurrentPoint(this).Position);
     }
 
     /// <summary>Activates the tool when the title receives a left-button release.</summary>

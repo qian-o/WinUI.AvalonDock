@@ -112,7 +112,8 @@ public class LayoutGridResizerControl : Control
             return;
         }
 
-        IDragInputSession? input = PlatformServices.CreateDragInputService(this).TryBegin(OnDragInput);
+        Point offset = e.GetCurrentPoint(this).Position;
+        IDragInputSession? input = PlatformServices.CreateDragInputService(this).TryBegin(OnDragInput, offset);
         if (input == null)
         {
             return;
@@ -122,7 +123,6 @@ public class LayoutGridResizerControl : Control
         dragStartPosition = dragCurrentPosition = input.Position;
         dragScale = XamlRoot?.RasterizationScale ?? 1;
         e.Handled = true;
-        Point offset = e.GetCurrentPoint(this).Position;
         try
         {
             ReadOnlyPropertyGuard.Set(this, IsDraggingProperty, true);
@@ -141,6 +141,13 @@ public class LayoutGridResizerControl : Control
                 (dragCurrentPosition.X - previous.X) / dragScale,
                 (dragCurrentPosition.Y - previous.Y) / dragScale));
             return;
+        }
+
+        if (update.Kind == DragInputUpdateKind.Released && dragCurrentPosition != previous)
+        {
+            DragDelta?.Invoke(this, new DragDeltaEventArgs(
+                (dragCurrentPosition.X - previous.X) / dragScale,
+                (dragCurrentPosition.Y - previous.Y) / dragScale));
         }
 
         IDragInputSession? input = dragSession;

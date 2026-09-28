@@ -12,7 +12,8 @@ namespace AvalonDock.Layout;
 /// </summary>
 [ContentProperty(Name = nameof(Children))]
 [Serializable]
-public class LayoutAnchorGroup : LayoutGroup<LayoutAnchorable>, ILayoutPreviousContainer, ILayoutPaneSerializable, Core.Serialization.ISerializableLayoutPane
+public class LayoutAnchorGroup : LayoutGroup<LayoutAnchorable>, ILayoutPreviousContainer, ILayoutPaneSerializable,
+    Core.Serialization.ISerializableLayoutPane, Core.Serialization.ISerializablePreviousContainer
 {
     // WinUI XBF requires a concrete owner for implicit content declared on a generic base.
     // This exposes the original collection instance without changing its API type or state.
@@ -63,5 +64,19 @@ public class LayoutAnchorGroup : LayoutGroup<LayoutAnchorable>, ILayoutPreviousC
     string? Core.Serialization.ISerializableLayoutPane.Id
     {
         get => id; set => id = value;
+    }
+
+    /// <inheritdoc/>
+    Core.Serialization.ISerializableLayoutContainer? Core.Serialization.ISerializablePreviousContainer.PreviousContainer
+    {
+        get => previousContainer as Core.Serialization.ISerializableLayoutContainer;
+        set => ((ILayoutPreviousContainer)this).PreviousContainer = value as ILayoutContainer;
+    }
+
+    /// <inheritdoc/>
+    string? Core.Serialization.ISerializablePreviousContainer.PreviousContainerId
+    {
+        get => ((ILayoutPreviousContainer)this).PreviousContainerId;
+        set => ((ILayoutPreviousContainer)this).PreviousContainerId = value;
     }
 }

@@ -7,7 +7,7 @@ namespace AvalonDock.Controls;
 /// <summary>Describes a docking region and its coordinate conversion.</summary>
 public interface IDropArea
 {
-    /// <summary>Gets the region's captured screen bounds in the target host's logical units.</summary>
+    /// <summary>Gets the region's current screen bounds in the target host's logical units.</summary>
     Rect DetectionRect
     {
         get;

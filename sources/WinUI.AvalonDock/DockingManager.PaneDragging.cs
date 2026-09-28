@@ -18,11 +18,11 @@ public partial class DockingManager
     private IDockingWindowHost? paneDragHost;
     private Point paneDragAnchor;
 
-    internal void BeginPaneDrag(LayoutAnchorablePane pane, FrameworkElement origin)
+    internal void BeginPaneDrag(LayoutAnchorablePane pane, FrameworkElement origin, Point? pressPosition = null)
     {
         if (this is ToggleDockingManager toggle && pane.SelectedContent is LayoutAnchorable tool && tool.CanMove && !IsDetached(tool))
         {
-            toggle.BeginZoneDrag(tool, origin, waitForLeave: true);
+            toggle.BeginZoneDrag(tool, origin, waitForLeave: true, pressPosition: pressPosition);
             return;
         }
         if (dragInput != null || pane.Root?.Manager != this || pane.SelectedContent is not LayoutAnchorable selected
@@ -31,7 +31,7 @@ public partial class DockingManager
             return;
         }
 
-        BeginContentDrag(selected, origin);
+        BeginContentDrag(selected, origin, pressPosition);
         if (dragInput == null)
         {
             return;

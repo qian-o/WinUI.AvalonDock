@@ -236,7 +236,11 @@ public partial class LayoutAnchorableFloatingWindowControl : LayoutFloatingWindo
             anchorableLayoutItem?.HideCommand?.Execute(parameter);
         }
 
-        Hide();
+        // 隐藏被取消时内容仍在浮动模型中，保留可见宿主供用户继续使用。
+        if (!Model.Descendents().OfType<LayoutContent>().Any())
+        {
+            Hide();
+        }
     }
 
     private bool CanExecuteCloseWindowCommand(object parameter)

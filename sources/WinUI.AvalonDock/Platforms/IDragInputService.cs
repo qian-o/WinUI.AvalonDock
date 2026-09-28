@@ -8,10 +8,12 @@ internal interface IDragInputService
 {
     /// <summary>
     /// Returns null when input capture cannot start. The initial position is available on the
-    /// returned session; callbacks begin after this method returns. Dispose the session when the
-    /// operation ends. Callback failures cancel capture and are retained by the session.
+    /// returned session. The optional press position is in the originating element's local XAML
+    /// coordinates, so a later cursor update cannot replace the actual press location. Callbacks
+    /// begin after this method returns. Dispose the session when the operation ends. Callback
+    /// failures cancel capture and are retained by the session.
     /// </summary>
-    IDragInputSession? TryBegin(Action<DragInputUpdate> onUpdate);
+    IDragInputSession? TryBegin(Action<DragInputUpdate> onUpdate, global::Windows.Foundation.Point? pressPosition = null);
 }
 
 internal interface IDragInputSession : IDisposable

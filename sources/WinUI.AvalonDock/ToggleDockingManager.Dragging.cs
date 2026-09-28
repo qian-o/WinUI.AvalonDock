@@ -14,7 +14,8 @@ public partial class ToggleDockingManager
     private ToggleDockDragOverlay? zoneOverlay;
     private LayoutAnchorable? zoneSource;
     private FrameworkElement? zoneOrigin;
-    internal void BeginZoneDrag(LayoutAnchorable tool, FrameworkElement origin, bool waitForLeave = false)
+    internal void BeginZoneDrag(LayoutAnchorable tool, FrameworkElement origin, bool waitForLeave = false,
+        Point? pressPosition = null)
     {
         if (IsDisposed || zoneInput != null || tool.Root?.Manager != this || IsDetached(tool) || !IsLoaded)
         {
@@ -23,7 +24,7 @@ public partial class ToggleDockingManager
 
         zoneSource = tool;
         zoneOrigin = origin;
-        zoneInput = PlatformServices.CreateDragInputService(origin).TryBegin(OnZoneInput);
+        zoneInput = PlatformServices.CreateDragInputService(origin).TryBegin(OnZoneInput, pressPosition);
         if (zoneInput == null)
         {
             zoneSource = null;
@@ -50,13 +51,12 @@ public partial class ToggleDockingManager
         Point point = new(update.Position.X, update.Position.Y);
         if (zoneOverlay == null)
         {
-            if (update.Kind == DragInputUpdateKind.Released)
-            {
-                StopZoneDrag();
-                return;
-            }
             if (zoneOrigin == null || PlatformServices.Coordinates.TryGetScreenBounds(zoneOrigin, out Rect area) && area.Contains(point))
             {
+                if (update.Kind == DragInputUpdateKind.Released)
+                {
+                    StopZoneDrag();
+                }
                 return;
             }
 

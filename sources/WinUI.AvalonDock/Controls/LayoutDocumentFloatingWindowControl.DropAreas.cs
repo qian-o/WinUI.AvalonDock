@@ -11,34 +11,36 @@ public partial class LayoutDocumentFloatingWindowControl
 
     public IEnumerable<IDropArea> GetDropAreas(LayoutFloatingWindowControl draggingWindow)
     {
-        if (dropAreas != null)
-        {
-            return dropAreas;
-        }
-
-        dropAreas = new List<IDropArea>();
+        List<IDropArea> currentAreas = new();
         bool dockAsDocument = FloatingDropAreaRules.CanDockAsDocument(draggingWindow);
 
         // A window whose content has already been released offers nothing to drop onto (issue #587).
         UIElement? rootVisual = (Content as FloatingWindowContentHost)?.RootVisual;
         if (rootVisual == null)
         {
-            return dropAreas;
+            return dropAreas = currentAreas;
         }
 
         foreach (LayoutAnchorablePaneControl areaHost in rootVisual.FindVisualChildren<LayoutAnchorablePaneControl>())
         {
-            dropAreas.Add(new DropArea<LayoutAnchorablePaneControl>(areaHost, DropAreaType.AnchorablePane));
+            if (DropAreaCache.IsConnected(areaHost, Manager, Model))
+            {
+                currentAreas.Add(DropAreaCache.Reuse(dropAreas, areaHost, DropAreaType.AnchorablePane));
+            }
         }
 
         if (dockAsDocument)
         {
             foreach (LayoutDocumentPaneControl areaHost in rootVisual.FindVisualChildren<LayoutDocumentPaneControl>())
             {
-                dropAreas.Add(new DropArea<LayoutDocumentPaneControl>(areaHost, DropAreaType.DocumentPane));
+                if (DropAreaCache.IsConnected(areaHost, Manager, Model))
+                {
+                    currentAreas.Add(DropAreaCache.Reuse(dropAreas, areaHost, DropAreaType.DocumentPane));
+                }
             }
         }
 
+        dropAreas = currentAreas;
         return dropAreas;
     }
 }

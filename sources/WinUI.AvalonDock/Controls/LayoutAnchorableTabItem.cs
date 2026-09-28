@@ -108,7 +108,7 @@ public class LayoutAnchorableTabItem : Control
         // WinUI capture can move to the native host before this header receives a move event.
         // A previous selection's leave suppression must not cancel a new press.
         cancelMouseLeave = false;
-        Model?.Root?.Manager?.BeginContentDrag(Model, this);
+        Model?.Root?.Manager?.BeginContentDrag(Model, this, e.GetCurrentPoint(this).Position);
     }
 
     /// <summary>Receives movement while the native service owns the docking gesture.</summary>

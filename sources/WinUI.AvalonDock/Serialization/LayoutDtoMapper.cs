@@ -543,10 +543,10 @@ public class LayoutDtoMapper : ILayoutDtoMapper
         {
             CanHide = dto.CanHide,
             CanAutoHide = dto.CanAutoHide,
-            AutoHideWidth = dto.AutoHideWidth,
-            AutoHideHeight = dto.AutoHideHeight,
             AutoHideMinWidth = dto.AutoHideMinWidth,
             AutoHideMinHeight = dto.AutoHideMinHeight,
+            AutoHideWidth = dto.AutoHideWidth,
+            AutoHideHeight = dto.AutoHideHeight,
             CanDockAsTabbedDocument = dto.CanDockAsTabbedDocument,
             CanMove = dto.CanMove,
             IsDetached = dto.IsDetached,

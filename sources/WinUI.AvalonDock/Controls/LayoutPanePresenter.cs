@@ -496,7 +496,7 @@ internal sealed class LayoutPanePresenter : IDisposable
             }
         }
 
-        header.BeginDragFromTab(tab);
+        header.BeginDragFromTab(tab, args);
     }
 
     private static void UpdateToolTabPlacement(TabViewItem tab, bool selected) =>
