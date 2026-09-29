@@ -15,7 +15,7 @@ public sealed partial class MainWindow : Window
     public MainWindow()
     {
         InitializeComponent();
-        Title = "MVVM 数据驱动工作区";
+        Title = "MVVM Data-Driven Workspace";
         Closed += OnClosed;
         Manager.LayoutItemContainerStyleSelector = SampleStyles.CreateItemStyleSelector();
         Manager.DocumentClosing += OnDocumentClosing;
@@ -28,14 +28,14 @@ public sealed partial class MainWindow : Window
         using MemoryStream output = new();
         new XmlLayoutSerializer(Manager).Serialize(output);
         savedLayout = output.ToArray();
-        ViewModel.SetStatus("MVVM 布局已保存到内存。");
+        ViewModel.SetStatus("MVVM layout saved in memory.");
     }
 
     private void RestoreLayout_Click(object sender, RoutedEventArgs e)
     {
         if (savedLayout is null)
         {
-            ViewModel.SetStatus("请先保存布局。");
+            ViewModel.SetStatus("Save the layout first.");
             return;
         }
 
@@ -58,13 +58,13 @@ public sealed partial class MainWindow : Window
         };
         using MemoryStream input = new(savedLayout);
         serializer.Deserialize(input);
-        ViewModel.SetStatus("MVVM 布局已恢复，模型内容按 ContentId 重新连接。");
+        ViewModel.SetStatus("MVVM layout restored and model content reconnected by ContentId.");
     }
 
     private void ToggleTheme_Click(object sender, RoutedEventArgs e)
     {
         PageRoot.RequestedTheme = PageRoot.RequestedTheme == ElementTheme.Dark ? ElementTheme.Light : ElementTheme.Dark;
-        ViewModel.SetStatus(PageRoot.RequestedTheme == ElementTheme.Dark ? "深色主题。" : "浅色主题。");
+        ViewModel.SetStatus(PageRoot.RequestedTheme == ElementTheme.Dark ? "Dark theme." : "Light theme.");
     }
 
     private void OnDocumentClosing(object? sender, DocumentClosingEventArgs e)
@@ -72,7 +72,7 @@ public sealed partial class MainWindow : Window
         if (e.Document.Content is WorkspaceDocument document && document.IsModified)
         {
             e.Cancel = true;
-            ViewModel.SetStatus($"已取消关闭修改中的 {document.Title}；请先保存。 ");
+            ViewModel.SetStatus($"Closing modified {document.Title} was canceled. Save it first.");
         }
     }
 
@@ -91,28 +91,28 @@ public sealed partial class MainWindow : Window
 
     public async Task RunScenarioChecksAsync(SampleChecks checks)
     {
-        SampleChecks.Require(ReferenceEquals(Manager.DockLayout, ViewModel.Layout), "DockLayout 已绑定到 ViewModel.Layout。");
-        SampleChecks.Require(ViewModel.Documents.Count == 2, "初始文档模型已创建。");
-        SampleChecks.Require(ViewModel.Tools.Count == 4, "初始工具模型已创建。");
+        SampleChecks.Require(ReferenceEquals(Manager.DockLayout, ViewModel.Layout), "DockLayout binds to ViewModel.Layout.");
+        SampleChecks.Require(ViewModel.Documents.Count == 2, "Initial document models were created.");
+        SampleChecks.Require(ViewModel.Tools.Count == 4, "Initial tool models were created.");
         await SampleChecks.SettleAsync();
-        CheckContentCount(checks, ViewModel.Documents, "初始文档");
-        CheckContentCount(checks, ViewModel.Tools, "初始工具");
+        CheckContentCount(checks, ViewModel.Documents, "Initial documents");
+        CheckContentCount(checks, ViewModel.Tools, "Initial tools");
 
-        WorkspaceDocument opened = ViewModel.OpenDocument("场景文档", "用于验证打开和活动项同步。");
+        WorkspaceDocument opened = ViewModel.OpenDocument("Scenario Document", "Used to verify opening and active-item synchronization.");
         await SampleChecks.SettleAsync();
-        SampleChecks.Require(ReferenceEquals(ViewModel.Layout.ActiveDockable, opened), "打开文档后模型活动项已更新。");
-        SampleChecks.Require(HasContent(opened), "打开文档已同步到 Manager 布局。");
-        checks.Record("文档打开和活动项同步通过。");
+        SampleChecks.Require(ReferenceEquals(ViewModel.Layout.ActiveDockable, opened), "Opening a document updates the active model item.");
+        SampleChecks.Require(HasContent(opened), "The opened document appears in the manager layout.");
+        checks.Record("Document opening and active-item synchronization");
 
         ViewModel.MarkModifiedCommand.Execute(null);
-        SampleChecks.Require(opened.IsModified, "编辑命令可标记活动文档为已修改。");
+        SampleChecks.Require(opened.IsModified, "Edit command marks the active document as modified.");
         ViewModel.CloseActiveCommand.Execute(null);
-        SampleChecks.Require(ViewModel.Documents.Contains(opened), "修改中的文档不会被命令关闭。");
+        SampleChecks.Require(ViewModel.Documents.Contains(opened), "The command does not close a modified document.");
         ViewModel.SaveCommand.Execute(null);
         ViewModel.CloseActiveCommand.Execute(null);
         await SampleChecks.SettleAsync();
-        SampleChecks.Require(!ViewModel.Documents.Contains(opened), "保存后文档可以被命令关闭。");
-        checks.Record("IsModified 保存与关闭命令通过。");
+        SampleChecks.Require(!ViewModel.Documents.Contains(opened), "The command closes the document after it is saved.");
+        checks.Record("IsModified save and close commands");
 
         WorkspaceDocument closedFromTab = ViewModel.Documents.First();
         LayoutDocument tabDocument = Manager.Layout.Descendents().OfType<LayoutDocument>()
@@ -120,49 +120,49 @@ public sealed partial class MainWindow : Window
         Manager.GetLayoutItemFromModel(tabDocument)?.CloseCommand?.Execute(null);
         await SampleChecks.SettleAsync();
         SampleChecks.Require(!ViewModel.Documents.Contains(closedFromTab) && !HasContent(closedFromTab),
-            "通过文档标签关闭后，MVVM 文档列表和布局树均移除同一模型。");
+            "Closing a document tab removes the same model from the MVVM list and layout tree.");
         ViewModel.NextCommand.Execute(null);
         SampleChecks.Require(ViewModel.ActiveDocument is { } active && ViewModel.Documents.Contains(active) && HasContent(active),
-            "标签关闭后下一个文档命令仍指向布局内文档。");
-        checks.Record("文档标签关闭与下一个文档模型同步通过。");
+            "Next Document still selects a document in the layout after tab closing.");
+        checks.Record("Document tab closing and Next Document model synchronization");
 
         ViewModel.NextCommand.Execute(null);
         WorkspaceDocument? beforeReplace = ViewModel.ActiveDocument;
         ViewModel.ReplaceCommand.Execute(null);
         await SampleChecks.SettleAsync();
-        SampleChecks.Require(beforeReplace is null || !ViewModel.Documents.Contains(beforeReplace), "Replace 命令移除了旧文档。");
-        SampleChecks.Require(ViewModel.ActiveDocument is not null && HasContent(ViewModel.ActiveDocument), "Replace 命令接入了新文档。");
-        checks.Record("文档 Replace 命令通过。");
+        SampleChecks.Require(beforeReplace is null || !ViewModel.Documents.Contains(beforeReplace), "Replace removes the old document.");
+        SampleChecks.Require(ViewModel.ActiveDocument is not null && HasContent(ViewModel.ActiveDocument), "Replace adds the new document.");
+        checks.Record("Document Replace command");
 
         ViewModel.ResetCommand.Execute(null);
         await SampleChecks.SettleAsync();
-        SampleChecks.Require(ViewModel.Documents.Count == 1, "Reset 命令保留一个初始文档。");
-        CheckContentCount(checks, ViewModel.Documents, "Reset 后文档");
+        SampleChecks.Require(ViewModel.Documents.Count == 1, "Reset keeps one initial document.");
+        CheckContentCount(checks, ViewModel.Documents, "Documents after Reset");
 
         ViewModel.AddToolCommand.Execute(null);
         await SampleChecks.SettleAsync();
-        SampleChecks.Require(ViewModel.Tools.Count == 5, "工具 Add 命令增加模型。");
-        CheckContentCount(checks, ViewModel.Tools, "工具 Add");
+        SampleChecks.Require(ViewModel.Tools.Count == 5, "Add Tool adds a model.");
+        CheckContentCount(checks, ViewModel.Tools, "Tools after Add");
         ViewModel.ReplaceToolCommand.Execute(null);
         await SampleChecks.SettleAsync();
-        CheckContentCount(checks, ViewModel.Tools, "工具 Replace");
+        CheckContentCount(checks, ViewModel.Tools, "Tools after Replace");
         ViewModel.ResetToolsCommand.Execute(null);
         await SampleChecks.SettleAsync();
-        SampleChecks.Require(ViewModel.Tools.Count == 1, "工具 Reset 命令保留一个工具。");
-        CheckContentCount(checks, ViewModel.Tools, "工具 Reset");
+        SampleChecks.Require(ViewModel.Tools.Count == 1, "Reset Tools keeps one tool.");
+        CheckContentCount(checks, ViewModel.Tools, "Tools after Reset");
 
         bool originalFloating = ViewModel.Layout.AllowFloatingWindows;
         ViewModel.ToggleFloatingCommand.Execute(null);
-        SampleChecks.Require(ViewModel.Layout.AllowFloatingWindows != originalFloating, "窗口浮动策略由命令切换。");
+        SampleChecks.Require(ViewModel.Layout.AllowFloatingWindows != originalFloating, "The command toggles the floating-window policy.");
         ViewModel.ToggleFloatingCommand.Execute(null);
-        SampleChecks.Require(ViewModel.Layout.AllowFloatingWindows == originalFloating, "窗口浮动策略可恢复。");
-        checks.Record("工具集合和窗口策略同步通过。");
+        SampleChecks.Require(ViewModel.Layout.AllowFloatingWindows == originalFloating, "The floating-window policy can be restored.");
+        checks.Record("Tool collection and window policy synchronization");
 
         SaveLayout_Click(this, new RoutedEventArgs());
         RestoreLayout_Click(this, new RoutedEventArgs());
         await SampleChecks.SettleAsync();
-        CheckContentCount(checks, ViewModel.Documents, "恢复后文档");
-        checks.Record("MVVM XML 布局恢复通过。");
+        CheckContentCount(checks, ViewModel.Documents, "Documents after restore");
+        checks.Record("MVVM XML layout restore");
 
         await WorkspacePersistenceChecks.RunAsync(Manager, ViewModel, checks);
     }
@@ -183,11 +183,11 @@ public sealed partial class MainWindow : Window
             .Where(content => content is not null)
             .Cast<object>()
             .ToArray();
-        SampleChecks.Require(actual.Length == expected.Length, $"{label}布局节点数量与模型集合一致，没有额外或重复项。");
+        SampleChecks.Require(actual.Length == expected.Length, $"{label}: layout node count matches the model collection without extra or duplicate items.");
         foreach (object model in expected)
         {
-            SampleChecks.Require(actual.Any(content => ReferenceEquals(content, model)), $"{label}模型已在布局中找到。");
+            SampleChecks.Require(actual.Any(content => ReferenceEquals(content, model)), $"{label}: model is present in the layout.");
         }
-        checks.Record($"{label}内容引用同步通过（{expected.Length}）。");
+        checks.Record($"{label}: content references synchronized ({expected.Length})");
     }
 }

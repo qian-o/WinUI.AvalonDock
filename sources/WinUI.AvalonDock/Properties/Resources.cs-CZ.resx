@@ -121,7 +121,7 @@
     <value>Aktivní soubory</value>
   </data>
   <data name="Active_ToolWindows" xml:space="preserve">
-    <value>Aktivní nástroj Windows</value>
+    <value>Aktivní okna nástrojů</value>
   </data>
   <data name="Anchorable_AutoHide" xml:space="preserve">
     <value>Skrývat automaticky</value>
@@ -140,6 +140,9 @@
   </data>
   <data name="Anchorable_DockAsDocument" xml:space="preserve">
     <value>Dokovat jako záložku</value>
+  </data>
+  <data name="Anchorable_DetachToWindow" xml:space="preserve">
+    <value>Okno</value>
   </data>
   <data name="Anchorable_Float" xml:space="preserve">
     <value>Změnit na plovoucí</value>
@@ -179,6 +182,78 @@
   </data>
   <data name="Document_NewVerticalTabGroup" xml:space="preserve">
     <value>Nová vertikální skupina záložek</value>
+  </data>
+  <data name="A11y_AutoHideTool" xml:space="preserve">
+    <value>Automaticky skrýt nástroj</value>
+  </data>
+  <data name="A11y_HideTool" xml:space="preserve">
+    <value>Skrýt nástroj</value>
+  </data>
+  <data name="A11y_DockLeft" xml:space="preserve">
+    <value>Ukotvit vlevo</value>
+  </data>
+  <data name="A11y_DockTop" xml:space="preserve">
+    <value>Ukotvit nahoře</value>
+  </data>
+  <data name="A11y_DockRight" xml:space="preserve">
+    <value>Ukotvit vpravo</value>
+  </data>
+  <data name="A11y_DockBottom" xml:space="preserve">
+    <value>Ukotvit dole</value>
+  </data>
+  <data name="A11y_DockInside" xml:space="preserve">
+    <value>Ukotvit uvnitř</value>
+  </data>
+  <data name="A11y_DockLeftAsToolPane" xml:space="preserve">
+    <value>Ukotvit vlevo jako panel nástrojů</value>
+  </data>
+  <data name="A11y_DockTopAsToolPane" xml:space="preserve">
+    <value>Ukotvit nahoře jako panel nástrojů</value>
+  </data>
+  <data name="A11y_DockRightAsToolPane" xml:space="preserve">
+    <value>Ukotvit vpravo jako panel nástrojů</value>
+  </data>
+  <data name="A11y_DockBottomAsToolPane" xml:space="preserve">
+    <value>Ukotvit dole jako panel nástrojů</value>
+  </data>
+  <data name="Toggle_MoveTo" xml:space="preserve">
+    <value>Přesunout do</value>
+  </data>
+  <data name="Toggle_ViewMode" xml:space="preserve">
+    <value>Režim zobrazení</value>
+  </data>
+  <data name="Toggle_Docked" xml:space="preserve">
+    <value>Ukotveno</value>
+  </data>
+  <data name="Toggle_Hidden" xml:space="preserve">
+    <value>Skryto</value>
+  </data>
+  <data name="Toggle_Options" xml:space="preserve">
+    <value>Možnosti</value>
+  </data>
+  <data name="Toggle_Minimize" xml:space="preserve">
+    <value>Minimalizovat</value>
+  </data>
+  <data name="Toggle_ShowHiddenToolWindows" xml:space="preserve">
+    <value>Zobrazit skrytá okna nástrojů</value>
+  </data>
+  <data name="Toggle_Zone_LeftTop" xml:space="preserve">
+    <value>Levá strana nahoře</value>
+  </data>
+  <data name="Toggle_Zone_LeftBottom" xml:space="preserve">
+    <value>Levá strana dole</value>
+  </data>
+  <data name="Toggle_Zone_RightTop" xml:space="preserve">
+    <value>Pravá strana nahoře</value>
+  </data>
+  <data name="Toggle_Zone_RightBottom" xml:space="preserve">
+    <value>Pravá strana dole</value>
+  </data>
+  <data name="Toggle_Zone_BottomLeft" xml:space="preserve">
+    <value>Dole vlevo</value>
+  </data>
+  <data name="Toggle_Zone_BottomRight" xml:space="preserve">
+    <value>Dole vpravo</value>
   </data>
   <data name="Window_Maximize" xml:space="preserve">
     <value>Maximalizovat</value>

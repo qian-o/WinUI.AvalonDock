@@ -76,7 +76,8 @@ public partial class ToggleDockingManager
             {
                 if (button.Name == "PART_AutoHidePin")
                 {
-                    ToolTipService.SetToolTip(button, "Minimize");
+                    ToolTipService.SetToolTip(button, global::AvalonDock.Properties.Resources.Toggle_Minimize);
+                    Microsoft.UI.Xaml.Automation.AutomationProperties.SetName(button, global::AvalonDock.Properties.Resources.Toggle_Minimize);
                     if (button.Content is not Border border)
                     {
                         border = new Border { Background = new SolidColorBrush(Microsoft.UI.Colors.Transparent) };
@@ -150,7 +151,8 @@ public partial class ToggleDockingManager
         };
         ellipsis.SetBinding(Microsoft.UI.Xaml.Shapes.Shape.FillProperty,
             new Binding { Source = button, Path = new PropertyPath(nameof(Button.Foreground)) });
-        ToolTipService.SetToolTip(button, "Options");
+        ToolTipService.SetToolTip(button, global::AvalonDock.Properties.Resources.Toggle_Options);
+        Microsoft.UI.Xaml.Automation.AutomationProperties.SetName(button, global::AvalonDock.Properties.Resources.Toggle_Options);
         button.Click += (_, _) =>
         {
             if (title.Model is { } model)

@@ -141,6 +141,9 @@
   <data name="Anchorable_DockAsDocument" xml:space="preserve">
     <value>탭 문서로 도킹</value>
   </data>
+  <data name="Anchorable_DetachToWindow" xml:space="preserve">
+    <value>창</value>
+  </data>
   <data name="Anchorable_Float" xml:space="preserve">
     <value>부동</value>
   </data>
@@ -180,10 +183,82 @@
   <data name="Document_NewVerticalTabGroup" xml:space="preserve">
     <value>새 세로 탭 그룹</value>
   </data>
+  <data name="A11y_AutoHideTool" xml:space="preserve">
+    <value>도구 창 자동 숨기기</value>
+  </data>
+  <data name="A11y_HideTool" xml:space="preserve">
+    <value>도구 창 숨기기</value>
+  </data>
+  <data name="A11y_DockLeft" xml:space="preserve">
+    <value>왼쪽에 도킹</value>
+  </data>
+  <data name="A11y_DockTop" xml:space="preserve">
+    <value>위쪽에 도킹</value>
+  </data>
+  <data name="A11y_DockRight" xml:space="preserve">
+    <value>오른쪽에 도킹</value>
+  </data>
+  <data name="A11y_DockBottom" xml:space="preserve">
+    <value>아래쪽에 도킹</value>
+  </data>
+  <data name="A11y_DockInside" xml:space="preserve">
+    <value>안쪽에 도킹</value>
+  </data>
+  <data name="A11y_DockLeftAsToolPane" xml:space="preserve">
+    <value>왼쪽에 도구 창으로 도킹</value>
+  </data>
+  <data name="A11y_DockTopAsToolPane" xml:space="preserve">
+    <value>위쪽에 도구 창으로 도킹</value>
+  </data>
+  <data name="A11y_DockRightAsToolPane" xml:space="preserve">
+    <value>오른쪽에 도구 창으로 도킹</value>
+  </data>
+  <data name="A11y_DockBottomAsToolPane" xml:space="preserve">
+    <value>아래쪽에 도구 창으로 도킹</value>
+  </data>
+  <data name="Toggle_MoveTo" xml:space="preserve">
+    <value>이동 위치</value>
+  </data>
+  <data name="Toggle_ViewMode" xml:space="preserve">
+    <value>보기 모드</value>
+  </data>
+  <data name="Toggle_Docked" xml:space="preserve">
+    <value>도킹됨</value>
+  </data>
+  <data name="Toggle_Hidden" xml:space="preserve">
+    <value>숨김</value>
+  </data>
+  <data name="Toggle_Options" xml:space="preserve">
+    <value>옵션</value>
+  </data>
+  <data name="Toggle_Minimize" xml:space="preserve">
+    <value>최소화</value>
+  </data>
+  <data name="Toggle_ShowHiddenToolWindows" xml:space="preserve">
+    <value>숨겨진 도구 창 표시</value>
+  </data>
+  <data name="Toggle_Zone_LeftTop" xml:space="preserve">
+    <value>왼쪽 상단</value>
+  </data>
+  <data name="Toggle_Zone_LeftBottom" xml:space="preserve">
+    <value>왼쪽 하단</value>
+  </data>
+  <data name="Toggle_Zone_RightTop" xml:space="preserve">
+    <value>오른쪽 상단</value>
+  </data>
+  <data name="Toggle_Zone_RightBottom" xml:space="preserve">
+    <value>오른쪽 하단</value>
+  </data>
+  <data name="Toggle_Zone_BottomLeft" xml:space="preserve">
+    <value>하단 왼쪽</value>
+  </data>
+  <data name="Toggle_Zone_BottomRight" xml:space="preserve">
+    <value>하단 오른쪽</value>
+  </data>
   <data name="Window_Maximize" xml:space="preserve">
     <value>최대화</value>
   </data>
   <data name="Window_Restore" xml:space="preserve">
-    <value>보류 해제</value>
+    <value>복원</value>
   </data>
 </root>

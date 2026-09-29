@@ -366,11 +366,14 @@ internal sealed class ToggleDockDragOverlay : IDisposable
         double sideEnd = double.IsNaN(sideBottom) ? bottomTop : Math.Clamp(sideBottom, content.Top, content.Bottom);
         double sideHeight = Math.Max(0, sideEnd - content.Top);
         AddContentPair(visiblePaneBounds, new Rect(content.Left, content.Top, leftWidth, sideHeight),
-            DockZone.LeftTop, "Left Top", DockZone.LeftBottom, "Left Bottom", vertical: true);
+            DockZone.LeftTop, ToggleDockingManager.GetLocalizedZoneName(DockZone.LeftTop),
+            DockZone.LeftBottom, ToggleDockingManager.GetLocalizedZoneName(DockZone.LeftBottom), vertical: true);
         AddContentPair(visiblePaneBounds, new Rect(content.Right - rightWidth, content.Top, rightWidth, sideHeight),
-            DockZone.RightTop, "Right Top", DockZone.RightBottom, "Right Bottom", vertical: true);
+            DockZone.RightTop, ToggleDockingManager.GetLocalizedZoneName(DockZone.RightTop),
+            DockZone.RightBottom, ToggleDockingManager.GetLocalizedZoneName(DockZone.RightBottom), vertical: true);
         AddContentPair(visiblePaneBounds, new Rect(content.Left, bottomTop, content.Width, bottomHeight),
-            DockZone.BottomLeft, "Bottom Left", DockZone.BottomRight, "Bottom Right", vertical: false);
+            DockZone.BottomLeft, ToggleDockingManager.GetLocalizedZoneName(DockZone.BottomLeft),
+            DockZone.BottomRight, ToggleDockingManager.GetLocalizedZoneName(DockZone.BottomRight), vertical: false);
 
         FrameworkElement? leftFrame = leftNavigationFrame ?? manager.injectedLeftDockPanel;
         FrameworkElement? rightFrame = rightNavigationFrame ?? manager.injectedRightDockPanel;

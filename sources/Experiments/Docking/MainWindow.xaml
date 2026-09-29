@@ -13,37 +13,37 @@
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
         <controls:MenuBar Grid.Row="0">
-            <controls:MenuBarItem Title="文件">
-                <controls:MenuFlyoutItem Text="新建文档" Click="AddDocument_Click" />
-                <controls:MenuFlyoutItem Text="替换文档源" Click="ReplaceDocument_Click" />
-                <controls:MenuFlyoutItem Text="重置文档源" Click="ResetDocuments_Click" />
+            <controls:MenuBarItem Title="File">
+                <controls:MenuFlyoutItem Text="New Document" Click="AddDocument_Click" />
+                <controls:MenuFlyoutItem Text="Replace Document Source" Click="ReplaceDocument_Click" />
+                <controls:MenuFlyoutItem Text="Reset Document Source" Click="ResetDocuments_Click" />
             </controls:MenuBarItem>
-            <controls:MenuBarItem Title="编辑">
-                <controls:MenuFlyoutItem Text="标记活动文档为已修改" Click="MarkActiveDocumentModified_Click" />
-                <controls:MenuFlyoutItem Text="关闭活动项" Click="CloseActive_Click" />
+            <controls:MenuBarItem Title="Edit">
+                <controls:MenuFlyoutItem Text="Mark Active Document as Modified" Click="MarkActiveDocumentModified_Click" />
+                <controls:MenuFlyoutItem Text="Close Active Item" Click="CloseActive_Click" />
                 <controls:ToggleMenuFlyoutItem x:Name="AllowCloseModifiedMenuItem"
-                                                Text="允许关闭修改项"
+                                                Text="Allow Closing Modified Items"
                                                 IsChecked="False"
                                                 Click="AllowCloseModified_Click" />
             </controls:MenuBarItem>
-            <controls:MenuBarItem Title="布局">
-                <controls:MenuFlyoutItem Text="保存布局" Click="SaveLayout_Click" />
-                <controls:MenuFlyoutItem Text="恢复布局" Click="RestoreLayout_Click" />
+            <controls:MenuBarItem Title="Layout">
+                <controls:MenuFlyoutItem Text="Save Layout" Click="SaveLayout_Click" />
+                <controls:MenuFlyoutItem Text="Restore Layout" Click="RestoreLayout_Click" />
                 <controls:MenuFlyoutSeparator />
-                <controls:MenuFlyoutItem Text="浮动活动项" Click="FloatActive_Click" />
-                <controls:MenuFlyoutItem Text="重新停靠活动项" Click="DockActive_Click" />
-                <controls:MenuFlyoutItem Text="切换浮动窗口策略" Click="ToggleWindowPolicy_Click" />
+                <controls:MenuFlyoutItem Text="Float Active Item" Click="FloatActive_Click" />
+                <controls:MenuFlyoutItem Text="Dock Active Item" Click="DockActive_Click" />
+                <controls:MenuFlyoutItem Text="Toggle Floating Window Policy" Click="ToggleWindowPolicy_Click" />
             </controls:MenuBarItem>
-            <controls:MenuBarItem Title="工具">
-                <controls:MenuFlyoutItem Text="自动隐藏工具" Click="AutoHideTool_Click" />
-                <controls:MenuFlyoutItem Text="显示隐藏工具" Click="ShowHiddenTool_Click" />
-                <controls:MenuFlyoutItem Text="浮动或停靠工具" Click="ToggleToolFloating_Click" />
+            <controls:MenuBarItem Title="Tools">
+                <controls:MenuFlyoutItem Text="Auto Hide Tool" Click="AutoHideTool_Click" />
+                <controls:MenuFlyoutItem Text="Show Hidden Tool" Click="ShowHiddenTool_Click" />
+                <controls:MenuFlyoutItem Text="Float or Dock Tool" Click="ToggleToolFloating_Click" />
             </controls:MenuBarItem>
-            <controls:MenuBarItem Title="主题">
-                <controls:MenuFlyoutItem Text="切换浅色/深色主题" Click="ToggleTheme_Click" />
+            <controls:MenuBarItem Title="Theme">
+                <controls:MenuFlyoutItem Text="Toggle Light/Dark Theme" Click="ToggleTheme_Click" />
             </controls:MenuBarItem>
         </controls:MenuBar>
-        <TextBlock x:Name="StatusText" Grid.Row="1" Text="Docking：XAML LayoutRoot 与数据源工作区。" />
+        <TextBlock x:Name="StatusText" Grid.Row="1" Text="Classic workspace using XAML LayoutRoot and data sources." />
         <dock:DockingManager x:Name="Manager" Grid.Row="2"
                              AllowFloatingWindows="True"
                              AllowDetachedWindows="True"
@@ -59,6 +59,6 @@
                 </layout:LayoutPanel>
             </layout:LayoutRoot>
         </dock:DockingManager>
-        <TextBlock Grid.Row="3" Text="拖动文档标签或工具标题栏，使用停靠引导重新排列工作区；右键标签可打开上下文命令。" Opacity="0.75" />
+        <TextBlock Grid.Row="3" Text="Drag document tabs or tool headers to rearrange the workspace with docking guides. Right-click a tab for more commands." Opacity="0.75" />
     </Grid>
 </Window>

@@ -121,7 +121,7 @@
     <value>Aktiva filer</value>
   </data>
   <data name="Active_ToolWindows" xml:space="preserve">
-    <value>Aktivt verktyg Windows</value>
+    <value>Aktiva verktygsfönster</value>
   </data>
   <data name="Anchorable_AutoHide" xml:space="preserve">
     <value>Dölj automatiskt</value>
@@ -141,6 +141,9 @@
   <data name="Anchorable_DockAsDocument" xml:space="preserve">
     <value>Docka som tabbat dokument</value>
   </data>
+  <data name="Anchorable_DetachToWindow" xml:space="preserve">
+    <value>Fönster</value>
+  </data>
   <data name="Anchorable_Float" xml:space="preserve">
     <value>Koppla loss</value>
   </data>
@@ -148,7 +151,7 @@
     <value>Dölj</value>
   </data>
   <data name="Document_BtnPinned_Hint" xml:space="preserve">
-    <value>Toggle Pin status</value>
+    <value>Fäst eller lossa fliken</value>
   </data>
   <data name="Document_Close" xml:space="preserve">
     <value>Stäng</value>
@@ -179,6 +182,78 @@
   </data>
   <data name="Document_NewVerticalTabGroup" xml:space="preserve">
     <value>Ny vertikal tabgrupp</value>
+  </data>
+  <data name="A11y_AutoHideTool" xml:space="preserve">
+    <value>Dölj verktygsfönster automatiskt</value>
+  </data>
+  <data name="A11y_HideTool" xml:space="preserve">
+    <value>Dölj verktygsfönster</value>
+  </data>
+  <data name="A11y_DockLeft" xml:space="preserve">
+    <value>Docka till vänster</value>
+  </data>
+  <data name="A11y_DockTop" xml:space="preserve">
+    <value>Docka upptill</value>
+  </data>
+  <data name="A11y_DockRight" xml:space="preserve">
+    <value>Docka till höger</value>
+  </data>
+  <data name="A11y_DockBottom" xml:space="preserve">
+    <value>Docka nedtill</value>
+  </data>
+  <data name="A11y_DockInside" xml:space="preserve">
+    <value>Docka inuti</value>
+  </data>
+  <data name="A11y_DockLeftAsToolPane" xml:space="preserve">
+    <value>Docka till vänster som verktygspanel</value>
+  </data>
+  <data name="A11y_DockTopAsToolPane" xml:space="preserve">
+    <value>Docka upptill som verktygspanel</value>
+  </data>
+  <data name="A11y_DockRightAsToolPane" xml:space="preserve">
+    <value>Docka till höger som verktygspanel</value>
+  </data>
+  <data name="A11y_DockBottomAsToolPane" xml:space="preserve">
+    <value>Docka nedtill som verktygspanel</value>
+  </data>
+  <data name="Toggle_MoveTo" xml:space="preserve">
+    <value>Flytta till</value>
+  </data>
+  <data name="Toggle_ViewMode" xml:space="preserve">
+    <value>Visningsläge</value>
+  </data>
+  <data name="Toggle_Docked" xml:space="preserve">
+    <value>Dockad</value>
+  </data>
+  <data name="Toggle_Hidden" xml:space="preserve">
+    <value>Dold</value>
+  </data>
+  <data name="Toggle_Options" xml:space="preserve">
+    <value>Alternativ</value>
+  </data>
+  <data name="Toggle_Minimize" xml:space="preserve">
+    <value>Minimera</value>
+  </data>
+  <data name="Toggle_ShowHiddenToolWindows" xml:space="preserve">
+    <value>Visa dolda verktygsfönster</value>
+  </data>
+  <data name="Toggle_Zone_LeftTop" xml:space="preserve">
+    <value>Vänster sida upptill</value>
+  </data>
+  <data name="Toggle_Zone_LeftBottom" xml:space="preserve">
+    <value>Vänster sida nedtill</value>
+  </data>
+  <data name="Toggle_Zone_RightTop" xml:space="preserve">
+    <value>Höger sida upptill</value>
+  </data>
+  <data name="Toggle_Zone_RightBottom" xml:space="preserve">
+    <value>Höger sida nedtill</value>
+  </data>
+  <data name="Toggle_Zone_BottomLeft" xml:space="preserve">
+    <value>Nedtill till vänster</value>
+  </data>
+  <data name="Toggle_Zone_BottomRight" xml:space="preserve">
+    <value>Nedtill till höger</value>
   </data>
   <data name="Window_Maximize" xml:space="preserve">
     <value>Maximera</value>

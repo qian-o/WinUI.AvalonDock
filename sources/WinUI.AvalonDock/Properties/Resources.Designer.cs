@@ -1,4 +1,4 @@
-// Ported unchanged from Dirkster.AvalonDock v5.0.0 (MS-PL), Properties/Resources.Designer.cs.
+// Based on Dirkster.AvalonDock v5.0.0 (MS-PL), Properties/Resources.Designer.cs.
 // Upstream: 408dc2896e2f41f3bb79a15207f160edee8a6792.
 #nullable disable
 //------------------------------------------------------------------------------
@@ -261,6 +261,222 @@ namespace AvalonDock.Properties {
             }
         }
         
+        /// <summary>
+        ///   Looks up a localized string similar to Auto hide tool.
+        /// </summary>
+        public static string A11y_AutoHideTool {
+            get {
+                return ResourceManager.GetString("A11y_AutoHideTool", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Hide tool.
+        /// </summary>
+        public static string A11y_HideTool {
+            get {
+                return ResourceManager.GetString("A11y_HideTool", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Dock left.
+        /// </summary>
+        public static string A11y_DockLeft {
+            get {
+                return ResourceManager.GetString("A11y_DockLeft", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Dock top.
+        /// </summary>
+        public static string A11y_DockTop {
+            get {
+                return ResourceManager.GetString("A11y_DockTop", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Dock right.
+        /// </summary>
+        public static string A11y_DockRight {
+            get {
+                return ResourceManager.GetString("A11y_DockRight", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Dock bottom.
+        /// </summary>
+        public static string A11y_DockBottom {
+            get {
+                return ResourceManager.GetString("A11y_DockBottom", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Dock inside.
+        /// </summary>
+        public static string A11y_DockInside {
+            get {
+                return ResourceManager.GetString("A11y_DockInside", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Dock left as tool pane.
+        /// </summary>
+        public static string A11y_DockLeftAsToolPane {
+            get {
+                return ResourceManager.GetString("A11y_DockLeftAsToolPane", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Dock top as tool pane.
+        /// </summary>
+        public static string A11y_DockTopAsToolPane {
+            get {
+                return ResourceManager.GetString("A11y_DockTopAsToolPane", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Dock right as tool pane.
+        /// </summary>
+        public static string A11y_DockRightAsToolPane {
+            get {
+                return ResourceManager.GetString("A11y_DockRightAsToolPane", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Dock bottom as tool pane.
+        /// </summary>
+        public static string A11y_DockBottomAsToolPane {
+            get {
+                return ResourceManager.GetString("A11y_DockBottomAsToolPane", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Move To.
+        /// </summary>
+        public static string Toggle_MoveTo {
+            get {
+                return ResourceManager.GetString("Toggle_MoveTo", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to View Mode.
+        /// </summary>
+        public static string Toggle_ViewMode {
+            get {
+                return ResourceManager.GetString("Toggle_ViewMode", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Docked.
+        /// </summary>
+        public static string Toggle_Docked {
+            get {
+                return ResourceManager.GetString("Toggle_Docked", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Hidden.
+        /// </summary>
+        public static string Toggle_Hidden {
+            get {
+                return ResourceManager.GetString("Toggle_Hidden", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Options.
+        /// </summary>
+        public static string Toggle_Options {
+            get {
+                return ResourceManager.GetString("Toggle_Options", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Minimize.
+        /// </summary>
+        public static string Toggle_Minimize {
+            get {
+                return ResourceManager.GetString("Toggle_Minimize", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Show Hidden Tool Windows.
+        /// </summary>
+        public static string Toggle_ShowHiddenToolWindows {
+            get {
+                return ResourceManager.GetString("Toggle_ShowHiddenToolWindows", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Left Top.
+        /// </summary>
+        public static string Toggle_Zone_LeftTop {
+            get {
+                return ResourceManager.GetString("Toggle_Zone_LeftTop", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Left Bottom.
+        /// </summary>
+        public static string Toggle_Zone_LeftBottom {
+            get {
+                return ResourceManager.GetString("Toggle_Zone_LeftBottom", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Right Top.
+        /// </summary>
+        public static string Toggle_Zone_RightTop {
+            get {
+                return ResourceManager.GetString("Toggle_Zone_RightTop", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Right Bottom.
+        /// </summary>
+        public static string Toggle_Zone_RightBottom {
+            get {
+                return ResourceManager.GetString("Toggle_Zone_RightBottom", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Bottom Left.
+        /// </summary>
+        public static string Toggle_Zone_BottomLeft {
+            get {
+                return ResourceManager.GetString("Toggle_Zone_BottomLeft", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Bottom Right.
+        /// </summary>
+        public static string Toggle_Zone_BottomRight {
+            get {
+                return ResourceManager.GetString("Toggle_Zone_BottomRight", resourceCulture);
+            }
+        }
+
         /// <summary>
         ///   Looks up a localized string similar to Maximize.
         /// </summary>

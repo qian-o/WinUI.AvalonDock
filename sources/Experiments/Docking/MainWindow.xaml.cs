@@ -26,7 +26,7 @@ public sealed partial class MainWindow : Window
     public MainWindow()
     {
         InitializeComponent();
-        Title = "Docking 经典工作区";
+        Title = "Docking Classic Workspace";
         Closed += OnClosed;
 
         Manager.LayoutItemContainerStyleSelector = SampleStyles.CreateItemStyleSelector();
@@ -41,30 +41,30 @@ public sealed partial class MainWindow : Window
         documents.Add(new WorkspaceDocument
         {
             Id = "classic-editor",
-            Title = "编辑器",
-            Text = "这是一个由 DocumentsSource 导入的文档。可在编辑菜单标记为已修改，再测试可取消关闭。",
+            Title = "Editor",
+            Text = "This document was imported through DocumentsSource. Mark it as modified from Edit to try cancelable closing.",
             IsModified = false
         });
         documents.Add(new WorkspaceDocument
         {
             Id = "classic-readme",
-            Title = "项目说明",
-            Text = "拖动标签到停靠引导，或从文档菜单创建新的标签组。",
+            Title = "Notes",
+            Text = "Drag the tab onto a docking guide, or use the document menu to create a new tab group.",
             IsModified = false
         });
         tools.Add(new WorkspaceTool
         {
             Id = "classic-solution",
-            Title = "解决方案",
+            Title = "Solution Explorer",
             Zone = DockZone.LeftTop,
-            Text = "工具窗格支持隐藏、自动隐藏、浮动和独立窗口。"
+            Text = "Tool panes support hiding, auto hide, floating, and detached windows."
         });
         tools.Add(new WorkspaceTool
         {
             Id = "classic-properties",
-            Title = "属性",
+            Title = "Properties",
             Zone = DockZone.LeftBottom,
-            Text = "同一个 AnchorablesSource 可以提供多个工具模型。"
+            Text = "A single AnchorablesSource can provide multiple tool models."
         });
         Manager.Loaded += InitializeSampleAutoHideSizes;
         SampleChecks.RunWhenLoaded(this, RunScenarioChecksAsync);
@@ -92,13 +92,13 @@ public sealed partial class MainWindow : Window
         WorkspaceDocument document = new()
         {
             Id = $"classic-document-{number}",
-            Title = $"文档 {number}",
-            Text = "运行时加入的文档会立即进入 DocumentsSource 和布局树。",
+            Title = $"Document {number}",
+            Text = "A document added at runtime immediately appears in DocumentsSource and the layout tree.",
             IsModified = false
         };
         documents.Add(document);
         Manager.ActiveContent = document;
-        StatusText.Text = $"已新增 {document.Title}。";
+        StatusText.Text = $"Added {document.Title}.";
     }
 
     private void ReplaceDocument_Click(object sender, RoutedEventArgs e)
@@ -112,13 +112,13 @@ public sealed partial class MainWindow : Window
         WorkspaceDocument replacement = new()
         {
             Id = $"classic-document-{nextDocumentNumber++}",
-            Title = "替换后的文档",
-            Text = "这个文档通过 ObservableCollection.Replace 进入布局源。",
+            Title = "Replacement Document",
+            Text = "This document entered the layout source through ObservableCollection.Replace.",
             IsModified = false
         };
         documents[0] = replacement;
         Manager.ActiveContent = replacement;
-        StatusText.Text = "已替换 DocumentsSource 的第一个文档。";
+        StatusText.Text = "Replaced the first document in DocumentsSource.";
     }
 
     private void ResetDocuments_Click(object sender, RoutedEventArgs e)
@@ -127,46 +127,46 @@ public sealed partial class MainWindow : Window
         WorkspaceDocument resetDocument = new()
         {
             Id = "classic-reset-document",
-            Title = "重置后的文档",
-            Text = "这个文档通过 DocumentsSource.Reset 重新导入。",
+            Title = "Reset Document",
+            Text = "This document was reimported through DocumentsSource.Reset.",
             IsModified = false
         };
         documents.Add(resetDocument);
         Manager.ActiveContent = resetDocument;
-        StatusText.Text = "已重置 DocumentsSource 并重新导入文档。";
+        StatusText.Text = "Reset DocumentsSource and reimported the document.";
     }
 
     private void CloseActive_Click(object sender, RoutedEventArgs e)
     {
         LayoutContent? content = ActiveLayoutContent;
         content?.Close();
-        StatusText.Text = content is null ? "当前没有活动项。" : $"已请求关闭 {content.Title}。";
+        StatusText.Text = content is null ? "No active item." : $"Requested closing {content.Title}.";
     }
 
     private void MarkActiveDocumentModified_Click(object sender, RoutedEventArgs e)
     {
         if (ActiveLayoutContent?.Content is not WorkspaceDocument document)
         {
-            StatusText.Text = "当前没有活动文档。";
+            StatusText.Text = "No active document.";
             return;
         }
 
         document.IsModified = true;
-        StatusText.Text = $"已标记 {document.Title} 为已修改。";
+        StatusText.Text = $"Marked {document.Title} as modified.";
     }
 
     private void FloatActive_Click(object sender, RoutedEventArgs e)
     {
         LayoutContent? content = ActiveLayoutContent;
         content?.Float();
-        StatusText.Text = content is null ? "当前没有活动项。" : $"已请求浮动 {content.Title}。";
+        StatusText.Text = content is null ? "No active item." : $"Requested floating {content.Title}.";
     }
 
     private void DockActive_Click(object sender, RoutedEventArgs e)
     {
         LayoutContent? content = ActiveLayoutContent;
         content?.Dock();
-        StatusText.Text = content is null ? "当前没有活动项。" : $"已重新停靠 {content.Title}。";
+        StatusText.Text = content is null ? "No active item." : $"Docked {content.Title}.";
     }
 
     private void AutoHideTool_Click(object sender, RoutedEventArgs e)
@@ -174,12 +174,12 @@ public sealed partial class MainWindow : Window
         LayoutAnchorable? tool = Manager.Layout.Descendents().OfType<LayoutAnchorable>().FirstOrDefault();
         if (tool is null)
         {
-            StatusText.Text = "当前没有工具窗格。";
+            StatusText.Text = "No tool pane is available.";
             return;
         }
 
         tool.ToggleAutoHide();
-        StatusText.Text = $"已切换 {tool.Title} 的自动隐藏状态。";
+        StatusText.Text = $"Toggled auto hide for {tool.Title}.";
     }
 
     private void ShowHiddenTool_Click(object sender, RoutedEventArgs e)
@@ -187,12 +187,12 @@ public sealed partial class MainWindow : Window
         LayoutAnchorable? tool = Manager.Layout.Hidden.FirstOrDefault();
         if (tool is null)
         {
-            StatusText.Text = "当前没有隐藏工具。";
+            StatusText.Text = "No hidden tools are available.";
             return;
         }
 
         tool.Show();
-        StatusText.Text = $"已显示 {tool.Title}。";
+        StatusText.Text = $"Showed {tool.Title}.";
     }
 
     private void ToggleToolFloating_Click(object sender, RoutedEventArgs e)
@@ -205,19 +205,19 @@ public sealed partial class MainWindow : Window
             ?? availableTools.FirstOrDefault();
         if (tool is null)
         {
-            StatusText.Text = "当前没有工具窗格。";
+            StatusText.Text = "No tool pane is available.";
             return;
         }
 
         if (tool.IsFloating)
         {
             tool.Dock();
-            StatusText.Text = $"已停靠 {tool.Title}。";
+            StatusText.Text = $"Docked {tool.Title}.";
         }
         else
         {
             tool.Float();
-            StatusText.Text = $"已浮动 {tool.Title}。";
+            StatusText.Text = $"Floated {tool.Title}.";
         }
     }
 
@@ -226,14 +226,14 @@ public sealed partial class MainWindow : Window
         using MemoryStream output = new();
         new XmlLayoutSerializer(Manager).Serialize(output);
         savedLayout = output.ToArray();
-        StatusText.Text = "当前布局已保存到内存。";
+        StatusText.Text = "Current layout saved in memory.";
     }
 
     private void RestoreLayout_Click(object sender, RoutedEventArgs e)
     {
         if (savedLayout is null)
         {
-            StatusText.Text = "请先保存布局。";
+            StatusText.Text = "Save the layout first.";
             return;
         }
 
@@ -256,27 +256,27 @@ public sealed partial class MainWindow : Window
         };
         using MemoryStream input = new(savedLayout);
         serializer.Deserialize(input);
-        StatusText.Text = "布局已恢复，内容按 ContentId 重新连接。";
+        StatusText.Text = "Layout restored and content reconnected by ContentId.";
     }
 
     private void AllowCloseModified_Click(object sender, RoutedEventArgs e)
     {
         StatusText.Text = AllowCloseModifiedMenuItem.IsChecked
-            ? "已允许关闭修改中的文档。"
-            : "关闭修改中的文档仍会被取消。";
+            ? "Closing modified documents is allowed."
+            : "Closing modified documents will be canceled.";
     }
 
     private void ToggleWindowPolicy_Click(object sender, RoutedEventArgs e)
     {
         Manager.AllowFloatingWindows = !Manager.AllowFloatingWindows;
         Manager.AllowDetachedWindows = Manager.AllowFloatingWindows;
-        StatusText.Text = Manager.AllowFloatingWindows ? "已允许浮动和独立工具窗口。" : "已禁止新的浮动和独立工具窗口。";
+        StatusText.Text = Manager.AllowFloatingWindows ? "Floating and detached tool windows are enabled." : "New floating and detached tool windows are disabled.";
     }
 
     private void ToggleTheme_Click(object sender, RoutedEventArgs e)
     {
         PageRoot.RequestedTheme = PageRoot.RequestedTheme == ElementTheme.Dark ? ElementTheme.Light : ElementTheme.Dark;
-        StatusText.Text = PageRoot.RequestedTheme == ElementTheme.Dark ? "深色主题。" : "浅色主题。";
+        StatusText.Text = PageRoot.RequestedTheme == ElementTheme.Dark ? "Dark theme." : "Light theme.";
     }
 
     private void OnDocumentClosing(object? sender, DocumentClosingEventArgs e)
@@ -284,7 +284,7 @@ public sealed partial class MainWindow : Window
         if (e.Document.Content is WorkspaceDocument document && document.IsModified && !AllowCloseModifiedMenuItem.IsChecked)
         {
             e.Cancel = true;
-            StatusText.Text = $"已取消关闭修改中的 {document.Title}；在“编辑”菜单中启用允许关闭修改项后重试。";
+            StatusText.Text = $"Closing modified {document.Title} was canceled. Enable Allow Closing Modified Items under Edit to retry.";
         }
     }
 
@@ -298,62 +298,62 @@ public sealed partial class MainWindow : Window
 
     private void OnAnchorableHiding(object? sender, AnchorableHidingEventArgs e)
     {
-        StatusText.Text = $"正在隐藏 {e.Anchorable.Title}。";
+        StatusText.Text = $"Hiding {e.Anchorable.Title}.";
     }
 
     private void OnContentFloated(object? sender, ContentFloatedEventArgs e)
     {
-        StatusText.Text = $"{e.Content.Title} 已浮动。";
+        StatusText.Text = $"{e.Content.Title} floated.";
     }
 
     private void OnContentDocked(object? sender, ContentDockedEventArgs e)
     {
-        StatusText.Text = $"{e.Content.Title} 已停靠。";
+        StatusText.Text = $"{e.Content.Title} docked.";
     }
 
     public async Task RunScenarioChecksAsync(SampleChecks checks)
     {
         await SampleChecks.SettleAsync();
-        SampleChecks.Require(documents.Count == 2, "Classic 初始文档源已创建。");
-        SampleChecks.Require(tools.Count == 2, "Classic 初始工具源已创建。");
-        CheckSourceContent(checks, documents, "Classic 初始文档");
-        CheckSourceContent(checks, tools, "Classic 初始工具");
+        SampleChecks.Require(documents.Count == 2, "Classic initial document source was created.");
+        SampleChecks.Require(tools.Count == 2, "Classic initial tool source was created.");
+        CheckSourceContent(checks, documents, "Classic initial documents");
+        CheckSourceContent(checks, tools, "Classic initial tools");
 
         TabViewItem[] initialToolTabs = PageRoot.FindVisualChildren<LayoutAnchorablePaneControl>()
             .SelectMany(pane => pane.TabItems.OfType<TabViewItem>())
             .ToArray();
-        SampleChecks.Require(initialToolTabs.Length == tools.Count, "Classic 首次加载已创建全部工具标签。");
+        SampleChecks.Require(initialToolTabs.Length == tools.Count, "Classic initial load creates every tool tab.");
         SampleChecks.Require(initialToolTabs.All(tab => tab.Header is LayoutAnchorableTabItem { ActualWidth: > 0 } header
             && header.FindVisualChildren<TextBlock>().Any(text => text.Visibility == Visibility.Visible && text.ActualWidth > 0)),
-            "Classic 首次加载的工具标签标题已完成测量并可见。");
+            "Classic tool tab headers are measured and visible on initial load.");
         SampleChecks.Require(Manager.Layout.Descendents().OfType<LayoutAnchorable>()
             .Where(tool => tool.Content is WorkspaceTool)
             .All(tool => tool.AutoHideWidth == 280 && tool.AutoHideHeight == 180),
-            "Classic 首次加载为来源工具设置适合示例内容的自动隐藏弹窗尺寸。");
-        checks.Record("Classic 首次加载工具标签呈现通过。");
+            "Classic initial load sets suitable auto-hide popup sizes for source tools.");
+        checks.Record("Classic initial tool tab presentation");
 
         LayoutAnchorable styleTool = Manager.Layout.Descendents().OfType<LayoutAnchorable>().First();
         LayoutAnchorableItem styleItem = Manager.GetLayoutItemFromModel(styleTool) as LayoutAnchorableItem
-            ?? throw new InvalidOperationException("Classic 工具布局项未创建。");
-        SampleChecks.Require(!styleTool.CanClose, "Classic 工具默认不可关闭。");
+            ?? throw new InvalidOperationException("Classic tool layout item was not created.");
+        SampleChecks.Require(!styleTool.CanClose, "Classic tool cannot be closed by default.");
         Style closeStyle = new(typeof(LayoutItem));
         closeStyle.Setters.Add(new Setter(LayoutItem.CanCloseProperty, true));
         Manager.LayoutItemContainerStyle = closeStyle;
         SampleChecks.Require(styleItem.CanClose && styleTool.CanClose,
-            "Classic 布局项样式的 CanClose 设置优先于模型初始值。");
+            "Classic layout item style CanClose setting overrides the model's initial value.");
         styleItem.CanClose = false;
         Style nextCloseStyle = new(typeof(LayoutItem));
         nextCloseStyle.Setters.Add(new Setter(LayoutItem.CanCloseProperty, true));
         Manager.LayoutItemContainerStyle = nextCloseStyle;
         SampleChecks.Require(!styleItem.CanClose && !styleTool.CanClose,
-            "Classic 消费者显式设置的本地值优先于后续样式。");
+            "Classic explicitly set local value overrides a later style.");
         styleItem.ClearValue(LayoutItem.CanCloseProperty);
         SampleChecks.Require(styleItem.CanClose && styleTool.CanClose,
-            "Classic 清除本地值后重新采用样式的关闭策略。");
+            "Classic clearing the local value reapplies the style's close policy.");
         Manager.LayoutItemContainerStyle = null;
         styleItem.CanClose = false;
-        SampleChecks.Require(!styleItem.CanClose && !styleTool.CanClose, "Classic 移除样式后工具可恢复关闭策略。");
-        checks.Record("Classic 布局项样式可覆盖初始模型值并恢复。");
+        SampleChecks.Require(!styleItem.CanClose && !styleTool.CanClose, "Classic removing the style restores the tool's close policy.");
+        checks.Record("Classic layout item style overrides initial model value and restores it");
 
         await CheckDocumentTabLayoutAsync(checks);
         await CheckDocumentChromeAsync(checks);
@@ -366,28 +366,28 @@ public sealed partial class MainWindow : Window
         floatingTool.IsActive = true;
         ToggleToolFloating_Click(this, new RoutedEventArgs());
         await SampleChecks.SettleAsync();
-        SampleChecks.Require(floatingTool.IsFloating && !Manager.IsDetached(floatingTool), "工具菜单使用标准浮动布局，而不是独立窗口模式。");
+        SampleChecks.Require(floatingTool.IsFloating && !Manager.IsDetached(floatingTool), "Tool menu uses standard floating layout rather than detached-window mode.");
         SampleChecks.Require(Manager.FloatingWindows.OfType<LayoutAnchorableFloatingWindowControl>()
             .Any(window => window.Model.Descendents().OfType<LayoutAnchorable>().Any(tool => ReferenceEquals(tool, floatingTool))),
-            "工具菜单创建了可参与停靠拖放的标准浮动窗口。");
+            "Tool menu creates a standard floating window that participates in docking drag and drop.");
         ToggleToolFloating_Click(this, new RoutedEventArgs());
         await SampleChecks.SettleAsync();
-        SampleChecks.Require(!floatingTool.IsFloating && !Manager.IsDetached(floatingTool), "工具菜单可将标准浮动工具停靠回原布局。");
-        checks.Record("Classic 工具菜单标准浮动和停靠通过。");
+        SampleChecks.Require(!floatingTool.IsFloating && !Manager.IsDetached(floatingTool), "Tool menu docks a standard floating tool back into the original layout.");
+        checks.Record("Classic tool menu standard float and dock");
 
         LayoutAnchorable[] pairedTools = Manager.Layout.Descendents().OfType<LayoutAnchorable>().ToArray();
         SampleChecks.Require(pairedTools.Length == 2 && ReferenceEquals(pairedTools[0].Parent, pairedTools[1].Parent),
-            "Classic 两个初始工具共享一个窗格。");
+            "Classic initial tools share a pane.");
         LayoutAnchorablePane homePane = (LayoutAnchorablePane)pairedTools[0].Parent!;
         LayoutAnchorableFloatingWindowControl pairedFloating = Manager.CreateFloatingWindow(pairedTools[0], false)
             as LayoutAnchorableFloatingWindowControl
-            ?? throw new InvalidOperationException("Classic 工具浮动窗口未创建。");
+            ?? throw new InvalidOperationException("Classic tool floating window was not created.");
         LayoutAnchorablePane floatingPane = (pairedFloating.Model as LayoutAnchorableFloatingWindow)?.SinglePane as LayoutAnchorablePane
-            ?? throw new InvalidOperationException("Classic 工具浮动窗口没有窗格。");
+            ?? throw new InvalidOperationException("Classic tool floating window has no pane.");
         floatingPane.Children.Add(pairedTools[1]);
         pairedFloating.Show();
         SampleChecks.Require((pairedFloating.Model as LayoutAnchorableFloatingWindow)?.SinglePane is LayoutAnchorablePane { ChildrenCount: 2 },
-            "Classic 两个工具共处同一浮动窗格。");
+            "Classic both tools share the same floating pane.");
         await SampleChecks.SettleAsync();
         FrameworkElement? floatingRoot = pairedFloating.Content?.GetType().GetProperty("Content")?
             .GetValue(pairedFloating.Content) as FrameworkElement;
@@ -409,13 +409,13 @@ public sealed partial class MainWindow : Window
             && fillPath?.Fill is not null && fillPath.Stroke is null && outlinePath?.Fill is null
             && outlinePath?.Stroke is not null
             && Canvas.GetZIndex(paneOutline) > Canvas.GetZIndex(paneFill),
-            "Classic 双工具浮动窗格保留两标签、圆角描边和上层轮廓。");
+            "Classic two-tool floating pane keeps both tabs, rounded border, and upper outline.");
         pairedTools[0].IsActive = true;
         await SampleChecks.SettleAsync();
         SampleChecks.Require(outlinePath!.Stroke is SolidColorBrush activeStroke && activeStroke.Color.A > 0
             && floatingTabs!.BorderBrush is SolidColorBrush inactiveStroke && activeStroke.Color != inactiveStroke.Color,
-            "Classic 双工具浮动窗格的活动描边可见。");
-        checks.Record("Classic 双工具共用浮动窗格外观通过。");
+            "Classic active border is visible in the two-tool floating pane.");
+        checks.Record("Classic two-tool shared floating pane appearance");
         homePane.Children.Add(pairedTools[1]);
         await SampleChecks.SettleAsync();
         SampleChecks.Require(floatingPane.ChildrenCount == 1 && floatingTabs!.TabItems.Count == 1
@@ -423,48 +423,48 @@ public sealed partial class MainWindow : Window
             && paneOutline is Grid { CornerRadius: { TopLeft: 0 } }
             && paneFill is Grid { CornerRadius: { TopLeft: 0 } }
             && outlinePath.Stroke is SolidColorBrush singleStroke && singleStroke.Color.A == 0,
-            "Classic 双工具浮动窗格缩回单工具时隐藏标签与轮廓。");
+            "Classic floating pane hides tabs and outline when reduced to one tool.");
         pairedTools[0].Dock();
         await SampleChecks.SettleAsync();
         SampleChecks.Require(pairedTools.All(tool => !tool.IsFloating) && Manager.Layout.Descendents().OfType<LayoutAnchorable>().Count() == 2,
-            "Classic 双工具浮动后可停靠回主布局。");
+            "Classic tools can dock back into the main layout after floating together.");
 
         AddDocument_Click(this, new RoutedEventArgs());
         await SampleChecks.SettleAsync();
-        SampleChecks.Require(documents.Count == 3, "DocumentsSource Add 已生效。");
-        CheckSourceContent(checks, documents, "Add 后文档");
+        SampleChecks.Require(documents.Count == 3, "DocumentsSource Add took effect.");
+        CheckSourceContent(checks, documents, "Documents after Add");
 
         ReplaceDocument_Click(this, new RoutedEventArgs());
         await SampleChecks.SettleAsync();
-        SampleChecks.Require(documents[0].Title == "替换后的文档", "DocumentsSource Replace 已生效。");
-        CheckSourceContent(checks, documents, "Replace 后文档");
+        SampleChecks.Require(documents[0].Title == "Replacement Document", "DocumentsSource Replace took effect.");
+        CheckSourceContent(checks, documents, "Documents after Replace");
 
         ResetDocuments_Click(this, new RoutedEventArgs());
         await SampleChecks.SettleAsync();
-        SampleChecks.Require(documents.Count == 1 && documents[0].Id == "classic-reset-document", "DocumentsSource Reset 已生效。");
-        CheckSourceContent(checks, documents, "Reset 后文档");
+        SampleChecks.Require(documents.Count == 1 && documents[0].Id == "classic-reset-document", "DocumentsSource Reset took effect.");
+        CheckSourceContent(checks, documents, "Documents after Reset");
 
         WorkspaceDocument dirtyDocument = documents[0];
         Manager.ActiveContent = dirtyDocument;
         MarkActiveDocumentModified_Click(this, new RoutedEventArgs());
-        SampleChecks.Require(dirtyDocument.IsModified, "编辑菜单可标记活动文档为已修改。");
+        SampleChecks.Require(dirtyDocument.IsModified, "Edit menu marks the active document as modified.");
         LayoutDocument? layoutDocument = Manager.Layout.Descendents().OfType<LayoutDocument>()
             .FirstOrDefault(item => ReferenceEquals(item.Content, dirtyDocument));
-        SampleChecks.Require(layoutDocument is not null, "修改文档已连接到布局项。");
+        SampleChecks.Require(layoutDocument is not null, "Modified document is connected to a layout item.");
         layoutDocument!.Close();
         await SampleChecks.SettleAsync();
-        SampleChecks.Require(documents.Contains(dirtyDocument), "修改文档的关闭请求已取消。");
+        SampleChecks.Require(documents.Contains(dirtyDocument), "Close request for a modified document was canceled.");
         AllowCloseModifiedMenuItem.IsChecked = true;
         layoutDocument.Close();
         await SampleChecks.SettleAsync();
-        SampleChecks.Require(!documents.Contains(dirtyDocument), "允许关闭后文档可关闭。");
-        checks.Record("Classic 可取消关闭和源集合同步通过。");
+        SampleChecks.Require(!documents.Contains(dirtyDocument), "Document closes when closing modified items is allowed.");
+        checks.Record("Classic cancelable closing and source collection synchronization");
 
         WorkspaceDocument restored = new()
         {
             Id = "classic-smoke-document",
-            Title = "Smoke 文档",
-            Text = "ContentId 恢复测试。",
+            Title = "Smoke Document",
+            Text = "ContentId restoration check.",
             IsModified = false
         };
         documents.Add(restored);
@@ -472,16 +472,16 @@ public sealed partial class MainWindow : Window
         SaveLayout_Click(this, new RoutedEventArgs());
         RestoreLayout_Click(this, new RoutedEventArgs());
         await SampleChecks.SettleAsync();
-        CheckSourceContent(checks, documents, "恢复后文档");
-        SampleChecks.Require(Manager.Layout.Descendents().OfType<LayoutContent>().Any(item => ReferenceEquals(item.Content, restored)), "恢复后 ContentId 重新连接内容。");
-        checks.Record("Classic XML ContentId 恢复通过。");
+        CheckSourceContent(checks, documents, "Documents after restore");
+        SampleChecks.Require(Manager.Layout.Descendents().OfType<LayoutContent>().Any(item => ReferenceEquals(item.Content, restored)), "ContentId reconnects content after restore.");
+        checks.Record("Classic XML ContentId restoration");
 
         bool originalFloating = Manager.AllowFloatingWindows;
         ToggleWindowPolicy_Click(this, new RoutedEventArgs());
-        SampleChecks.Require(Manager.AllowFloatingWindows != originalFloating, "Classic 浮动策略可切换。");
+        SampleChecks.Require(Manager.AllowFloatingWindows != originalFloating, "Classic floating policy can be toggled.");
         ToggleWindowPolicy_Click(this, new RoutedEventArgs());
-        SampleChecks.Require(Manager.AllowFloatingWindows == originalFloating, "Classic 浮动策略可恢复。");
-        checks.Record("Classic 窗口策略通过。");
+        SampleChecks.Require(Manager.AllowFloatingWindows == originalFloating, "Classic floating policy can be restored.");
+        checks.Record("Classic window policy");
 
         await CheckRightAutoHidePopupAsync(checks);
         await DockingTemplateChecks.RunAsync(Manager, PageRoot, documents.Single(), tools[0], tools[1],
@@ -501,34 +501,34 @@ public sealed partial class MainWindow : Window
         Manager.LayoutEngine.InsertPane(Manager.Layout, rightPane, AnchorSide.Right);
         await SampleChecks.SettleAsync();
         SampleChecks.Require(ReferenceEquals(tool.Parent, rightPane) && rightPane.GetSide() == AnchorSide.Right,
-            "Classic 属性工具已进入真实右侧窗格。");
+            "Classic Properties tool enters the real right pane.");
 
         tool.ToggleAutoHide();
         await SampleChecks.SettleAsync();
         SampleChecks.Require(tool.IsAutoHidden && tool.FindParent<LayoutAnchorSide>()?.Side == AnchorSide.Right,
-            "Classic 右侧工具切换到自动隐藏侧栏。");
+            "Classic right-side tool moves to the auto-hide sidebar.");
         LayoutAnchorControl anchor = PageRoot.FindVisualChildren<LayoutAnchorControl>()
             .Single(item => ReferenceEquals(item.Model, tool));
-        SampleChecks.Require(anchor.IsLoaded, "Classic 右侧自动隐藏标签已加载到真实主窗口。");
+        SampleChecks.Require(anchor.IsLoaded, "Classic right auto-hide tab is loaded in the real main window.");
         tool.IsSelected = false;
         tool.IsSelected = true;
         await SampleChecks.SettleAsync();
         LayoutAutoHideWindowControl popup = Manager.AutoHideWindow
-            ?? throw new InvalidOperationException("Classic 自动隐藏弹窗未创建。");
+            ?? throw new InvalidOperationException("Classic auto-hide popup was not created.");
         SampleChecks.Require(ReferenceEquals(popup.Model, tool) && popup.Visibility == Visibility.Visible
             && Math.Abs(popup.ActualWidth - (tool.AutoHideWidth + Manager.GridSplitterWidth)) < 3,
-            $"Classic 右侧自动隐藏真实弹窗使用 280 像素内容宽度，实际宽度 {popup.ActualWidth}。");
+            $"Classic real right auto-hide popup uses a 280-pixel content width; actual width: {popup.ActualWidth}.");
 
         LayoutAnchorableItem item = Manager.GetLayoutItemFromModel(tool) as LayoutAnchorableItem
-            ?? throw new InvalidOperationException("Classic 属性工具布局项未创建。");
+            ?? throw new InvalidOperationException("Classic Properties tool layout item was not created.");
         SampleChecks.Require(item.AutoHideCommand?.CanExecute(null) == true,
-            "Classic 右侧自动隐藏工具的固定命令可用。");
+            "Classic pin command is available for the right auto-hide tool.");
         item.AutoHideCommand!.Execute(null);
         await SampleChecks.SettleAsync();
         SampleChecks.Require(!tool.IsAutoHidden && ReferenceEquals(tool.Parent, rightPane)
             && rightPane.GetSide() == AnchorSide.Right,
-            "Classic 属性工具固定后返回原右侧窗格。");
-        checks.Record("Classic 来源工具自动隐藏宽度、右侧真实弹窗尺寸与固定返回通过。");
+            "Classic Properties tool returns to its original right pane after pinning.");
+        checks.Record("Classic source tool auto-hide width, right popup size, and pin return");
     }
 
     private async Task CheckContentOperationEventsAsync(SampleChecks checks)
@@ -539,7 +539,7 @@ public sealed partial class MainWindow : Window
             Manager.Layout.Descendents().OfType<LayoutAnchorable>().First(),
         })
         {
-            string label = source is LayoutDocument ? "文档" : "工具";
+            string label = source is LayoutDocument ? "document" : "tool";
             ILayoutContainer? originalParent = source.Parent;
             int floating = 0;
             int floated = 0;
@@ -584,17 +584,17 @@ public sealed partial class MainWindow : Window
             try
             {
                 LayoutItem item = Manager.GetLayoutItemFromModel(source)
-                    ?? throw new InvalidOperationException("事件检查的布局项未建立。");
-                SampleChecks.Require(item.FloatCommand?.CanExecute(null) == true, $"Classic {label}允许正常浮动。");
+                    ?? throw new InvalidOperationException("Layout item for the event check was not created.");
+                SampleChecks.Require(item.FloatCommand?.CanExecute(null) == true, $"Classic {label} can float normally.");
                 item.FloatCommand!.Execute(null);
                 await SampleChecks.SettleAsync();
                 SampleChecks.Require(floating == 1 && floated == 0 && !source.IsFloating
-                    && ReferenceEquals(source.Parent, originalParent), $"Classic {label}取消浮动不改变布局或发送完成事件。");
+                    && ReferenceEquals(source.Parent, originalParent), $"Classic {label} canceled float leaves the layout unchanged and sends no completion event.");
                 cancelFloat = false;
                 item.FloatCommand.Execute(null);
                 await SampleChecks.SettleAsync();
                 SampleChecks.Require(floating == 2 && floated == 1 && source.IsFloating,
-                    $"Classic {label}成功浮动只发送一次完成事件。");
+                    $"Classic {label} successful float sends one completion event.");
                 LayoutFloatingWindowControl window = Manager.FloatingWindows.Single(host => host.Model.Descendents().Contains(source));
                 window.Width = 160;
                 window.Height = 120;
@@ -610,7 +610,7 @@ public sealed partial class MainWindow : Window
                     session.Update(DockingDragChecks.Center(DockingDragChecks.ScreenBounds(pane)));
                     string glyphName = source is LayoutDocument ? "PART_DocumentPaneDropTargetInto" : "PART_AnchorablePaneDropTargetInto";
                     await DockingDragChecks.WaitUntilAsync(() => session.Targets().Any(target =>
-                        ReferenceEquals(DockingDragChecks.TargetArea(target), pane)), "事件检查目标未出现。");
+                        ReferenceEquals(DockingDragChecks.TargetArea(target), pane)), "Target for the event check did not appear.");
                     Point release = DockingDragChecks.Center(session.GlyphBounds(glyphName));
                     session.Update(release);
                     session.Drop(release);
@@ -618,16 +618,16 @@ public sealed partial class MainWindow : Window
                     if (attempt == 0)
                     {
                         SampleChecks.Require(docking == 1 && docked == 0 && source.IsFloating,
-                            $"Classic {label}取消停靠后保留浮窗且不发送完成事件。");
+                            $"Classic {label} canceled dock keeps the floating window and sends no completion event.");
                         cancelDock = false;
                     }
                     else
                     {
                         SampleChecks.Require(docking == 2 && docked == 1 && !source.IsFloating
-                            && ReferenceEquals(source.Parent, originalParent), $"Classic {label}成功停靠只发送一次完成事件并返回目标窗格。");
+                            && ReferenceEquals(source.Parent, originalParent), $"Classic {label} successful dock sends one completion event and returns to the target pane.");
                     }
                 }
-                checks.Record($"Classic {label}浮动/停靠事件取消保持布局，成功完成各通知一次通过。");
+                checks.Record($"Classic {label} float/dock cancellation preserves layout and successful completion notifies once");
             }
             finally
             {
@@ -642,34 +642,34 @@ public sealed partial class MainWindow : Window
     private async Task CheckDocumentTabLayoutAsync(SampleChecks checks)
     {
         LayoutDocumentPaneControl pane = PageRoot.FindVisualChildren<LayoutDocumentPaneControl>().First();
-        VerifyTabs("首次加载");
+        VerifyTabs("initial load");
 
         LayoutDocument document = Manager.Layout.Descendents().OfType<LayoutDocument>().First();
         document.Float();
         await SampleChecks.SettleAsync();
         document.Dock();
         await SampleChecks.SettleAsync();
-        VerifyTabs("浮动后回停");
+        VerifyTabs("after floating and redocking");
 
         WorkspaceDocument longDocument = new()
         {
             Id = "classic-wide-tab-check",
-            Title = "这是一个明显比普通文档标题更长的标签名称",
-            Text = "检查文档标签的内容宽度。"
+            Title = "This Tab Has a Much Longer Title Than an Ordinary Document Tab",
+            Text = "Check the content-based width of the document tab."
         };
         documents.Add(longDocument);
         await SampleChecks.SettleAsync();
         TabViewItem longTab = pane.TabItems.OfType<TabViewItem>().First(tab => ReferenceEquals(((LayoutContent)tab.Tag).Content, longDocument));
         SampleChecks.Require(longTab.ActualWidth > 100 && longTab.ActualWidth <= 240,
-            "Classic 长文档标签按内容增长并受 240 像素上限约束。");
+            "Classic long document tab grows with its content and stays within the 240-pixel cap.");
         documents.Remove(longDocument);
         await SampleChecks.SettleAsync();
-        checks.Record("Classic 文档标签宽度及非按钮空白命中在首次加载、浮动回停后保持一致。");
+        checks.Record("Classic document tab width and non-button blank-space hit testing remain consistent on load and after redocking");
 
         void VerifyTabs(string stage)
         {
             TabViewItem[] tabs = pane.TabItems.OfType<TabViewItem>().ToArray();
-            SampleChecks.Require(tabs.Length == 2, $"Classic {stage}保留两个文档标签。");
+            SampleChecks.Require(tabs.Length == 2, $"Classic {stage} keeps two document tabs.");
             foreach (TabViewItem tab in tabs)
             {
                 LayoutDocumentTabItem header = (LayoutDocumentTabItem)tab.Header;
@@ -677,13 +677,13 @@ public sealed partial class MainWindow : Window
                 double headerRight = header.TransformToVisual(tab).TransformBounds(new Rect(0, 0, header.ActualWidth, header.ActualHeight)).Right;
                 double closeLeft = closeButton?.TransformToVisual(tab).TransformPoint(new Point(0, 0)).X ?? -1;
                 SampleChecks.Require(Math.Abs(tab.ActualWidth - 100) < 1 && Math.Abs(tab.MinWidth - 100) < 0.1,
-                    $"Classic {stage}短文档标签保持 100 像素下限。");
+                    $"Classic {stage} keeps a 100-pixel minimum for short document tabs.");
                 SampleChecks.Require(closeButton is not null && closeLeft - headerRight >= 3,
-                    $"Classic {stage}标题与关闭按钮之间存在可检查的空白。");
+                    $"Classic {stage} leaves testable space between title and close button.");
                 Point blank = tab.TransformToVisual(PageRoot).TransformPoint(new Point((headerRight + closeLeft) / 2, 14));
                 IReadOnlyList<UIElement> hits = VisualTreeHelper.FindElementsInHostCoordinates(blank, PageRoot).ToArray();
                 SampleChecks.Require(hits.Contains(tab) && !hits.Contains(closeButton!),
-                    $"Classic {stage}标题与关闭按钮之间由文档标签命中。");
+                    $"Classic {stage} hits the document tab between title and close button.");
             }
         }
     }
@@ -692,28 +692,28 @@ public sealed partial class MainWindow : Window
     {
         foreach (Orientation orientation in new[] { Orientation.Vertical, Orientation.Horizontal })
         {
-            string direction = orientation == Orientation.Vertical ? "上下" : "左右";
+            string direction = orientation == Orientation.Vertical ? "top/bottom" : "left/right";
             LayoutDocument[] layoutDocuments = Manager.Layout.Descendents().OfType<LayoutDocument>().ToArray();
-            SampleChecks.Require(layoutDocuments.Length == 2, $"Classic {direction}分组前保留两个初始文档。");
+            SampleChecks.Require(layoutDocuments.Length == 2, $"Classic {direction} grouping keeps two initial documents before splitting.");
             LayoutDocument remainingDocument = layoutDocuments.Single(document => ReferenceEquals(document.Content, documents[0]));
             LayoutDocument floatedDocument = layoutDocuments.Single(document => ReferenceEquals(document.Content, documents[1]));
             LayoutDocumentItem item = Manager.GetLayoutItemFromModel(floatedDocument) as LayoutDocumentItem
-                ?? throw new InvalidOperationException("Classic 分组文档布局项未创建。");
+                ?? throw new InvalidOperationException("Classic grouped document layout item was not created.");
             ICommand splitCommand = (orientation == Orientation.Vertical ? item.NewHorizontalTabGroupCommand : item.NewVerticalTabGroupCommand)
-                ?? throw new InvalidOperationException("Classic 文档分组命令未创建。");
-            SampleChecks.Require(splitCommand.CanExecute(null), $"Classic 可创建{direction}标签组。");
+                ?? throw new InvalidOperationException("Classic document grouping command was not created.");
+            SampleChecks.Require(splitCommand.CanExecute(null), $"Classic can create a {direction} tab group.");
             splitCommand.Execute(null);
             await SampleChecks.SettleAsync();
             LayoutDocumentPane remainingModel = remainingDocument.Parent as LayoutDocumentPane
-                ?? throw new InvalidOperationException("Classic 剩余文档窗格不存在。");
+                ?? throw new InvalidOperationException("Classic remaining document pane is missing.");
             SampleChecks.Require(remainingModel.Parent is LayoutDocumentPaneGroup group && group.Orientation == orientation
-                && !ReferenceEquals(remainingDocument.Parent, floatedDocument.Parent), $"Classic {direction}分组方向正确。");
+                && !ReferenceEquals(remainingDocument.Parent, floatedDocument.Parent), $"Classic {direction} group orientation is correct.");
 
             WorkspaceDocument dragModel = new()
             {
                 Id = "classic-active-drag-check",
-                Title = "会话检查文档",
-                Text = "在已经显示停靠指示器的同一会话中改变布局。"
+                Title = "Session Check Document",
+                Text = "Change the layout in the same drag session while docking indicators are visible."
             };
             documents.Add(dragModel);
             await SampleChecks.SettleAsync();
@@ -731,17 +731,17 @@ public sealed partial class MainWindow : Window
                 Point originalCenter = DockingDragChecks.Center(splitBounds);
                 session.Update(originalCenter);
                 await DockingDragChecks.WaitUntilAsync(() => session.Targets().Any(target => IsCenter(target, pane)),
-                    "实际会话未生成主文档窗格的中央目标。");
+                    "The real session did not create a center target for the main document pane.");
                 DropArea<LayoutDocumentPaneControl> capturedArea = session.HostAreas(Manager)
                     .Single(area => ReferenceEquals(area.AreaElement, pane));
                 SampleChecks.Require(session.ContainsArea(capturedArea)
                     && session.HostAreas(Manager).Any(area => ReferenceEquals(area, capturedArea)),
-                    "Classic 初始目标来自实际宿主缓存并已进入拖动会话。");
+                    "Classic initial target comes from the real host cache and enters the drag session.");
                 session.Update(DockingDragChecks.Center(session.GlyphBounds("PART_DocumentPaneDropTargetInto")));
-                await session.WaitForFrameAsync(0, "初始中央指示器与预览未实际呈现。");
+                await session.WaitForFrameAsync(0, "Initial center indicator and preview were not rendered.");
                 SampleChecks.Require(DockingDragChecks.Centered(session.GlyphBounds("PART_DocumentPaneDropTargetInto"), splitBounds)
                     && DockingDragChecks.Near(session.PreviewBounds(), splitBounds),
-                    $"Classic {direction}分组的实际指示器居中且预览覆盖当前窗格。");
+                    $"Classic {direction} group's real indicator is centered and its preview covers the current pane.");
                 OverlayWindow originalOverlay = session.Overlay;
                 int splitFrames = session.Frames;
 
@@ -758,12 +758,12 @@ public sealed partial class MainWindow : Window
                     Rect currentBounds = DockingDragChecks.ScreenBounds(currentPane);
                     return orientation == Orientation.Vertical ? currentBounds.Height > splitBounds.Height + 30
                         : currentBounds.Width > splitBounds.Width + 30;
-                }, "浮出另一文档后，剩余窗格未完成扩展。");
+                }, "The remaining pane did not expand after floating the other document.");
                 pane = PaneFor(remainingModel);
                 Rect expandedBounds = DockingDragChecks.ScreenBounds(pane);
                 session.Update(originalCenter);
-                await session.WaitForFrameAsync(splitFrames, "同一拖动会话没有呈现扩展后的指示器。");
-                SampleChecks.Require(ReferenceEquals(session.Overlay, originalOverlay), "Classic 布局变化后继续使用同一实际覆盖层会话。");
+                await session.WaitForFrameAsync(splitFrames, "The expanded indicator was not rendered in the same drag session.");
+                SampleChecks.Require(ReferenceEquals(session.Overlay, originalOverlay), "Classic continues using the same real overlay session after layout change.");
                 DropArea<LayoutDocumentPaneControl> currentArea = session.HostAreas(Manager)
                     .Single(area => ReferenceEquals(area.AreaElement, pane));
                 Point formerOtherHalf = orientation == Orientation.Vertical
@@ -772,18 +772,18 @@ public sealed partial class MainWindow : Window
                 session.Update(formerOtherHalf);
                 SampleChecks.Require(!splitBounds.Contains(formerOtherHalf) && session.ContainsArea(currentArea)
                     && currentArea.DetectionRect.Contains(currentArea.TransformToDeviceDPI(formerOtherHalf)),
-                    $"Classic {direction}分组原另一半区命中实际会话中的扩展窗格。");
+                    $"Classic {direction} group's former other half hits the expanded pane in the real session.");
                 object centerTarget = session.Targets().Single(target => IsCenter(target, pane));
                 Rect glyphBounds = session.GlyphBounds("PART_DocumentPaneDropTargetInto");
                 SampleChecks.Require(DockingDragChecks.Centered(glyphBounds, expandedBounds)
                     && DockingDragChecks.Near(DockingDragChecks.TargetBounds(centerTarget), glyphBounds),
-                    $"Classic {direction}分组浮出后，实际指示器及停靠目标的中心误差不超过 2 物理像素。");
+                    $"Classic {direction} group's real indicator and dock target centers differ by no more than two physical pixels after floating.");
                 int expandedFrames = session.Frames;
                 session.Update(DockingDragChecks.Center(glyphBounds));
-                await session.WaitForFrameAsync(expandedFrames, "扩展窗格中央目标的预览未实际呈现。");
+                await session.WaitForFrameAsync(expandedFrames, "Center-target preview of the expanded pane was not rendered.");
                 SampleChecks.Require(session.ActiveTarget is { } active && IsCenter(active, pane)
                     && DockingDragChecks.Near(session.PreviewBounds(), expandedBounds),
-                    "Classic 中央命中和实际预览共同覆盖扩展后的窗格。");
+                    "Classic center hit region and real preview both cover the expanded pane.");
 
                 Thickness originalMargin = pane.Margin;
                 object? originalTarget = session.ActiveTarget;
@@ -794,14 +794,14 @@ public sealed partial class MainWindow : Window
                         originalMargin.Right + 12, originalMargin.Bottom + 12);
                     PageRoot.UpdateLayout();
                     await DockingDragChecks.WaitUntilAsync(() => DockingDragChecks.ScreenBounds(pane).Width < expandedBounds.Width - 16,
-                        "对称内缩后实际窗格边界未改变。");
+                        "Real pane bounds did not change after symmetric inset.");
                     Rect insetBounds = DockingDragChecks.ScreenBounds(pane);
                     session.Update(DockingDragChecks.Center(glyphBounds));
-                    await session.WaitForFrameAsync(marginFrames, "中央目标位置不变时，预览未跟随窗格边界重新呈现。");
+                    await session.WaitForFrameAsync(marginFrames, "Preview did not follow pane bounds when the center-target position stayed fixed.");
                     SampleChecks.Require(ReferenceEquals(session.ActiveTarget, originalTarget)
                         && DockingDragChecks.Centered(session.GlyphBounds("PART_DocumentPaneDropTargetInto"), glyphBounds)
                         && DockingDragChecks.Near(session.PreviewBounds(), insetBounds),
-                        "Classic 同一中央目标保持位置时，实际预览仍跟随窗格边界变化。");
+                        "Classic real preview follows pane bounds even when the same center target keeps its position.");
                 }
                 finally
                 {
@@ -809,19 +809,19 @@ public sealed partial class MainWindow : Window
                     pane.Margin = originalMargin;
                     PageRoot.UpdateLayout();
                     session.Update(DockingDragChecks.Center(glyphBounds));
-                    await session.WaitForFrameAsync(restoreFrames, "恢复窗格边界后预览未重新呈现。");
+                    await session.WaitForFrameAsync(restoreFrames, "Preview was not redrawn after restoring pane bounds.");
                 }
                 SampleChecks.Require(DockingDragChecks.Near(session.PreviewBounds(), DockingDragChecks.ScreenBounds(pane)),
-                    "Classic 恢复后的实际中央预览覆盖当前窗格。");
+                    "Classic restored real center preview covers the current pane.");
                 SampleChecks.Require(session.Drop(DockingDragChecks.Center(session.GlyphBounds("PART_DocumentPaneDropTargetInto"))),
-                    "Classic 实际拖动会话提交了中央停靠目标。");
+                    "Classic real drag session commits the center dock target.");
                 await DockingDragChecks.WaitUntilAsync(() => !dragDocument.IsFloating
-                    && ReferenceEquals(dragDocument.Parent, remainingDocument.Parent), "中央释放后文档未合并到实际目标窗格。");
+                    && ReferenceEquals(dragDocument.Parent, remainingDocument.Parent), "The document did not merge into the real target pane after center release.");
                 SampleChecks.Require(remainingModel.Children.Contains(dragDocument)
                     && PageRoot.FindVisualChildren<LayoutDocumentPaneControl>().Any(current => ReferenceEquals(current.Model, remainingModel)
                         && current.TabItems.OfType<TabViewItem>().Any(tab => tab.Tag is LayoutContent content && ReferenceEquals(content.Content, dragModel))),
-                    "Classic 中央释放后的布局树和可见标签均包含同一文档内容。");
-                checks.Record($"Classic {direction}分组动态变化的实际 DragService、目标、指示器、预览、绘制帧和中央释放通过。");
+                    "Classic layout tree and visible tabs contain the same document content after center release.");
+                checks.Record($"Classic {direction} dynamic group change in real DragService, targets, indicators, preview, rendered frames, and center release");
             }
             finally
             {
@@ -834,7 +834,7 @@ public sealed partial class MainWindow : Window
                 await SampleChecks.SettleAsync();
             }
             SampleChecks.Require(documents.Count == 2 && !floatedDocument.IsFloating
-                && ReferenceEquals(remainingDocument.Parent, floatedDocument.Parent), "Classic 会话检查后恢复两个同组停靠文档。");
+                && ReferenceEquals(remainingDocument.Parent, floatedDocument.Parent), "Classic session check restores two documents docked in the same group.");
         }
 
         LayoutDocumentPaneControl PaneFor(LayoutDocumentPane model) => PageRoot.FindVisualChildren<LayoutDocumentPaneControl>()
@@ -855,23 +855,23 @@ public sealed partial class MainWindow : Window
     private async Task CheckDocumentChromeAsync(SampleChecks checks)
     {
         LayoutDocumentPaneControl? pane = PageRoot.FindVisualChildren<LayoutDocumentPaneControl>().FirstOrDefault();
-        SampleChecks.Require(pane is not null, "Classic 文档窗格已加载。");
+        SampleChecks.Require(pane is not null, "Classic document pane is loaded.");
         TabViewItem[] tabs = pane!.TabItems.OfType<TabViewItem>().ToArray();
-        SampleChecks.Require(tabs.Length == documents.Count, "Classic 初始文档标签已加载。");
+        SampleChecks.Require(tabs.Length == documents.Count, "Classic initial document tabs are loaded.");
         foreach (TabViewItem tab in tabs)
         {
             Button? closeButton = tab.FindVisualChildren<Button>().FirstOrDefault(button => button.Name == "CloseButton");
             SampleChecks.Require(closeButton is not null && Math.Abs(closeButton.ActualWidth - 20) < 1
                 && Math.Abs(closeButton.ActualHeight - 20) < 1 && Math.Abs(tab.Padding.Right - 4) < 0.1,
-                "Classic 文档标签关闭按钮和右侧内边距符合 WPFUI 尺寸。");
+                "Classic document tab close button and right padding match WPFUI dimensions.");
             SampleChecks.Require(closeButton!.Content is Viewbox { Width: 12, Height: 12, Child: PathIcon { Width: 12, Height: 12, Data: not null } },
-                "Classic 文档标签关闭图形为 12 像素。");
+                "Classic document tab close glyph is 12 pixels.");
         }
-        checks.Record("Classic 文档标签关闭按钮尺寸和图形通过。");
+        checks.Record("Classic document tab close button size and glyph");
 
         global::AvalonDock.Controls.DropDownButton? selectorButton = pane.FindVisualChildren<global::AvalonDock.Controls.DropDownButton>()
             .FirstOrDefault(button => button.Name == "MenuDropDownButton");
-        SampleChecks.Require(selectorButton?.DropDownContextMenu is ContextMenuEx, "Classic 文档选择器已连接菜单。");
+        SampleChecks.Require(selectorButton?.DropDownContextMenu is ContextMenuEx, "Classic document selector is connected to a menu.");
         ContextMenuEx menu = (ContextMenuEx)selectorButton!.DropDownContextMenu!;
         ElementTheme originalTheme = PageRoot.RequestedTheme;
         try
@@ -885,7 +885,7 @@ public sealed partial class MainWindow : Window
                     && surface.Color.R == (theme == ElementTheme.Light ? 0xF9 : 0x28)
                     && surface.Color.G == (theme == ElementTheme.Light ? 0xF9 : 0x28)
                     && surface.Color.B == (theme == ElementTheme.Light ? 0xF9 : 0x28),
-                    $"Classic 文档表面符合{(theme == ElementTheme.Light ? "浅色" : "深色")}主题色。");
+                    $"Classic document surface matches the {(theme == ElementTheme.Light ? "light" : "dark")} theme colors.");
                 menu.ShowAt(selectorButton);
                 selectorButton.IsChecked = true;
                 await SampleChecks.SettleAsync();
@@ -896,12 +896,12 @@ public sealed partial class MainWindow : Window
                 MenuFlyoutPresenter? flyoutPresenter = popup?.Child as MenuFlyoutPresenter
                     ?? popup?.Child.FindVisualChildren<MenuFlyoutPresenter>().FirstOrDefault();
                 SampleChecks.Require(flyoutPresenter is not null && flyoutPresenter.ActualTheme == theme,
-                    $"Classic 文档选择器弹出菜单跟随{(theme == ElementTheme.Light ? "浅色" : "深色")}主题。");
+                    $"Classic document selector popup follows the {(theme == ElementTheme.Light ? "light" : "dark")} theme.");
 
                 if (theme == ElementTheme.Light)
                 {
                     MenuItemEx[] items = menu.Items.OfType<MenuItemEx>().ToArray();
-                    SampleChecks.Require(items.Length == documents.Count, "Classic 文档选择器包含初始文档。");
+                    SampleChecks.Require(items.Length == documents.Count, "Classic document selector contains initial documents.");
                     double? firstLeft = null;
                     foreach (WorkspaceDocument document in documents)
                     {
@@ -916,25 +916,25 @@ public sealed partial class MainWindow : Window
                             && titlePresenter is not null && title is not null && itemRoot is not null
                             && item.HorizontalContentAlignment == HorizontalAlignment.Left
                             && titlePresenter.HorizontalContentAlignment == HorizontalAlignment.Left,
-                            "Classic 文档选择器标题文案与左对齐设置正确。");
+                            "Classic document selector title and left alignment are correct.");
                         double titleLeft = title!.TransformToVisual(popup!.Child).TransformPoint(new Point(0, 0)).X;
                         double presenterLeft = titlePresenter!.TransformToVisual(itemRoot).TransformPoint(new Point(0, 0)).X;
                         SampleChecks.Require(item!.Icon is Image { Source: null }
                             && ((MenuFlyoutItem)item).Icon is null
                             && titlePresenter.Margin.Left < 1
                             && titleLeft - itemRoot!.TransformToVisual(popup.Child).TransformPoint(new Point(0, 0)).X < 20,
-                            "Classic 无图标文档的菜单标题紧贴左侧，不预留空图标列。");
+                            "Classic iconless document menu title starts at the left without reserving an empty icon column.");
                         SampleChecks.Require(Math.Abs(presenterLeft - itemRoot!.Padding.Left - titlePresenter.Margin.Left) < 1,
-                            "Classic 文档选择器标题无重复图标占位。");
+                            "Classic document selector title has no duplicate icon placeholder.");
                         SampleChecks.Require(firstLeft is null || Math.Abs(titleLeft - firstLeft.Value) < 1,
-                            "Classic 长短文档标题具有相同左边界。");
+                            "Classic long and short document titles share the same left edge.");
                         firstLeft ??= titleLeft;
 
                         AutomationPeer? peer = FrameworkElementAutomationPeer.FromElement(item)
                             ?? FrameworkElementAutomationPeer.CreatePeerForElement(item);
-                        SampleChecks.Require(peer?.GetName() == document.Title, "Classic 文档选择器自动化文案可读。");
+                        SampleChecks.Require(peer?.GetName() == document.Title, "Classic document selector automation name is readable.");
                     }
-                    checks.Record("Classic 文档选择器文案、左对齐和自动化名称通过。");
+                    checks.Record("Classic document selector text, left alignment, and automation name");
 
                     LayoutContent iconDocument = (LayoutContent)items[0].DataContext;
                     iconDocument.IconSource = new Microsoft.UI.Xaml.Media.Imaging.WriteableBitmap(1, 1);
@@ -950,15 +950,15 @@ public sealed partial class MainWindow : Window
                     SampleChecks.Require(items[0].Icon is Image { Source: not null }
                         && ((MenuFlyoutItem)items[0]).Icon is not null
                         && iconRoot?.Visibility == Visibility.Visible && iconTitle?.Margin.Left >= 20,
-                        "Classic 文档选择器在图标加载后预留图标列。");
-                    checks.Record("Classic 文档图标加载后菜单占位通过。");
+                        "Classic document selector reserves an icon column after icon loading.");
+                    checks.Record("Classic menu spacing after document icon loads");
                 }
 
                 menu.Hide();
                 selectorButton.IsChecked = false;
                 await SampleChecks.SettleAsync();
             }
-            checks.Record("Classic 文档选择器浅色和深色弹出主题通过。");
+            checks.Record("Classic document selector popup theme in light and dark modes");
         }
         finally
         {
@@ -980,11 +980,11 @@ public sealed partial class MainWindow : Window
             await SampleChecks.SettleAsync();
             TabViewItem[] overflowTabs = pane.TabItems.OfType<TabViewItem>().ToArray();
             SampleChecks.Require(overflowTabs.Length == 6 && overflowTabs.Any(tab => tab.Opacity == 0),
-                "Classic 文档选择器可配合窄窗格隐藏溢出标签。");
+                "Classic document selector hides overflowing tabs in a narrow pane.");
             Rect selectorBounds = selectorButton.TransformToVisual(pane).TransformBounds(
                 new Rect(0, 0, selectorButton.ActualWidth, selectorButton.ActualHeight));
             SampleChecks.Require(selectorBounds.Right <= pane.ActualWidth + 1 && selectorBounds.Left >= 0,
-                "Classic 窄窗格中的文档选择按钮仍位于窗格内。");
+                "Classic document selector button stays within a narrow pane.");
             TabViewItem hiddenTab = overflowTabs.First(tab => tab.Opacity == 0);
             LayoutContent hiddenModel = (LayoutContent)hiddenTab.Tag;
             menu.ShowAt(selectorButton);
@@ -992,13 +992,13 @@ public sealed partial class MainWindow : Window
             MenuItemEx? hiddenItem = menu.Items.OfType<MenuItemEx>()
                 .FirstOrDefault(item => ReferenceEquals(item.DataContext, hiddenModel));
             SampleChecks.Require(hiddenItem?.Command?.CanExecute(null) == true,
-                "Classic 文档选择器提供溢出文档的激活命令。");
+                "Classic document selector provides an activation command for an overflow document.");
             hiddenItem!.Command!.Execute(null);
             menu.Hide();
             await SampleChecks.SettleAsync();
             SampleChecks.Require(hiddenModel.IsSelected && hiddenTab.Opacity > 0,
-                "Classic 从选择器激活的溢出文档重新显示在标签条中。");
-            checks.Record("Classic 窄窗格文档溢出、选择按钮与隐藏文档激活通过。");
+                "Classic overflow document activated from the selector reappears in the tab strip.");
+            checks.Record("Classic narrow-pane document overflow, selector button, and hidden-document activation");
         }
         finally
         {
@@ -1025,8 +1025,8 @@ public sealed partial class MainWindow : Window
             && actual.Distinct(System.Collections.Generic.ReferenceEqualityComparer.Instance).Count() == actual.Length
             && expected.Distinct(System.Collections.Generic.ReferenceEqualityComparer.Instance).Count() == expected.Length
             && expected.All(model => actual.Any(content => ReferenceEquals(content, model))),
-            $"{label}内容身份集合准确，没有残留旧项或重复模型。");
-        checks.Record($"{label}精确引用集合与重复检查通过（{expected.Length}）。");
+            $"{label}: content identity set is exact, with no stale items or duplicate models.");
+        checks.Record($"{label}: exact reference set and duplicate check ({expected.Length})");
     }
 
     private void OnClosed(object sender, WindowEventArgs args)

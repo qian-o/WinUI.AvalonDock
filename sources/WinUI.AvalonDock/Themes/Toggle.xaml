@@ -5,6 +5,7 @@
 <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:controls="using:AvalonDock.Controls"
+                    xmlns:properties="using:AvalonDock.Properties"
                     xmlns:primitives="using:Microsoft.UI.Xaml.Controls.Primitives">
     <ResourceDictionary.MergedDictionaries>
         <ResourceDictionary Source="ms-appx:///WinUI.AvalonDock/Themes/Chrome.xaml" />
@@ -114,9 +115,12 @@
                                       FontWeight="SemiBold" />
                     <Button x:Name="PART_OptionsButton" Grid.Column="1" Width="24" Height="24" Margin="2,0" MinWidth="0" MinHeight="0"
                             Padding="0" IsTabStop="False" Style="{StaticResource AvalonDockChromeButtonStyle}"
-                            ToolTipService.ToolTip="Options"><FontIcon Glyph="&#xE712;" FontSize="14" /></Button>
+                            ToolTipService.ToolTip="{properties:LocalizedString Key=Toggle_Options}"
+                            AutomationProperties.Name="{properties:LocalizedString Key=Toggle_Options}"><FontIcon Glyph="&#xE712;" FontSize="14" /></Button>
                     <Button x:Name="PART_MinimizeButton" Grid.Column="2" Width="24" Height="24" Margin="2,0" MinWidth="0" MinHeight="0"
-                            Padding="0" IsTabStop="False" Style="{StaticResource AvalonDockChromeButtonStyle}" ToolTipService.ToolTip="Minimize"
+                            Padding="0" IsTabStop="False" Style="{StaticResource AvalonDockChromeButtonStyle}"
+                            ToolTipService.ToolTip="{properties:LocalizedString Key=Toggle_Minimize}"
+                            AutomationProperties.Name="{properties:LocalizedString Key=Toggle_Minimize}"
                             Command="{Binding LayoutItem.AutoHideCommand, RelativeSource={RelativeSource TemplatedParent}}"><FontIcon Glyph="&#xE921;" FontSize="14" /></Button>
                 </Grid>
             </ControlTemplate>

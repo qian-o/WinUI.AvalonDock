@@ -133,13 +133,16 @@
     <value>Esconder</value>
   </data>
   <data name="Anchorable_CxMenu_Hint" xml:space="preserve">
-    <value>Posición de la ventana </value>
+    <value>Posición de la ventana</value>
   </data>
   <data name="Anchorable_Dock" xml:space="preserve">
     <value>Anclar</value>
   </data>
   <data name="Anchorable_DockAsDocument" xml:space="preserve">
     <value>Anclar como documento en ficha</value>
+  </data>
+  <data name="Anchorable_DetachToWindow" xml:space="preserve">
+    <value>Ventana</value>
   </data>
   <data name="Anchorable_Float" xml:space="preserve">
     <value>Ventana flotante</value>
@@ -172,13 +175,85 @@
     <value>Mover al siguiente grupo de fichas</value>
   </data>
   <data name="Document_MoveToPreviousTabGroup" xml:space="preserve">
-    <value>Mover al anterior grupo de fichas </value>
+    <value>Mover al anterior grupo de fichas</value>
   </data>
   <data name="Document_NewHorizontalTabGroup" xml:space="preserve">
     <value>Nuevo grupo de fichas horizontal</value>
   </data>
   <data name="Document_NewVerticalTabGroup" xml:space="preserve">
     <value>Nuevo grupo de fichas vertical</value>
+  </data>
+  <data name="A11y_AutoHideTool" xml:space="preserve">
+    <value>Ocultar automáticamente la herramienta</value>
+  </data>
+  <data name="A11y_HideTool" xml:space="preserve">
+    <value>Ocultar la herramienta</value>
+  </data>
+  <data name="A11y_DockLeft" xml:space="preserve">
+    <value>Acoplar a la izquierda</value>
+  </data>
+  <data name="A11y_DockTop" xml:space="preserve">
+    <value>Acoplar arriba</value>
+  </data>
+  <data name="A11y_DockRight" xml:space="preserve">
+    <value>Acoplar a la derecha</value>
+  </data>
+  <data name="A11y_DockBottom" xml:space="preserve">
+    <value>Acoplar abajo</value>
+  </data>
+  <data name="A11y_DockInside" xml:space="preserve">
+    <value>Acoplar dentro</value>
+  </data>
+  <data name="A11y_DockLeftAsToolPane" xml:space="preserve">
+    <value>Acoplar a la izquierda como panel de herramientas</value>
+  </data>
+  <data name="A11y_DockTopAsToolPane" xml:space="preserve">
+    <value>Acoplar arriba como panel de herramientas</value>
+  </data>
+  <data name="A11y_DockRightAsToolPane" xml:space="preserve">
+    <value>Acoplar a la derecha como panel de herramientas</value>
+  </data>
+  <data name="A11y_DockBottomAsToolPane" xml:space="preserve">
+    <value>Acoplar abajo como panel de herramientas</value>
+  </data>
+  <data name="Toggle_MoveTo" xml:space="preserve">
+    <value>Mover a</value>
+  </data>
+  <data name="Toggle_ViewMode" xml:space="preserve">
+    <value>Modo de vista</value>
+  </data>
+  <data name="Toggle_Docked" xml:space="preserve">
+    <value>Acoplado</value>
+  </data>
+  <data name="Toggle_Hidden" xml:space="preserve">
+    <value>Oculto</value>
+  </data>
+  <data name="Toggle_Options" xml:space="preserve">
+    <value>Opciones</value>
+  </data>
+  <data name="Toggle_Minimize" xml:space="preserve">
+    <value>Minimizar</value>
+  </data>
+  <data name="Toggle_ShowHiddenToolWindows" xml:space="preserve">
+    <value>Mostrar ventanas de herramientas ocultas</value>
+  </data>
+  <data name="Toggle_Zone_LeftTop" xml:space="preserve">
+    <value>Lado izquierdo superior</value>
+  </data>
+  <data name="Toggle_Zone_LeftBottom" xml:space="preserve">
+    <value>Lado izquierdo inferior</value>
+  </data>
+  <data name="Toggle_Zone_RightTop" xml:space="preserve">
+    <value>Lado derecho superior</value>
+  </data>
+  <data name="Toggle_Zone_RightBottom" xml:space="preserve">
+    <value>Lado derecho inferior</value>
+  </data>
+  <data name="Toggle_Zone_BottomLeft" xml:space="preserve">
+    <value>Parte inferior izquierda</value>
+  </data>
+  <data name="Toggle_Zone_BottomRight" xml:space="preserve">
+    <value>Parte inferior derecha</value>
   </data>
   <data name="Window_Maximize" xml:space="preserve">
     <value>Maximizar</value>

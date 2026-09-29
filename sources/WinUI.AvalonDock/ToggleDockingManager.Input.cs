@@ -110,26 +110,26 @@ public partial class ToggleDockingManager
         MenuFlyout menu = new();
         MenuFlyoutSubItem move = new()
         {
-            Text = "Move To"
+            Text = global::AvalonDock.Properties.Resources.Toggle_MoveTo
         };
         foreach (DockZone zone in Enum.GetValues<DockZone>())
         {
-            move.Items.Add(MenuItem(System.Text.RegularExpressions.Regex.Replace(zone.ToString(), "(\\B[A-Z])", " $1"), () => MoveAnchorableToZone(anchorable, zone)));
+            move.Items.Add(MenuItem(GetLocalizedZoneName(zone), () => MoveAnchorableToZone(anchorable, zone)));
         }
 
         menu.Items.Add(move);
         menu.Items.Add(new MenuFlyoutSeparator());
         MenuFlyoutSubItem modes = new()
         {
-            Text = "View Mode"
+            Text = global::AvalonDock.Properties.Resources.Toggle_ViewMode
         };
-        modes.Items.Add(MenuItem("Float", () => FloatAnchorableFromMenu(anchorable),
+        modes.Items.Add(MenuItem(global::AvalonDock.Properties.Resources.Anchorable_Float, () => FloatAnchorableFromMenu(anchorable),
             AllowFloatingWindows && GetLayoutItemFromModel(anchorable)?.FloatCommand?.CanExecute(null) == true));
         // The pinned WPF MenuItem sets IsChecked but leaves IsCheckable=false, so
         // invoking it must not toggle its checked state before the Click handler.
         MenuFlyoutItem separate = new()
         {
-            Text = "Window",
+            Text = global::AvalonDock.Properties.Resources.Anchorable_DetachToWindow,
             IsEnabled = AllowDetachedWindows
         };
         if (IsDetached(anchorable))
@@ -149,7 +149,7 @@ public partial class ToggleDockingManager
             }
         };
         modes.Items.Add(separate);
-        modes.Items.Add(MenuItem("Docked", () =>
+        modes.Items.Add(MenuItem(global::AvalonDock.Properties.Resources.Toggle_Docked, () =>
         {
             if (IsDetached(anchorable))
             {
@@ -160,11 +160,21 @@ public partial class ToggleDockingManager
                 ToggleAnchorable(anchorable, GetAnchorableZone(anchorable));
             }
         }));
-        modes.Items.Add(MenuItem("Hidden", () => HideAnchorableFromMenu(anchorable),
+        modes.Items.Add(MenuItem(global::AvalonDock.Properties.Resources.Toggle_Hidden, () => HideAnchorableFromMenu(anchorable),
             (GetLayoutItemFromModel(anchorable) as LayoutAnchorableItem)?.HideCommand?.CanExecute(null) == true));
         menu.Items.Add(modes);
         return menu;
     }
+    internal static string GetLocalizedZoneName(DockZone zone) => zone switch
+    {
+        DockZone.LeftTop => global::AvalonDock.Properties.Resources.Toggle_Zone_LeftTop,
+        DockZone.LeftBottom => global::AvalonDock.Properties.Resources.Toggle_Zone_LeftBottom,
+        DockZone.RightTop => global::AvalonDock.Properties.Resources.Toggle_Zone_RightTop,
+        DockZone.RightBottom => global::AvalonDock.Properties.Resources.Toggle_Zone_RightBottom,
+        DockZone.BottomLeft => global::AvalonDock.Properties.Resources.Toggle_Zone_BottomLeft,
+        DockZone.BottomRight => global::AvalonDock.Properties.Resources.Toggle_Zone_BottomRight,
+        _ => throw new ArgumentOutOfRangeException(nameof(zone))
+    };
     internal void FloatAnchorableFromMenu(LayoutAnchorable anchorable)
     {
         ICommand? command = GetLayoutItemFromModel(anchorable)?.FloatCommand;

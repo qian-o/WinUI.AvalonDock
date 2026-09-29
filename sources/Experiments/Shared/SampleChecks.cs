@@ -14,7 +14,7 @@ public sealed class SampleChecks
         }
     }
 
-    public void Record(string message) => results.Add($"通过：{message}");
+    public void Record(string message) => results.Add($"PASS: {message}");
 
     public static Task SettleAsync() => Task.Delay(250);
 
@@ -29,7 +29,7 @@ public sealed class SampleChecks
 
         if (index + 1 >= arguments.Length || !Path.IsPathFullyQualified(arguments[index + 1]))
         {
-            throw new ArgumentException("--smoke-test 后必须提供仓库外的绝对结果文件路径。");
+            throw new ArgumentException("--smoke-test requires an absolute report path outside the repository.");
         }
 
         string reportPath = arguments[index + 1];
@@ -45,13 +45,13 @@ public sealed class SampleChecks
                 await SettleAsync();
                 await run(checks);
                 window.Close();
-                checks.Record("主窗口关闭并释放管理器");
+                checks.Record("Main window closed and manager disposed");
                 File.WriteAllLines(reportPath, checks.results);
                 Environment.ExitCode = 0;
             }
             catch (Exception exception)
             {
-                checks.results.Add($"失败：{exception}");
+                checks.results.Add($"FAIL: {exception}");
                 File.WriteAllLines(reportPath, checks.results);
                 Environment.ExitCode = 1;
                 window.Close();

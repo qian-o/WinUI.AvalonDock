@@ -141,6 +141,9 @@
   <data name="Anchorable_DockAsDocument" xml:space="preserve">
     <value>Zadokuj jako dokument na kartach</value>
   </data>
+  <data name="Anchorable_DetachToWindow" xml:space="preserve">
+    <value>Okno</value>
+  </data>
   <data name="Anchorable_Float" xml:space="preserve">
     <value>Zwolnij</value>
   </data>
@@ -179,6 +182,78 @@
   </data>
   <data name="Document_NewVerticalTabGroup" xml:space="preserve">
     <value>Nowa pionowa grupa kart</value>
+  </data>
+  <data name="A11y_AutoHideTool" xml:space="preserve">
+    <value>Automatycznie ukryj okno narzędziowe</value>
+  </data>
+  <data name="A11y_HideTool" xml:space="preserve">
+    <value>Ukryj okno narzędziowe</value>
+  </data>
+  <data name="A11y_DockLeft" xml:space="preserve">
+    <value>Zadokuj po lewej</value>
+  </data>
+  <data name="A11y_DockTop" xml:space="preserve">
+    <value>Zadokuj u góry</value>
+  </data>
+  <data name="A11y_DockRight" xml:space="preserve">
+    <value>Zadokuj po prawej</value>
+  </data>
+  <data name="A11y_DockBottom" xml:space="preserve">
+    <value>Zadokuj u dołu</value>
+  </data>
+  <data name="A11y_DockInside" xml:space="preserve">
+    <value>Zadokuj wewnątrz</value>
+  </data>
+  <data name="A11y_DockLeftAsToolPane" xml:space="preserve">
+    <value>Zadokuj po lewej jako panel narzędziowy</value>
+  </data>
+  <data name="A11y_DockTopAsToolPane" xml:space="preserve">
+    <value>Zadokuj u góry jako panel narzędziowy</value>
+  </data>
+  <data name="A11y_DockRightAsToolPane" xml:space="preserve">
+    <value>Zadokuj po prawej jako panel narzędziowy</value>
+  </data>
+  <data name="A11y_DockBottomAsToolPane" xml:space="preserve">
+    <value>Zadokuj u dołu jako panel narzędziowy</value>
+  </data>
+  <data name="Toggle_MoveTo" xml:space="preserve">
+    <value>Przenieś do</value>
+  </data>
+  <data name="Toggle_ViewMode" xml:space="preserve">
+    <value>Tryb widoku</value>
+  </data>
+  <data name="Toggle_Docked" xml:space="preserve">
+    <value>Zadokowane</value>
+  </data>
+  <data name="Toggle_Hidden" xml:space="preserve">
+    <value>Ukryte</value>
+  </data>
+  <data name="Toggle_Options" xml:space="preserve">
+    <value>Opcje</value>
+  </data>
+  <data name="Toggle_Minimize" xml:space="preserve">
+    <value>Minimalizuj</value>
+  </data>
+  <data name="Toggle_ShowHiddenToolWindows" xml:space="preserve">
+    <value>Pokaż ukryte okna narzędziowe</value>
+  </data>
+  <data name="Toggle_Zone_LeftTop" xml:space="preserve">
+    <value>Lewa strona u góry</value>
+  </data>
+  <data name="Toggle_Zone_LeftBottom" xml:space="preserve">
+    <value>Lewa strona u dołu</value>
+  </data>
+  <data name="Toggle_Zone_RightTop" xml:space="preserve">
+    <value>Prawa strona u góry</value>
+  </data>
+  <data name="Toggle_Zone_RightBottom" xml:space="preserve">
+    <value>Prawa strona u dołu</value>
+  </data>
+  <data name="Toggle_Zone_BottomLeft" xml:space="preserve">
+    <value>Na dole po lewej</value>
+  </data>
+  <data name="Toggle_Zone_BottomRight" xml:space="preserve">
+    <value>Na dole po prawej</value>
   </data>
   <data name="Window_Maximize" xml:space="preserve">
     <value>Maksymalizuj</value>

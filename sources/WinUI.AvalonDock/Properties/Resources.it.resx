@@ -141,6 +141,9 @@
   <data name="Anchorable_DockAsDocument" xml:space="preserve">
     <value>Ancora come Documento</value>
   </data>
+  <data name="Anchorable_DetachToWindow" xml:space="preserve">
+    <value>Finestra</value>
+  </data>
   <data name="Anchorable_Float" xml:space="preserve">
     <value>Finestra Mobile</value>
   </data>
@@ -148,13 +151,13 @@
     <value>Nascondi</value>
   </data>
   <data name="Document_BtnPinned_Hint" xml:space="preserve">
-    <value>Stato Toggle Pin</value>
+    <value>Attiva o disattiva il blocco</value>
   </data>
   <data name="Document_Close" xml:space="preserve">
     <value>Chiudi</value>
   </data>
   <data name="Document_CloseAll" xml:space="preserve">
-    <value>Chiudere tutte le</value>
+    <value>Chiudi tutto</value>
   </data>
   <data name="Document_CloseAllButThis" xml:space="preserve">
     <value>Chiudi Tutti Tranne Questo</value>
@@ -179,6 +182,78 @@
   </data>
   <data name="Document_NewVerticalTabGroup" xml:space="preserve">
     <value>Nuovo Gruppo Verticale</value>
+  </data>
+  <data name="A11y_AutoHideTool" xml:space="preserve">
+    <value>Nascondi automaticamente lo strumento</value>
+  </data>
+  <data name="A11y_HideTool" xml:space="preserve">
+    <value>Nascondi lo strumento</value>
+  </data>
+  <data name="A11y_DockLeft" xml:space="preserve">
+    <value>Ancora a sinistra</value>
+  </data>
+  <data name="A11y_DockTop" xml:space="preserve">
+    <value>Ancora in alto</value>
+  </data>
+  <data name="A11y_DockRight" xml:space="preserve">
+    <value>Ancora a destra</value>
+  </data>
+  <data name="A11y_DockBottom" xml:space="preserve">
+    <value>Ancora in basso</value>
+  </data>
+  <data name="A11y_DockInside" xml:space="preserve">
+    <value>Ancora all'interno</value>
+  </data>
+  <data name="A11y_DockLeftAsToolPane" xml:space="preserve">
+    <value>Ancora a sinistra come riquadro strumenti</value>
+  </data>
+  <data name="A11y_DockTopAsToolPane" xml:space="preserve">
+    <value>Ancora in alto come riquadro strumenti</value>
+  </data>
+  <data name="A11y_DockRightAsToolPane" xml:space="preserve">
+    <value>Ancora a destra come riquadro strumenti</value>
+  </data>
+  <data name="A11y_DockBottomAsToolPane" xml:space="preserve">
+    <value>Ancora in basso come riquadro strumenti</value>
+  </data>
+  <data name="Toggle_MoveTo" xml:space="preserve">
+    <value>Sposta in</value>
+  </data>
+  <data name="Toggle_ViewMode" xml:space="preserve">
+    <value>Modalità di visualizzazione</value>
+  </data>
+  <data name="Toggle_Docked" xml:space="preserve">
+    <value>Ancorato</value>
+  </data>
+  <data name="Toggle_Hidden" xml:space="preserve">
+    <value>Nascosto</value>
+  </data>
+  <data name="Toggle_Options" xml:space="preserve">
+    <value>Opzioni</value>
+  </data>
+  <data name="Toggle_Minimize" xml:space="preserve">
+    <value>Riduci a icona</value>
+  </data>
+  <data name="Toggle_ShowHiddenToolWindows" xml:space="preserve">
+    <value>Mostra finestre degli strumenti nascoste</value>
+  </data>
+  <data name="Toggle_Zone_LeftTop" xml:space="preserve">
+    <value>Lato sinistro in alto</value>
+  </data>
+  <data name="Toggle_Zone_LeftBottom" xml:space="preserve">
+    <value>Lato sinistro in basso</value>
+  </data>
+  <data name="Toggle_Zone_RightTop" xml:space="preserve">
+    <value>Lato destro in alto</value>
+  </data>
+  <data name="Toggle_Zone_RightBottom" xml:space="preserve">
+    <value>Lato destro in basso</value>
+  </data>
+  <data name="Toggle_Zone_BottomLeft" xml:space="preserve">
+    <value>Parte inferiore sinistra</value>
+  </data>
+  <data name="Toggle_Zone_BottomRight" xml:space="preserve">
+    <value>Parte inferiore destra</value>
   </data>
   <data name="Window_Maximize" xml:space="preserve">
     <value>Ingrandisci</value>

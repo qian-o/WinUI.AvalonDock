@@ -141,6 +141,9 @@
   <data name="Anchorable_DockAsDocument" xml:space="preserve">
     <value>Присоединить как Документ</value>
   </data>
+  <data name="Anchorable_DetachToWindow" xml:space="preserve">
+    <value>Окно</value>
+  </data>
   <data name="Anchorable_Float" xml:space="preserve">
     <value>Отсоединить</value>
   </data>
@@ -148,7 +151,7 @@
     <value>Скрыть</value>
   </data>
   <data name="Document_BtnPinned_Hint" xml:space="preserve">
-    <value>Статус Переключение Pin</value>
+    <value>Переключить закрепление</value>
   </data>
   <data name="Document_Close" xml:space="preserve">
     <value>Закрыть</value>
@@ -179,6 +182,78 @@
   </data>
   <data name="Document_NewVerticalTabGroup" xml:space="preserve">
     <value>Новая Вертикальная Группа Вкладок</value>
+  </data>
+  <data name="A11y_AutoHideTool" xml:space="preserve">
+    <value>Автоматически скрыть окно инструментов</value>
+  </data>
+  <data name="A11y_HideTool" xml:space="preserve">
+    <value>Скрыть окно инструментов</value>
+  </data>
+  <data name="A11y_DockLeft" xml:space="preserve">
+    <value>Закрепить слева</value>
+  </data>
+  <data name="A11y_DockTop" xml:space="preserve">
+    <value>Закрепить сверху</value>
+  </data>
+  <data name="A11y_DockRight" xml:space="preserve">
+    <value>Закрепить справа</value>
+  </data>
+  <data name="A11y_DockBottom" xml:space="preserve">
+    <value>Закрепить снизу</value>
+  </data>
+  <data name="A11y_DockInside" xml:space="preserve">
+    <value>Закрепить внутри</value>
+  </data>
+  <data name="A11y_DockLeftAsToolPane" xml:space="preserve">
+    <value>Закрепить слева как панель инструментов</value>
+  </data>
+  <data name="A11y_DockTopAsToolPane" xml:space="preserve">
+    <value>Закрепить сверху как панель инструментов</value>
+  </data>
+  <data name="A11y_DockRightAsToolPane" xml:space="preserve">
+    <value>Закрепить справа как панель инструментов</value>
+  </data>
+  <data name="A11y_DockBottomAsToolPane" xml:space="preserve">
+    <value>Закрепить снизу как панель инструментов</value>
+  </data>
+  <data name="Toggle_MoveTo" xml:space="preserve">
+    <value>Переместить в</value>
+  </data>
+  <data name="Toggle_ViewMode" xml:space="preserve">
+    <value>Режим отображения</value>
+  </data>
+  <data name="Toggle_Docked" xml:space="preserve">
+    <value>Закреплено</value>
+  </data>
+  <data name="Toggle_Hidden" xml:space="preserve">
+    <value>Скрыто</value>
+  </data>
+  <data name="Toggle_Options" xml:space="preserve">
+    <value>Параметры</value>
+  </data>
+  <data name="Toggle_Minimize" xml:space="preserve">
+    <value>Свернуть</value>
+  </data>
+  <data name="Toggle_ShowHiddenToolWindows" xml:space="preserve">
+    <value>Показать скрытые окна инструментов</value>
+  </data>
+  <data name="Toggle_Zone_LeftTop" xml:space="preserve">
+    <value>Слева сверху</value>
+  </data>
+  <data name="Toggle_Zone_LeftBottom" xml:space="preserve">
+    <value>Слева снизу</value>
+  </data>
+  <data name="Toggle_Zone_RightTop" xml:space="preserve">
+    <value>Справа сверху</value>
+  </data>
+  <data name="Toggle_Zone_RightBottom" xml:space="preserve">
+    <value>Справа снизу</value>
+  </data>
+  <data name="Toggle_Zone_BottomLeft" xml:space="preserve">
+    <value>Снизу слева</value>
+  </data>
+  <data name="Toggle_Zone_BottomRight" xml:space="preserve">
+    <value>Снизу справа</value>
   </data>
   <data name="Window_Maximize" xml:space="preserve">
     <value>Развернуть</value>

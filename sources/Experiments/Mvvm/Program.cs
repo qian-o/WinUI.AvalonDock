@@ -1,4 +1,5 @@
 using Microsoft.UI.Xaml;
+using WinRT;
 
 namespace WinUI.AvalonDock.Experiments.Mvvm;
 
@@ -7,7 +8,8 @@ internal static class Program
     [STAThread]
     private static void Main()
     {
-        WinRT.ComWrappersSupport.InitializeComWrappers();
+        ComWrappersSupport.InitializeComWrappers();
+
         Application.Start(initialization =>
         {
             SynchronizationContext.SetSynchronizationContext(
@@ -17,4 +19,3 @@ internal static class Program
         });
     }
 }
-

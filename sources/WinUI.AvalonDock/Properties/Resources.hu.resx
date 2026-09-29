@@ -141,6 +141,9 @@
   <data name="Anchorable_DockAsDocument" xml:space="preserve">
     <value>Dokkolás dokumentumfülként</value>
   </data>
+  <data name="Anchorable_DetachToWindow" xml:space="preserve">
+    <value>Ablak</value>
+  </data>
   <data name="Anchorable_Float" xml:space="preserve">
     <value>Lebegő</value>
   </data>
@@ -148,13 +151,13 @@
     <value>Elrejtés</value>
   </data>
   <data name="Document_BtnPinned_Hint" xml:space="preserve">
-    <value>Toggle Pin állapot</value>
+    <value>Rögzítés be- vagy kikapcsolása</value>
   </data>
   <data name="Document_Close" xml:space="preserve">
     <value>Bezárás</value>
   </data>
   <data name="Document_CloseAll" xml:space="preserve">
-    <value>Zárjon be minden</value>
+    <value>Összes bezárása</value>
   </data>
   <data name="Document_CloseAllButThis" xml:space="preserve">
     <value>Ennek kivételével az összes bezárása</value>
@@ -179,6 +182,78 @@
   </data>
   <data name="Document_NewVerticalTabGroup" xml:space="preserve">
     <value>Új függőleges fülcsoport</value>
+  </data>
+  <data name="A11y_AutoHideTool" xml:space="preserve">
+    <value>Eszközablak automatikus elrejtése</value>
+  </data>
+  <data name="A11y_HideTool" xml:space="preserve">
+    <value>Eszközablak elrejtése</value>
+  </data>
+  <data name="A11y_DockLeft" xml:space="preserve">
+    <value>Dokkolás balra</value>
+  </data>
+  <data name="A11y_DockTop" xml:space="preserve">
+    <value>Dokkolás felülre</value>
+  </data>
+  <data name="A11y_DockRight" xml:space="preserve">
+    <value>Dokkolás jobbra</value>
+  </data>
+  <data name="A11y_DockBottom" xml:space="preserve">
+    <value>Dokkolás alulra</value>
+  </data>
+  <data name="A11y_DockInside" xml:space="preserve">
+    <value>Dokkolás belülre</value>
+  </data>
+  <data name="A11y_DockLeftAsToolPane" xml:space="preserve">
+    <value>Dokkolás balra eszközpanelként</value>
+  </data>
+  <data name="A11y_DockTopAsToolPane" xml:space="preserve">
+    <value>Dokkolás felülre eszközpanelként</value>
+  </data>
+  <data name="A11y_DockRightAsToolPane" xml:space="preserve">
+    <value>Dokkolás jobbra eszközpanelként</value>
+  </data>
+  <data name="A11y_DockBottomAsToolPane" xml:space="preserve">
+    <value>Dokkolás alulra eszközpanelként</value>
+  </data>
+  <data name="Toggle_MoveTo" xml:space="preserve">
+    <value>Áthelyezés ide</value>
+  </data>
+  <data name="Toggle_ViewMode" xml:space="preserve">
+    <value>Nézetmód</value>
+  </data>
+  <data name="Toggle_Docked" xml:space="preserve">
+    <value>Dokkolva</value>
+  </data>
+  <data name="Toggle_Hidden" xml:space="preserve">
+    <value>Rejtett</value>
+  </data>
+  <data name="Toggle_Options" xml:space="preserve">
+    <value>Beállítások</value>
+  </data>
+  <data name="Toggle_Minimize" xml:space="preserve">
+    <value>Kis méret</value>
+  </data>
+  <data name="Toggle_ShowHiddenToolWindows" xml:space="preserve">
+    <value>Rejtett eszközablakok megjelenítése</value>
+  </data>
+  <data name="Toggle_Zone_LeftTop" xml:space="preserve">
+    <value>Bal oldal fent</value>
+  </data>
+  <data name="Toggle_Zone_LeftBottom" xml:space="preserve">
+    <value>Bal oldal lent</value>
+  </data>
+  <data name="Toggle_Zone_RightTop" xml:space="preserve">
+    <value>Jobb oldal fent</value>
+  </data>
+  <data name="Toggle_Zone_RightBottom" xml:space="preserve">
+    <value>Jobb oldal lent</value>
+  </data>
+  <data name="Toggle_Zone_BottomLeft" xml:space="preserve">
+    <value>Alul balra</value>
+  </data>
+  <data name="Toggle_Zone_BottomRight" xml:space="preserve">
+    <value>Alul jobbra</value>
   </data>
   <data name="Window_Maximize" xml:space="preserve">
     <value>Teljes méret</value>

@@ -14,11 +14,11 @@ internal sealed class DockingDragChecks : IDisposable
 {
     private const BindingFlags Members = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
     private static readonly Type SessionType = typeof(DockingManager).Assembly.GetType("AvalonDock.Controls.DragService")
-        ?? throw new InvalidOperationException("找不到实际停靠拖动会话。");
+        ?? throw new InvalidOperationException("The docking drag session type was not found.");
     private static readonly Type HostType = typeof(DockingManager).Assembly.GetType("AvalonDock.Controls.IOverlayWindowHost")
-        ?? throw new InvalidOperationException("找不到停靠覆盖层宿主接口。");
+        ?? throw new InvalidOperationException("The docking overlay host interface was not found.");
     private static readonly Type OverlayType = typeof(DockingManager).Assembly.GetType("AvalonDock.Controls.IOverlayWindow")
-        ?? throw new InvalidOperationException("找不到停靠覆盖层接口。");
+        ?? throw new InvalidOperationException("The docking overlay interface was not found.");
     private readonly LayoutFloatingWindowControl source;
     private readonly object session;
 
@@ -26,11 +26,11 @@ internal sealed class DockingDragChecks : IDisposable
     {
         this.source = source;
         session = Activator.CreateInstance(SessionType, Members, null, [source], null)
-            ?? throw new InvalidOperationException("无法建立实际停靠拖动会话。");
+            ?? throw new InvalidOperationException("Could not create a docking drag session.");
     }
 
     internal OverlayWindow Overlay => Value(session, "currentWindow") as OverlayWindow
-        ?? throw new InvalidOperationException("拖动会话尚未进入可见覆盖层宿主。");
+        ?? throw new InvalidOperationException("The drag session has not entered a visible overlay host.");
     internal object? ActiveTarget => Value(session, "currentDropTarget");
     internal int Frames => (int)(Value(Overlay, "PresentedFrames") ?? 0);
     internal bool FrameIsCurrent => Equals(Value(Overlay, "revision"), Value(Overlay, "renderedRevision"));
@@ -46,9 +46,9 @@ internal sealed class DockingDragChecks : IDisposable
 
     internal DropArea<LayoutDocumentPaneControl>[] HostAreas(DockingManager manager)
     {
-        SampleChecks.Require(ReferenceEquals(Value(session, "currentHost"), manager), "实际拖动会话位于主停靠管理器。");
+        SampleChecks.Require(ReferenceEquals(Value(session, "currentHost"), manager), "The active drag session uses the main docking manager.");
         IEnumerable areas = (IEnumerable)(Method(HostType, "GetDropAreas").Invoke(manager, [source])
-            ?? throw new InvalidOperationException("宿主没有提供停靠区域。"));
+            ?? throw new InvalidOperationException("The host did not provide any docking areas."));
         return areas.OfType<DropArea<LayoutDocumentPaneControl>>().ToArray();
     }
 
@@ -56,25 +56,25 @@ internal sealed class DockingDragChecks : IDisposable
         && areas.Cast<object>().Any(item => ReferenceEquals(item, area));
 
     internal object[] Targets() => ((IEnumerable)(Method(OverlayType, "GetTargets").Invoke(Overlay, null)
-        ?? throw new InvalidOperationException("覆盖层未生成实际停靠目标。"))).Cast<object>().ToArray();
+        ?? throw new InvalidOperationException("The overlay did not create docking targets."))).Cast<object>().ToArray();
 
     internal static DropTargetType TargetType(object target) => (DropTargetType)(Value(target, "Type")
-        ?? throw new InvalidOperationException("停靠目标缺少类型。"));
+        ?? throw new InvalidOperationException("The docking target has no type."));
     internal static int TabIndex(object target) => (int)(Value(target, "TabIndex") ?? -1);
     internal static FrameworkElement TargetArea(object target) => (FrameworkElement)(Value(Value(target, "Target")
-        ?? throw new InvalidOperationException("停靠目标未初始化。"), "Area")
-        ?? throw new InvalidOperationException("停靠目标缺少原生窗格。"));
+        ?? throw new InvalidOperationException("The docking target is not initialized."), "Area")
+        ?? throw new InvalidOperationException("The docking target has no native pane."));
     internal static Rect TargetBounds(object target) => (Rect)(Value(Value(target, "Target")
-        ?? throw new InvalidOperationException("停靠目标未初始化。"), "ScreenBounds")
-        ?? throw new InvalidOperationException("停靠目标缺少屏幕边界。"));
+        ?? throw new InvalidOperationException("The docking target is not initialized."), "ScreenBounds")
+        ?? throw new InvalidOperationException("The docking target has no screen bounds."));
 
     internal Rect GlyphBounds(string name)
     {
         Canvas canvas = Value(Overlay, "TargetCanvas") as Canvas
-            ?? throw new InvalidOperationException("覆盖层未加载实际目标画布。");
+            ?? throw new InvalidOperationException("The overlay target canvas was not loaded.");
         FrameworkElement glyph = canvas.FindVisualChildren<FrameworkElement>().Single(element => element.Name == name);
         SampleChecks.Require(glyph.Visibility == Visibility.Visible && glyph.ActualWidth > 0 && glyph.ActualHeight > 0,
-            "中央停靠指示器已加载并可见。");
+            "The central docking indicator is loaded and visible.");
         Rect local = glyph.TransformToVisual(canvas).TransformBounds(new Rect(0, 0, glyph.ActualWidth, glyph.ActualHeight));
         return OverlayToScreen(local);
     }
@@ -82,9 +82,9 @@ internal sealed class DockingDragChecks : IDisposable
     internal Rect PreviewBounds()
     {
         Microsoft.UI.Xaml.Shapes.Path preview = Value(Overlay, "preview") as Microsoft.UI.Xaml.Shapes.Path
-            ?? throw new InvalidOperationException("覆盖层未加载实际停靠预览。");
+            ?? throw new InvalidOperationException("The overlay docking preview was not loaded.");
         SampleChecks.Require(preview.Visibility == Visibility.Visible && preview.Data is RectangleGeometry,
-            "中央目标显示实际矩形停靠预览。");
+            "The central target shows a rectangular docking preview.");
         return OverlayToScreen(((RectangleGeometry)preview.Data!).Rect);
     }
 
@@ -94,7 +94,7 @@ internal sealed class DockingDragChecks : IDisposable
         {
             if (Value(Overlay, "RenderFailure") is Exception failure)
             {
-                throw new InvalidOperationException("实际停靠覆盖层绘制失败。", failure);
+                throw new InvalidOperationException("The docking overlay failed to render.", failure);
             }
             return Frames > previousFrames && FrameIsCurrent;
         }, message);
@@ -115,7 +115,7 @@ internal sealed class DockingDragChecks : IDisposable
 
     internal static Rect ScreenBounds(FrameworkElement element)
     {
-        SampleChecks.Require(element.IsLoaded && element.XamlRoot is not null, "验收窗格已经连接到实际窗口。");
+        SampleChecks.Require(element.IsLoaded && element.XamlRoot is not null, "The check pane is attached to a real window.");
         Rect local = element.TransformToVisual(null).TransformBounds(new Rect(0, 0, element.ActualWidth, element.ActualHeight));
         global::Windows.Graphics.RectInt32 screen = element.XamlRoot!.CoordinateConverter.ConvertLocalToScreen(local);
         return new Rect(screen.X, screen.Y, screen.Width, screen.Height);
@@ -130,15 +130,15 @@ internal sealed class DockingDragChecks : IDisposable
 
     private Rect OverlayToScreen(Rect local)
     {
-        Rect bounds = (Rect)(Value(Overlay, "bounds") ?? throw new InvalidOperationException("覆盖层缺少屏幕边界。"));
+        Rect bounds = (Rect)(Value(Overlay, "bounds") ?? throw new InvalidOperationException("The overlay has no screen bounds."));
         FrameworkElement destination = (FrameworkElement)(Value(Overlay, "destination")
-            ?? throw new InvalidOperationException("覆盖层缺少目标窗口。"));
+            ?? throw new InvalidOperationException("The overlay has no destination window."));
         double scale = destination.XamlRoot.RasterizationScale;
         return new Rect(bounds.X + local.X * scale, bounds.Y + local.Y * scale, local.Width * scale, local.Height * scale);
     }
 
     private static MethodInfo Method(Type type, string name) => type.GetMethod(name, Members)
-        ?? throw new InvalidOperationException($"找不到验收入口 {type.Name}.{name}。");
+        ?? throw new InvalidOperationException($"The check entry point {type.Name}.{name} was not found.");
 
     private static object? Value(object owner, string name)
     {
@@ -153,7 +153,7 @@ internal sealed class DockingDragChecks : IDisposable
                 return field.GetValue(owner);
             }
         }
-        throw new InvalidOperationException($"找不到验收观测点 {owner.GetType().Name}.{name}。");
+        throw new InvalidOperationException($"The check observation point {owner.GetType().Name}.{name} was not found.");
     }
 
     public void Dispose() => Method(SessionType, "Abort").Invoke(session, null);

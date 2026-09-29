@@ -121,7 +121,7 @@
     <value>Fișiere active</value>
   </data>
   <data name="Active_ToolWindows" xml:space="preserve">
-    <value>Fereastra instrumentului active</value>
+    <value>Ferestre de instrumente active</value>
   </data>
   <data name="Anchorable_AutoHide" xml:space="preserve">
     <value>Ascunde automat</value>
@@ -141,6 +141,9 @@
   <data name="Anchorable_DockAsDocument" xml:space="preserve">
     <value>Dochează ca și document</value>
   </data>
+  <data name="Anchorable_DetachToWindow" xml:space="preserve">
+    <value>Fereastră</value>
+  </data>
   <data name="Anchorable_Float" xml:space="preserve">
     <value>Plutește</value>
   </data>
@@ -148,13 +151,13 @@
     <value>Ascunde</value>
   </data>
   <data name="Document_BtnPinned_Hint" xml:space="preserve">
-    <value>Starea de comutare Pin</value>
+    <value>Comută fixarea</value>
   </data>
   <data name="Document_Close" xml:space="preserve">
     <value>Închide</value>
   </data>
   <data name="Document_CloseAll" xml:space="preserve">
-    <value>Aproape toate</value>
+    <value>Închide tot</value>
   </data>
   <data name="Document_CloseAllButThis" xml:space="preserve">
     <value>Închide tot fără documentul curent</value>
@@ -179,6 +182,78 @@
   </data>
   <data name="Document_NewVerticalTabGroup" xml:space="preserve">
     <value>Grup nou de taburi vertical</value>
+  </data>
+  <data name="A11y_AutoHideTool" xml:space="preserve">
+    <value>Ascunde automat fereastra de instrumente</value>
+  </data>
+  <data name="A11y_HideTool" xml:space="preserve">
+    <value>Ascunde fereastra de instrumente</value>
+  </data>
+  <data name="A11y_DockLeft" xml:space="preserve">
+    <value>Dochează la stânga</value>
+  </data>
+  <data name="A11y_DockTop" xml:space="preserve">
+    <value>Dochează sus</value>
+  </data>
+  <data name="A11y_DockRight" xml:space="preserve">
+    <value>Dochează la dreapta</value>
+  </data>
+  <data name="A11y_DockBottom" xml:space="preserve">
+    <value>Dochează jos</value>
+  </data>
+  <data name="A11y_DockInside" xml:space="preserve">
+    <value>Dochează în interior</value>
+  </data>
+  <data name="A11y_DockLeftAsToolPane" xml:space="preserve">
+    <value>Dochează la stânga ca panou de instrumente</value>
+  </data>
+  <data name="A11y_DockTopAsToolPane" xml:space="preserve">
+    <value>Dochează sus ca panou de instrumente</value>
+  </data>
+  <data name="A11y_DockRightAsToolPane" xml:space="preserve">
+    <value>Dochează la dreapta ca panou de instrumente</value>
+  </data>
+  <data name="A11y_DockBottomAsToolPane" xml:space="preserve">
+    <value>Dochează jos ca panou de instrumente</value>
+  </data>
+  <data name="Toggle_MoveTo" xml:space="preserve">
+    <value>Mută în</value>
+  </data>
+  <data name="Toggle_ViewMode" xml:space="preserve">
+    <value>Mod de vizualizare</value>
+  </data>
+  <data name="Toggle_Docked" xml:space="preserve">
+    <value>Docat</value>
+  </data>
+  <data name="Toggle_Hidden" xml:space="preserve">
+    <value>Ascuns</value>
+  </data>
+  <data name="Toggle_Options" xml:space="preserve">
+    <value>Opțiuni</value>
+  </data>
+  <data name="Toggle_Minimize" xml:space="preserve">
+    <value>Minimizează</value>
+  </data>
+  <data name="Toggle_ShowHiddenToolWindows" xml:space="preserve">
+    <value>Afișează ferestrele de instrumente ascunse</value>
+  </data>
+  <data name="Toggle_Zone_LeftTop" xml:space="preserve">
+    <value>Partea stângă sus</value>
+  </data>
+  <data name="Toggle_Zone_LeftBottom" xml:space="preserve">
+    <value>Partea stângă jos</value>
+  </data>
+  <data name="Toggle_Zone_RightTop" xml:space="preserve">
+    <value>Partea dreaptă sus</value>
+  </data>
+  <data name="Toggle_Zone_RightBottom" xml:space="preserve">
+    <value>Partea dreaptă jos</value>
+  </data>
+  <data name="Toggle_Zone_BottomLeft" xml:space="preserve">
+    <value>Jos în stânga</value>
+  </data>
+  <data name="Toggle_Zone_BottomRight" xml:space="preserve">
+    <value>Jos în dreapta</value>
   </data>
   <data name="Window_Maximize" xml:space="preserve">
     <value>Maximizează</value>

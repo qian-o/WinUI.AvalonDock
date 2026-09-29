@@ -144,7 +144,8 @@ public partial class ToggleDockingManager
             }
             hiddenButton.SetBinding(WidthProperty, new Binding { Source = this, Path = new PropertyPath(nameof(ButtonSize)) });
             hiddenButton.SetBinding(HeightProperty, new Binding { Source = this, Path = new PropertyPath(nameof(ButtonSize)) });
-            ToolTipService.SetToolTip(hiddenButton, "Show Hidden Tool Windows");
+            ToolTipService.SetToolTip(hiddenButton, global::AvalonDock.Properties.Resources.Toggle_ShowHiddenToolWindows);
+            AutomationProperties.SetName(hiddenButton, global::AvalonDock.Properties.Resources.Toggle_ShowHiddenToolWindows);
             hiddenButton.Click += (_, _) => ShowHiddenMenu(hiddenButton);
             grid.Children.Add(hiddenButton);
             Grid.SetRow(hiddenButton, 3);

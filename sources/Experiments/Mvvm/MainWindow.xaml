@@ -12,36 +12,36 @@
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
         <controls:MenuBar Grid.Row="0">
-            <controls:MenuBarItem Title="文件">
-                <controls:MenuFlyoutItem Text="新建文档" Command="{x:Bind ViewModel.OpenCommand}" />
-                <controls:MenuFlyoutItem Text="保存活动文档" Command="{x:Bind ViewModel.SaveCommand}" />
-                <controls:MenuFlyoutItem Text="关闭活动文档" Command="{x:Bind ViewModel.CloseActiveCommand}" />
+            <controls:MenuBarItem Title="File">
+                <controls:MenuFlyoutItem Text="New Document" Command="{x:Bind ViewModel.OpenCommand}" />
+                <controls:MenuFlyoutItem Text="Save Active Document" Command="{x:Bind ViewModel.SaveCommand}" />
+                <controls:MenuFlyoutItem Text="Close Active Document" Command="{x:Bind ViewModel.CloseActiveCommand}" />
             </controls:MenuBarItem>
-            <controls:MenuBarItem Title="编辑">
-                <controls:MenuFlyoutItem Text="标记活动文档为已修改" Command="{x:Bind ViewModel.MarkModifiedCommand}" />
-                <controls:MenuFlyoutItem Text="下一个文档" Command="{x:Bind ViewModel.NextCommand}" />
-                <controls:MenuFlyoutItem Text="替换活动文档" Command="{x:Bind ViewModel.ReplaceCommand}" />
-                <controls:MenuFlyoutItem Text="重置文档集合" Command="{x:Bind ViewModel.ResetCommand}" />
+            <controls:MenuBarItem Title="Edit">
+                <controls:MenuFlyoutItem Text="Mark Active Document as Modified" Command="{x:Bind ViewModel.MarkModifiedCommand}" />
+                <controls:MenuFlyoutItem Text="Next Document" Command="{x:Bind ViewModel.NextCommand}" />
+                <controls:MenuFlyoutItem Text="Replace Active Document" Command="{x:Bind ViewModel.ReplaceCommand}" />
+                <controls:MenuFlyoutItem Text="Reset Documents" Command="{x:Bind ViewModel.ResetCommand}" />
             </controls:MenuBarItem>
-            <controls:MenuBarItem Title="工具">
-                <controls:MenuFlyoutItem Text="添加工具" Command="{x:Bind ViewModel.AddToolCommand}" />
-                <controls:MenuFlyoutItem Text="替换工具" Command="{x:Bind ViewModel.ReplaceToolCommand}" />
-                <controls:MenuFlyoutItem Text="重置工具" Command="{x:Bind ViewModel.ResetToolsCommand}" />
+            <controls:MenuBarItem Title="Tools">
+                <controls:MenuFlyoutItem Text="Add Tool" Command="{x:Bind ViewModel.AddToolCommand}" />
+                <controls:MenuFlyoutItem Text="Replace Tool" Command="{x:Bind ViewModel.ReplaceToolCommand}" />
+                <controls:MenuFlyoutItem Text="Reset Tools" Command="{x:Bind ViewModel.ResetToolsCommand}" />
             </controls:MenuBarItem>
-            <controls:MenuBarItem Title="布局">
-                <controls:MenuFlyoutItem Text="保存布局" Click="SaveLayout_Click" />
-                <controls:MenuFlyoutItem Text="恢复布局" Click="RestoreLayout_Click" />
+            <controls:MenuBarItem Title="Layout">
+                <controls:MenuFlyoutItem Text="Save Layout" Click="SaveLayout_Click" />
+                <controls:MenuFlyoutItem Text="Restore Layout" Click="RestoreLayout_Click" />
                 <controls:MenuFlyoutSeparator />
-                <controls:MenuFlyoutItem Text="切换浮动窗口策略" Command="{x:Bind ViewModel.ToggleFloatingCommand}" />
+                <controls:MenuFlyoutItem Text="Toggle Floating Window Policy" Command="{x:Bind ViewModel.ToggleFloatingCommand}" />
             </controls:MenuBarItem>
-            <controls:MenuBarItem Title="主题">
-                <controls:MenuFlyoutItem Text="切换浅色/深色主题" Click="ToggleTheme_Click" />
+            <controls:MenuBarItem Title="Theme">
+                <controls:MenuFlyoutItem Text="Toggle Light/Dark Theme" Click="ToggleTheme_Click" />
             </controls:MenuBarItem>
         </controls:MenuBar>
         <TextBlock Grid.Row="1" Text="{x:Bind ViewModel.StatusText, Mode=OneWay}" />
         <dock:DockingManager x:Name="Manager" Grid.Row="2"
                              DockLayout="{x:Bind ViewModel.Layout, Mode=OneWay}"
                              LayoutItemTemplate="{StaticResource WorkspaceContentTemplate}" />
-        <TextBlock Grid.Row="3" Text="文档和工具由 ViewModel 管理；可在编辑菜单标记文档为已修改，再测试保存、关闭、替换、重置和布局恢复。" Opacity="0.75" />
+        <TextBlock Grid.Row="3" Text="The ViewModel manages documents and tools. Use Edit to mark a document as modified, then try saving, closing, replacing, resetting, and restoring the layout." Opacity="0.75" />
     </Grid>
 </Window>

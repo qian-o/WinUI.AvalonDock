@@ -30,41 +30,41 @@ internal static class DockingTemplateChecks
         LayoutAnchorable partner = ToolFor(manager, secondTool);
         document.IsSelected = true;
         tool.IsSelected = true;
-        await WaitForMarksAsync(mainRoot, sourceDocument, sourceTool, "停靠");
-        VerifyContentSelector(manager, document, tool, selector, "停靠");
-        checks.Record("Classic 自定义文档/工具标签模板及内容选择器在主窗口实际可见。");
+        await WaitForMarksAsync(mainRoot, sourceDocument, sourceTool, "docked");
+        VerifyContentSelector(manager, document, tool, selector, "docked");
+        checks.Record("Classic custom document and tool tab templates and the content selector are visible in the main window.");
 
         document.Float();
         await DockingDragChecks.WaitUntilAsync(() => FloatingWindowFor(manager, document) is { IsLoaded: true },
-            "Classic 模板验收文档浮窗未加载。");
+            "The Classic template check document floating window did not load.");
         LayoutFloatingWindowControl documentWindow = FloatingWindowFor(manager, document)!;
         FrameworkElement documentWindowRoot = WindowRoot(documentWindow);
         FrameworkElement documentContentRoot = ContentRoot(documentWindow);
         await WaitForMarksAsync(() => HasMark(documentContentRoot, "SmokeDocumentHeaderMark", sourceDocument.Title)
             && HasMark(documentContentRoot, "SmokeDocumentContentMark", sourceDocument.Id)
             && HasMark(documentWindowRoot, "SmokeDocumentTitleMark", sourceDocument.Title),
-            () => $"标题根：{DescribeMarks(documentWindowRoot)} 内容根：{DescribeMarks(documentContentRoot)}",
-            "Classic 文档浮窗没有同时显示自定义标签、内容和标题模板。");
+            () => $"Title root: {DescribeMarks(documentWindowRoot)} Content root: {DescribeMarks(documentContentRoot)}",
+            "The Classic document floating window did not show the custom tab, content, and title templates together.");
 
         LayoutAnchorableFloatingWindowControl toolWindow = manager.CreateFloatingWindow(tool, false)
             as LayoutAnchorableFloatingWindowControl
-            ?? throw new InvalidOperationException("Classic 模板验收工具浮窗未创建。");
+            ?? throw new InvalidOperationException("The Classic template check tool floating window was not created.");
         LayoutAnchorablePane toolPane = (toolWindow.Model as LayoutAnchorableFloatingWindow)?.SinglePane
             as LayoutAnchorablePane
-            ?? throw new InvalidOperationException("Classic 模板验收工具浮窗没有窗格。");
+            ?? throw new InvalidOperationException("The Classic template check tool floating window has no pane.");
         toolPane.Children.Add(partner);
         tool.IsSelected = true;
         toolWindow.Show();
         await DockingDragChecks.WaitUntilAsync(() => toolWindow.IsLoaded,
-            "Classic 模板验收双工具浮窗未加载。");
+            "The Classic template check floating window with two tools did not load.");
         FrameworkElement toolWindowRoot = WindowRoot(toolWindow);
         FrameworkElement toolContentRoot = ContentRoot(toolWindow);
         await WaitForMarksAsync(() => HasMark(toolContentRoot, "SmokeAnchorableHeaderMark", sourceTool.Title)
             && HasMark(toolContentRoot, "SmokeAnchorableContentMark", sourceTool.Id)
             && HasMark(toolWindowRoot, "SmokeAnchorableTitleMark", sourceTool.Title),
-            () => $"标题根：{DescribeMarks(toolWindowRoot)} 内容根：{DescribeMarks(toolContentRoot)}",
-            "Classic 双工具浮窗没有同时显示自定义标签、内容和标题模板。");
-        checks.Record("Classic 自定义模板在文档和双工具真实浮窗的标签、内容及标题栏可见。");
+            () => $"Title root: {DescribeMarks(toolWindowRoot)} Content root: {DescribeMarks(toolContentRoot)}",
+            "The Classic floating window with two tools did not show the custom tab, content, and title templates together.");
+        checks.Record("Classic custom tab, content, and title templates are visible in document and tool floating windows.");
         await VerifyFloatingBorderThemeAsync(mainRoot, document, documentWindow, toolWindow, checks);
 
         saveLayout();
@@ -78,7 +78,7 @@ internal static class DockingTemplateChecks
             return restoredDocument is { IsFloating: true } && restoredTool is { IsFloating: true }
                 && FloatingWindowFor(manager, restoredDocument) is { IsLoaded: true }
                 && FloatingWindowFor(manager, restoredTool) is { IsLoaded: true };
-        }, "Classic XML 恢复后文档或工具浮窗未重新加载。");
+        }, "The Classic document or tool floating window did not reload after XML restoration.");
 
         LayoutDocument recoveredDocument = DocumentFor(manager, sourceDocument);
         LayoutAnchorable recoveredTool = ToolFor(manager, sourceTool);
@@ -96,14 +96,14 @@ internal static class DockingTemplateChecks
             && HasMark(recoveredToolContentRoot, "SmokeAnchorableHeaderMark", sourceTool.Title)
             && HasMark(recoveredToolContentRoot, "SmokeAnchorableContentMark", sourceTool.Id)
             && HasMark(recoveredToolWindowRoot, "SmokeAnchorableTitleMark", sourceTool.Title),
-            () => $"文档标题：{DescribeMarks(recoveredDocumentWindowRoot)} 文档内容：{DescribeMarks(recoveredDocumentContentRoot)} 工具标题：{DescribeMarks(recoveredToolWindowRoot)} 工具内容：{DescribeMarks(recoveredToolContentRoot)}",
-            "Classic XML 恢复后自定义模板未在两个真实浮窗中完整显示。");
-        VerifyContentSelector(manager, recoveredDocument, recoveredTool, selector, "XML 恢复后");
-        checks.Record("Classic XML 恢复后文档/工具浮窗仍显示自定义标签、内容选择器及标题模板。");
+            () => $"Document title: {DescribeMarks(recoveredDocumentWindowRoot)} Document content: {DescribeMarks(recoveredDocumentContentRoot)} Tool title: {DescribeMarks(recoveredToolWindowRoot)} Tool content: {DescribeMarks(recoveredToolContentRoot)}",
+            "Classic custom templates were not fully visible in both floating windows after XML restoration.");
+        VerifyContentSelector(manager, recoveredDocument, recoveredTool, selector, "after XML restoration");
+        checks.Record("Classic document and tool floating windows still show custom tabs, content selectors, and title templates after XML restoration.");
     }
 
     private static DataTemplate Template(string key) => Application.Current.Resources[key] as DataTemplate
-        ?? throw new InvalidOperationException($"Classic 模板验收资源 {key} 未找到。");
+        ?? throw new InvalidOperationException($"The Classic template check resource {key} was not found.");
 
     private static LayoutDocument DocumentFor(DockingManager manager, WorkspaceDocument content)
         => manager.Layout.Descendents().OfType<LayoutDocument>()
@@ -119,11 +119,11 @@ internal static class DockingTemplateChecks
 
     private static FrameworkElement WindowRoot(LayoutFloatingWindowControl window)
         => ((Window)window).Content as FrameworkElement
-            ?? throw new InvalidOperationException("Classic 模板验收浮窗没有真实可视根元素。");
+            ?? throw new InvalidOperationException("The Classic template check floating window has no visual root.");
 
     private static FrameworkElement ContentRoot(LayoutFloatingWindowControl window)
         => window.Content?.GetType().GetProperty("RootVisual")?.GetValue(window.Content) as FrameworkElement
-            ?? throw new InvalidOperationException("Classic 模板验收浮窗子 XAML 根尚未连接。");
+            ?? throw new InvalidOperationException("The Classic template check floating window's XAML root is not attached.");
 
     private static async Task VerifyFloatingBorderThemeAsync(FrameworkElement mainRoot,
         LayoutDocument document, LayoutFloatingWindowControl documentWindow,
@@ -138,7 +138,7 @@ internal static class DockingTemplateChecks
                 mainRoot.RequestedTheme = theme;
                 await DockingDragChecks.WaitUntilAsync(() => windows.All(window => WindowRoot(window).ActualTheme == theme
                     && ContentRoot(window).ActualTheme == theme),
-                    $"Classic 浮窗未切换到{(theme == ElementTheme.Dark ? "深色" : "浅色")}主题。");
+                    $"Classic floating windows did not switch to the {(theme == ElementTheme.Dark ? "dark" : "light")} theme.");
                 if (theme == ElementTheme.Dark)
                 {
                     document.IsSelected = true;
@@ -155,14 +155,14 @@ internal static class DockingTemplateChecks
                             IsLoaded: true, Data: not null,
                             ActualWidth: > 0, ActualHeight: > 0
                         },
-                        "Classic 深色浮窗外框或活动文档描边未加载。");
+                        "The Classic dark floating window border or active document outline did not load.");
 
                     foreach (LayoutFloatingWindowControl window in windows)
                     {
                         Border border = WindowRoot(window).FindVisualChildren<Border>()
                             .Single(element => element.Name == "WindowBorder");
                         SampleChecks.Require(IsLowContrastDarkStroke(border.BorderBrush, border.Background),
-                            "Classic 深色浮窗 XAML 外框仍呈亮色。");
+                            "The Classic dark floating window XAML border is still bright.");
                     }
 
                     LayoutDocumentPaneControl pane = ContentRoot(documentWindow)
@@ -170,10 +170,10 @@ internal static class DockingTemplateChecks
                         .Single(control => control.Model is LayoutDocumentPane { IsDirectlyHostedInFloatingWindow: true });
                     Path outline = DocumentPaneOutline(ContentRoot(documentWindow))!;
                     SampleChecks.Require(IsLowContrastDarkStroke(outline.Stroke, pane.Background, outline.Opacity),
-                        "Classic 深色浮窗内活动文档窗格仍有高对比亮色描边。");
+                        "The active document pane in the Classic dark floating window still has a bright, high contrast outline.");
                 }
             }
-            checks.Record("Classic 文档和工具真实浮窗深浅主题切换正常；深色 XAML 外框与活动文档描边均为低对比暗色。");
+            checks.Record("Classic document and tool floating windows switch between light and dark themes; dark XAML borders and active document outlines have low contrast.");
         }
         finally
         {
@@ -216,7 +216,7 @@ internal static class DockingTemplateChecks
             && HasMark(root, "SmokeDocumentContentMark", document.Id)
             && HasMark(root, "SmokeAnchorableHeaderMark", tool.Title)
             && HasMark(root, "SmokeAnchorableContentMark", tool.Id),
-            $"Classic {stage}状态未显示文档/工具自定义标签与内容模板。");
+            $"Classic {stage}: custom document and tool tab and content templates were not shown.");
     }
 
     private static bool HasMark(FrameworkElement root, string name, string? expectedTag)
@@ -246,13 +246,13 @@ internal static class DockingTemplateChecks
         LayoutAnchorable tool, DataTemplateSelector selector, string stage)
     {
         LayoutItem documentItem = manager.GetLayoutItemFromModel(document)
-            ?? throw new InvalidOperationException($"Classic {stage}文档布局项未创建。");
+            ?? throw new InvalidOperationException($"Classic {stage}: the document layout item was not created.");
         LayoutItem toolItem = manager.GetLayoutItemFromModel(tool)
-            ?? throw new InvalidOperationException($"Classic {stage}工具布局项未创建。");
+            ?? throw new InvalidOperationException($"Classic {stage}: the tool layout item was not created.");
         SampleChecks.Require(ReferenceEquals(documentItem.View.ContentTemplateSelector, selector)
             && ReferenceEquals(toolItem.View.ContentTemplateSelector, selector)
             && documentItem.View.ContentTemplate is null && toolItem.View.ContentTemplate is null,
-            $"Classic {stage}内容 presenter 没有采用消费者的 DataTemplateSelector。");
+            $"Classic {stage}: the content presenter did not use the consumer DataTemplateSelector.");
     }
 
     private sealed class WorkspaceContentTemplateSelector(DataTemplate document, DataTemplate tool) : DataTemplateSelector

@@ -121,7 +121,7 @@
     <value>Ficheiros ativos</value>
   </data>
   <data name="Active_ToolWindows" xml:space="preserve">
-    <value>Windows ferramenta ativa</value>
+    <value>Janelas de ferramentas ativas</value>
   </data>
   <data name="Anchorable_AutoHide" xml:space="preserve">
     <value>Esconder Automaticamente</value>
@@ -141,17 +141,23 @@
   <data name="Anchorable_DockAsDocument" xml:space="preserve">
     <value>Ancorar Como Documento em Aba</value>
   </data>
+  <data name="Anchorable_DetachToWindow" xml:space="preserve">
+    <value>Janela</value>
+  </data>
   <data name="Anchorable_Float" xml:space="preserve">
     <value>Flutuar</value>
   </data>
   <data name="Anchorable_Hide" xml:space="preserve">
     <value>Esconder</value>
   </data>
+  <data name="Document_BtnPinned_Hint" xml:space="preserve">
+    <value>Alternar estado de fixação</value>
+  </data>
   <data name="Document_Close" xml:space="preserve">
     <value>Fechar</value>
   </data>
   <data name="Document_CloseAll" xml:space="preserve">
-    <value>Feche todos os</value>
+    <value>Fechar tudo</value>
   </data>
   <data name="Document_CloseAllButThis" xml:space="preserve">
     <value>Fechar Todos Menos Este</value>
@@ -177,10 +183,82 @@
   <data name="Document_NewVerticalTabGroup" xml:space="preserve">
     <value>Novo Grupo de Documentos Vertical</value>
   </data>
+  <data name="A11y_AutoHideTool" xml:space="preserve">
+    <value>Ocultar automaticamente a janela de ferramentas</value>
+  </data>
+  <data name="A11y_HideTool" xml:space="preserve">
+    <value>Ocultar a janela de ferramentas</value>
+  </data>
+  <data name="A11y_DockLeft" xml:space="preserve">
+    <value>Ancorar à esquerda</value>
+  </data>
+  <data name="A11y_DockTop" xml:space="preserve">
+    <value>Ancorar em cima</value>
+  </data>
+  <data name="A11y_DockRight" xml:space="preserve">
+    <value>Ancorar à direita</value>
+  </data>
+  <data name="A11y_DockBottom" xml:space="preserve">
+    <value>Ancorar em baixo</value>
+  </data>
+  <data name="A11y_DockInside" xml:space="preserve">
+    <value>Ancorar no interior</value>
+  </data>
+  <data name="A11y_DockLeftAsToolPane" xml:space="preserve">
+    <value>Ancorar à esquerda como painel de ferramentas</value>
+  </data>
+  <data name="A11y_DockTopAsToolPane" xml:space="preserve">
+    <value>Ancorar em cima como painel de ferramentas</value>
+  </data>
+  <data name="A11y_DockRightAsToolPane" xml:space="preserve">
+    <value>Ancorar à direita como painel de ferramentas</value>
+  </data>
+  <data name="A11y_DockBottomAsToolPane" xml:space="preserve">
+    <value>Ancorar em baixo como painel de ferramentas</value>
+  </data>
+  <data name="Toggle_MoveTo" xml:space="preserve">
+    <value>Mover para</value>
+  </data>
+  <data name="Toggle_ViewMode" xml:space="preserve">
+    <value>Modo de visualização</value>
+  </data>
+  <data name="Toggle_Docked" xml:space="preserve">
+    <value>Ancorado</value>
+  </data>
+  <data name="Toggle_Hidden" xml:space="preserve">
+    <value>Oculto</value>
+  </data>
+  <data name="Toggle_Options" xml:space="preserve">
+    <value>Opções</value>
+  </data>
+  <data name="Toggle_Minimize" xml:space="preserve">
+    <value>Minimizar</value>
+  </data>
+  <data name="Toggle_ShowHiddenToolWindows" xml:space="preserve">
+    <value>Mostrar janelas de ferramentas ocultas</value>
+  </data>
+  <data name="Toggle_Zone_LeftTop" xml:space="preserve">
+    <value>Lado esquerdo em cima</value>
+  </data>
+  <data name="Toggle_Zone_LeftBottom" xml:space="preserve">
+    <value>Lado esquerdo em baixo</value>
+  </data>
+  <data name="Toggle_Zone_RightTop" xml:space="preserve">
+    <value>Lado direito em cima</value>
+  </data>
+  <data name="Toggle_Zone_RightBottom" xml:space="preserve">
+    <value>Lado direito em baixo</value>
+  </data>
+  <data name="Toggle_Zone_BottomLeft" xml:space="preserve">
+    <value>Parte inferior esquerda</value>
+  </data>
+  <data name="Toggle_Zone_BottomRight" xml:space="preserve">
+    <value>Parte inferior direita</value>
+  </data>
   <data name="Window_Maximize" xml:space="preserve">
     <value>Maximizar</value>
   </data>
   <data name="Window_Restore" xml:space="preserve">
-    <value>Recuperar</value>
+    <value>Restaurar</value>
   </data>
 </root>

@@ -203,7 +203,7 @@ public class ToggleDockButton : ToggleButton
         MenuFlyout menu = manager.BuildToggleContextMenu(Anchorable);
         MenuFlyoutItem hide = new()
         {
-            Text = "Hide",
+            Text = global::AvalonDock.Properties.Resources.Anchorable_Hide,
             IsEnabled = (manager.GetLayoutItemFromModel(Anchorable) as LayoutAnchorableItem)?.HideCommand?.CanExecute(null) == true
         };
         hide.Click += (_, _) => manager.HideAnchorableFromMenu(Anchorable);

@@ -121,7 +121,7 @@
     <value>Actieve bestanden</value>
   </data>
   <data name="Active_ToolWindows" xml:space="preserve">
-    <value>Actieve tool Windows</value>
+    <value>Actieve gereedschapsvensters</value>
   </data>
   <data name="Anchorable_AutoHide" xml:space="preserve">
     <value>Automatisch verbergen</value>
@@ -141,6 +141,9 @@
   <data name="Anchorable_DockAsDocument" xml:space="preserve">
     <value>Dokken als tabblad</value>
   </data>
+  <data name="Anchorable_DetachToWindow" xml:space="preserve">
+    <value>Venster</value>
+  </data>
   <data name="Anchorable_Float" xml:space="preserve">
     <value>Laten zweven</value>
   </data>
@@ -148,7 +151,7 @@
     <value>Verbergen</value>
   </data>
   <data name="Document_BtnPinned_Hint" xml:space="preserve">
-    <value>Schakel pin</value>
+    <value>Vastzetten of losmaken</value>
   </data>
   <data name="Document_Close" xml:space="preserve">
     <value>Sluiten</value>
@@ -160,7 +163,7 @@
     <value>Alles behalve deze sluiten</value>
   </data>
   <data name="Document_CxMenu_Hint" xml:space="preserve">
-    <value>Laten zweven</value>
+    <value>Vensterpositie</value>
   </data>
   <data name="Document_DockAsDocument" xml:space="preserve">
     <value>Dokken als tabblad</value>
@@ -179,6 +182,78 @@
   </data>
   <data name="Document_NewVerticalTabGroup" xml:space="preserve">
     <value>Nieuwe verticale groep tabbladen</value>
+  </data>
+  <data name="A11y_AutoHideTool" xml:space="preserve">
+    <value>Gereedschapsvenster automatisch verbergen</value>
+  </data>
+  <data name="A11y_HideTool" xml:space="preserve">
+    <value>Gereedschapsvenster verbergen</value>
+  </data>
+  <data name="A11y_DockLeft" xml:space="preserve">
+    <value>Links dokken</value>
+  </data>
+  <data name="A11y_DockTop" xml:space="preserve">
+    <value>Boven dokken</value>
+  </data>
+  <data name="A11y_DockRight" xml:space="preserve">
+    <value>Rechts dokken</value>
+  </data>
+  <data name="A11y_DockBottom" xml:space="preserve">
+    <value>Onder dokken</value>
+  </data>
+  <data name="A11y_DockInside" xml:space="preserve">
+    <value>Binnenin dokken</value>
+  </data>
+  <data name="A11y_DockLeftAsToolPane" xml:space="preserve">
+    <value>Links als gereedschapspaneel dokken</value>
+  </data>
+  <data name="A11y_DockTopAsToolPane" xml:space="preserve">
+    <value>Boven als gereedschapspaneel dokken</value>
+  </data>
+  <data name="A11y_DockRightAsToolPane" xml:space="preserve">
+    <value>Rechts als gereedschapspaneel dokken</value>
+  </data>
+  <data name="A11y_DockBottomAsToolPane" xml:space="preserve">
+    <value>Onder als gereedschapspaneel dokken</value>
+  </data>
+  <data name="Toggle_MoveTo" xml:space="preserve">
+    <value>Verplaatsen naar</value>
+  </data>
+  <data name="Toggle_ViewMode" xml:space="preserve">
+    <value>Weergavemodus</value>
+  </data>
+  <data name="Toggle_Docked" xml:space="preserve">
+    <value>Gedokt</value>
+  </data>
+  <data name="Toggle_Hidden" xml:space="preserve">
+    <value>Verborgen</value>
+  </data>
+  <data name="Toggle_Options" xml:space="preserve">
+    <value>Opties</value>
+  </data>
+  <data name="Toggle_Minimize" xml:space="preserve">
+    <value>Minimaliseren</value>
+  </data>
+  <data name="Toggle_ShowHiddenToolWindows" xml:space="preserve">
+    <value>Verborgen gereedschapsvensters tonen</value>
+  </data>
+  <data name="Toggle_Zone_LeftTop" xml:space="preserve">
+    <value>Linkerkant boven</value>
+  </data>
+  <data name="Toggle_Zone_LeftBottom" xml:space="preserve">
+    <value>Linkerkant onder</value>
+  </data>
+  <data name="Toggle_Zone_RightTop" xml:space="preserve">
+    <value>Rechterkant boven</value>
+  </data>
+  <data name="Toggle_Zone_RightBottom" xml:space="preserve">
+    <value>Rechterkant onder</value>
+  </data>
+  <data name="Toggle_Zone_BottomLeft" xml:space="preserve">
+    <value>Onderkant links</value>
+  </data>
+  <data name="Toggle_Zone_BottomRight" xml:space="preserve">
+    <value>Onderkant rechts</value>
   </data>
   <data name="Window_Maximize" xml:space="preserve">
     <value>Maximaliseren</value>

@@ -21,31 +21,31 @@ public sealed partial class MainWindow : Window
     public MainWindow()
     {
         InitializeComponent();
-        Title = "ToggleDocking：六区工作台";
+        Title = "ToggleDocking: Six-Zone Workspace";
         Closed += OnClosed;
 
         WorkspaceTool[] tools =
         [
-            CreateTool("toggle-explorer", "资源管理器", DockZone.LeftTop, "\uE838", "左上工具区：适合项目树和导航。"),
-            CreateTool("toggle-outline", "大纲", DockZone.LeftBottom, "\uE8A5", "左下工具区：适合结构化信息。"),
-            CreateTool("toggle-properties", "属性", DockZone.RightTop, "\uE713", "右上工具区：适合检查当前项。"),
-            CreateTool("toggle-diagnostics", "诊断", DockZone.RightBottom, "\uE814", "右下工具区：适合错误、警告和日志。"),
-            CreateTool("toggle-output", "输出", DockZone.BottomLeft, "\uE756", "底左工具区：适合构建和调试输出。"),
-            CreateTool("toggle-terminal", "终端", DockZone.BottomRight, "\uE756", "底右工具区：适合命令行和任务。")
+            CreateTool("toggle-explorer", "Explorer", DockZone.LeftTop, "\uE838", "Upper-left tool zone for project navigation."),
+            CreateTool("toggle-outline", "Outline", DockZone.LeftBottom, "\uE8A5", "Lower-left tool zone for document structure."),
+            CreateTool("toggle-properties", "Properties", DockZone.RightTop, "\uE713", "Upper-right tool zone for inspecting the selection."),
+            CreateTool("toggle-diagnostics", "Diagnostics", DockZone.RightBottom, "\uE814", "Lower-right tool zone for errors, warnings, and logs."),
+            CreateTool("toggle-output", "Output", DockZone.BottomLeft, "\uE756", "Bottom-left tool zone for build and debug output."),
+            CreateTool("toggle-terminal", "Terminal", DockZone.BottomRight, "\uE756", "Bottom-right tool zone for commands and tasks.")
         ];
         layoutService = new DockLayoutService(tools);
         layoutService.OpenDocument(new WorkspaceDocument
         {
             Id = "toggle-editor",
-            Title = "工作区",
-            Text = "ToggleDocking 使用同一棵布局树管理六个工具区。",
+            Title = "Workspace",
+            Text = "ToggleDocking manages all six tool zones in one layout tree.",
             IsModified = false
         });
         layoutService.OpenDocument(new WorkspaceDocument
         {
             Id = "toggle-notes",
-            Title = "笔记",
-            Text = "点击区域按钮，把当前工具移动到指定的 Zone。",
+            Title = "Notes",
+            Text = "Use a zone button to move the current tool.",
             IsModified = false
         });
 
@@ -81,13 +81,13 @@ public sealed partial class MainWindow : Window
         WorkspaceDocument document = new()
         {
             Id = $"toggle-document-{number}",
-            Title = $"文档 {number}",
-            Text = "动态文档由 DockLayoutService.OpenDocument 加入 MVVM 布局。",
+            Title = $"Document {number}",
+            Text = "DockLayoutService.OpenDocument adds dynamic documents to the MVVM layout.",
             IsModified = false
         };
         layoutService.OpenDocument(document);
         Manager.ActiveContent = document;
-        StatusText.Text = $"已新增 {document.Title}。";
+        StatusText.Text = $"Added {document.Title}.";
     }
 
     private void ToggleTool_Click(object sender, RoutedEventArgs e)
@@ -95,12 +95,12 @@ public sealed partial class MainWindow : Window
         LayoutAnchorable? tool = SelectedTool;
         if (tool is null)
         {
-            StatusText.Text = "当前没有可切换的工具。";
+            StatusText.Text = "No tool is available to toggle.";
             return;
         }
 
         Manager.ToggleAnchorable(tool, GetToolZone(tool));
-        StatusText.Text = $"已切换 {tool.Title} 的展开状态。";
+        StatusText.Text = $"Toggled {tool.Title}.";
     }
 
     private void ShowHiddenTool_Click(object sender, RoutedEventArgs e)
@@ -108,12 +108,12 @@ public sealed partial class MainWindow : Window
         LayoutAnchorable? tool = Manager.Layout?.Hidden.FirstOrDefault();
         if (tool is null)
         {
-            StatusText.Text = "当前没有隐藏工具。";
+            StatusText.Text = "No hidden tool is available.";
             return;
         }
 
         tool.Show();
-        StatusText.Text = $"已显示 {tool.Title}。";
+        StatusText.Text = $"Shown {tool.Title}.";
     }
 
     private void DetachTool_Click(object sender, RoutedEventArgs e)
@@ -121,19 +121,19 @@ public sealed partial class MainWindow : Window
         LayoutAnchorable? tool = SelectedTool;
         if (tool is null)
         {
-            StatusText.Text = "当前没有可拆分的工具。";
+            StatusText.Text = "No tool is available to detach.";
             return;
         }
 
         if (Manager.IsDetached(tool))
         {
             Manager.ReattachAnchorable(tool);
-            StatusText.Text = $"已附回 {tool.Title}。";
+            StatusText.Text = $"Reattached {tool.Title}.";
         }
         else
         {
             Manager.DetachAnchorableToWindow(tool);
-            StatusText.Text = $"已拆分 {tool.Title}。";
+            StatusText.Text = $"Detached {tool.Title}.";
         }
     }
 
@@ -153,7 +153,7 @@ public sealed partial class MainWindow : Window
     {
         if (tool is null)
         {
-            StatusText.Text = "当前没有可移动的工具。";
+            StatusText.Text = "No tool is available to move.";
             return;
         }
 
@@ -162,31 +162,31 @@ public sealed partial class MainWindow : Window
         {
             model.Zone = zone;
         }
-        StatusText.Text = $"已将 {tool.Title} 移到 {zone}。";
+        StatusText.Text = $"Moved {tool.Title} to {zone}.";
     }
 
     private void BottomFullWidth_Click(object sender, RoutedEventArgs e)
     {
         Manager.LayoutPriority = DockLayoutPriority.BottomFullWidth;
-        StatusText.Text = "布局优先级：底部工具区横跨全宽。";
+        StatusText.Text = "Layout priority: bottom spans full width.";
     }
 
     private void SidesFullHeight_Click(object sender, RoutedEventArgs e)
     {
         Manager.LayoutPriority = DockLayoutPriority.SidesFullHeight;
-        StatusText.Text = "布局优先级：左右工具区保持全高。";
+        StatusText.Text = "Layout priority: sidebars span full height.";
     }
 
     private void DefaultLayoutPriority_Click(object sender, RoutedEventArgs e)
     {
         Manager.LayoutPriority = DockLayoutPriority.Default;
-        StatusText.Text = "布局优先级：使用默认布局。";
+        StatusText.Text = "Layout priority: default.";
     }
 
     private void ToggleTheme_Click(object sender, RoutedEventArgs e)
     {
         PageRoot.RequestedTheme = PageRoot.RequestedTheme == ElementTheme.Dark ? ElementTheme.Light : ElementTheme.Dark;
-        StatusText.Text = PageRoot.RequestedTheme == ElementTheme.Dark ? "深色主题。" : "浅色主题。";
+        StatusText.Text = PageRoot.RequestedTheme == ElementTheme.Dark ? "Dark theme." : "Light theme.";
     }
 
     private void OnActiveContentChanged(object? sender, EventArgs e)
@@ -201,7 +201,7 @@ public sealed partial class MainWindow : Window
 
     private void OnRootLayoutUpdated(object? sender, object args)
     {
-        if (StatusText.Text.StartsWith("当前工具：", StringComparison.Ordinal)
+        if (StatusText.Text.StartsWith("Current tool: ", StringComparison.Ordinal)
             && Manager.ActiveContent is WorkspaceTool model)
         {
             string status = GetActiveToolStatus(model);
@@ -217,7 +217,7 @@ public sealed partial class MainWindow : Window
         LayoutAnchorable? tool = Manager.Layout?.Descendents().OfType<LayoutAnchorable>()
             .FirstOrDefault(item => ReferenceEquals(item.Content, model));
         DockZone zone = tool is null ? model.Zone : GetToolZone(tool);
-        return $"当前工具：{model.Title}（{zone}）。";
+        return $"Current tool: {model.Title} ({zone}).";
     }
 
     private DockZone GetToolZone(LayoutAnchorable tool) => PageRoot.FindVisualChildren<ToggleDockButton>()
@@ -227,33 +227,33 @@ public sealed partial class MainWindow : Window
     public async Task RunScenarioChecksAsync(SampleChecks checks)
     {
         await SampleChecks.SettleAsync();
-        SampleChecks.Require(layoutService.Anchorables.Count() == 6, "Toggle 初始六个工具模型已创建。");
-        SampleChecks.Require(layoutService.Documents.Count() == 2, "Toggle 初始文档模型已创建。");
+        SampleChecks.Require(layoutService.Anchorables.Count() == 6, "Toggle created six initial tool models.");
+        SampleChecks.Require(layoutService.Documents.Count() == 2, "Toggle created the initial document models.");
         foreach (WorkspaceTool tool in layoutService.Anchorables.OfType<WorkspaceTool>())
         {
-            SampleChecks.Require(Manager.Layout.Descendents().OfType<LayoutAnchorable>().Any(item => ReferenceEquals(item.Content, tool)), $"Toggle 工具 {tool.Title} 已同步到布局。");
+            SampleChecks.Require(Manager.Layout.Descendents().OfType<LayoutAnchorable>().Any(item => ReferenceEquals(item.Content, tool)), $"Toggle synchronized tool {tool.Title} with the layout.");
         }
-        checks.Record("Toggle 六个工具区模型同步通过。");
+        checks.Record("Toggle synchronized all six tool-zone models.");
 
         ToggleDockButton[] buttons = PageRoot.FindVisualChildren<ToggleDockButton>().ToArray();
-        SampleChecks.Require(buttons.Length == 6, "Toggle 六个工具均已生成侧栏按钮。");
+        SampleChecks.Require(buttons.Length == 6, "Toggle created sidebar buttons for all six tools.");
         SampleChecks.Require(buttons.All(button => Math.Abs(button.ActualWidth - Manager.ButtonSize) < 0.5
             && button.FindVisualChildren<Border>().Any(border => border.Name == "Indicator")),
-            "Toggle 侧栏按钮使用 WPFUI 尺寸和选中指示条模板。");
+            "Toggle sidebar buttons use WPFUI dimensions and selection-indicator templates.");
         SampleChecks.Require(PageRoot.FindVisualChildren<Grid>().Any(grid => grid.Name == "PART_ToggleNavigationGrid")
             && PageRoot.FindVisualChildren<Border>().Any(border => border.Name == "PART_LeftNavigationFrame")
             && PageRoot.FindVisualChildren<Border>().Any(border => border.Name == "PART_RightNavigationFrame"),
-            "Toggle 管理器已加载左右导航框模板。");
+            "Toggle loaded the left and right navigation-frame templates.");
         LayoutAnchorablePaneControl[] panes = PageRoot.FindVisualChildren<LayoutAnchorablePaneControl>().ToArray();
         SampleChecks.Require(panes.Length > 0 && panes.All(pane => pane.FindVisualChildren<Border>()
             .Any(border => border.Name == "PaneFrame" && border.CornerRadius.TopLeft == 6)),
-            "Toggle 工具窗格使用圆角边框模板。");
+            "Toggle tool panes use rounded-border templates.");
         SampleChecks.Require(panes.Where(pane => ((LayoutAnchorablePane)pane.Model).ChildrenCount == 1)
             .All(pane => pane.FindVisualChildren<Border>().Any(border => border.Name == "TabStrip" && border.Visibility == Visibility.Collapsed)),
-            "Toggle 单工具窗格隐藏了底部标签条。");
+            "Toggle single-tool panes hide the bottom tab strip.");
         SampleChecks.Require(PageRoot.FindVisualChildren<ToggleAnchorablePaneTitle>()
             .All(title => Math.Abs(title.ActualHeight - 32) < 0.5),
-            "Toggle 专用标题栏使用 32 像素高度。");
+            "Toggle pane titles use a height of 32 pixels.");
         Border navigationFrame = PageRoot.FindVisualChildren<Border>()
             .First(border => border.Name == "PART_LeftNavigationFrame");
         ElementTheme originalTheme = PageRoot.RequestedTheme;
@@ -264,20 +264,20 @@ public sealed partial class MainWindow : Window
         await SampleChecks.SettleAsync();
         global::Windows.UI.Color darkSurface = ((SolidColorBrush)navigationFrame.Background).Color;
         PageRoot.RequestedTheme = originalTheme;
-        SampleChecks.Require(lightSurface != darkSurface, "Toggle 导航框响应 Light/Dark 主题资源切换。");
-        checks.Record("Toggle WPFUI 专用管理器、侧栏和窗格模板通过。");
+        SampleChecks.Require(lightSurface != darkSurface, "Toggle navigation frames respond to Light/Dark theme changes.");
+        checks.Record("Toggle WPFUI manager, sidebar, and pane templates passed.");
 
         await CheckZonePreviewGeometryAsync(checks);
 
         LayoutAnchorable selectedTool = Manager.Layout.Descendents().OfType<LayoutAnchorable>().FirstOrDefault()
-            ?? throw new InvalidOperationException("Toggle 不存在可操作工具。");
+            ?? throw new InvalidOperationException("Toggle has no available tool.");
         WorkspaceTool model = selectedTool.Content as WorkspaceTool
-            ?? throw new InvalidOperationException("Toggle 工具内容不是 WorkspaceTool。");
+            ?? throw new InvalidOperationException("Toggle tool content is not a WorkspaceTool.");
         DockZone originalZone = model.Zone;
         MoveToolToZone(selectedTool, DockZone.RightBottom);
         await SampleChecks.SettleAsync();
-        SampleChecks.Require(ReferenceEquals(selectedTool.Content, model), "Toggle 区域移动保留内容引用。");
-        SampleChecks.Require(model.Zone == DockZone.RightBottom, "Toggle 工具模型 Zone 已更新为目标区域。");
+        SampleChecks.Require(ReferenceEquals(selectedTool.Content, model), "Toggle zone moves preserve content references.");
+        SampleChecks.Require(model.Zone == DockZone.RightBottom, "Toggle updated the tool model to the target zone.");
         ToggleDockButton movedButton = PageRoot.FindVisualChildren<ToggleDockButton>()
             .Single(button => ReferenceEquals(button.Anchorable, selectedTool));
         Border movedIndicator = movedButton.FindVisualChildren<Border>().Single(border => border.Name == "Indicator");
@@ -287,37 +287,37 @@ public sealed partial class MainWindow : Window
             && movedIndicator.HorizontalAlignment == HorizontalAlignment.Right
             && Math.Abs(indicatorBounds.Right - movedButton.ActualWidth) < 0.5
             && Math.Abs((indicatorBounds.Top + indicatorBounds.Bottom) / 2 - movedButton.ActualHeight / 2) < 0.5,
-            "Toggle 工具移动到右侧区域后，指示条精确贴合按钮右边并保持垂直居中。");
-        checks.Record($"Toggle 工具区域移动通过（{originalZone} -> {model.Zone}）。");
+            "After moving a tool to the right zone, its indicator remains right-aligned and vertically centered.");
+        checks.Record($"Toggle tool zone move passed ({originalZone} -> {model.Zone}).");
 
         StatusText.Text = GetActiveToolStatus(model);
         Manager.MoveAnchorableToZone(selectedTool, DockZone.BottomRight);
         await SampleChecks.SettleAsync();
         SampleChecks.Require(model.Zone == DockZone.RightBottom
-            && StatusText.Text == $"当前工具：{model.Title}（BottomRight）。",
-            "Toggle 拖动路径改变实际区域后，状态栏使用侧栏按钮当前区域而非模型初始 Zone。");
+            && StatusText.Text == $"Current tool: {model.Title} (BottomRight).",
+            "After a drag changes the actual zone, the status uses the current sidebar-button zone.");
         ToggleTool_Click(this, new RoutedEventArgs());
         await SampleChecks.SettleAsync();
         SampleChecks.Require(selectedTool.IsAutoHidden && selectedTool.FindParent<LayoutAnchorSide>()?.Side == AnchorSide.Bottom,
-            "Toggle 拖动后菜单收起当前工具仍保留实际底部区域。");
+            "After dragging, the menu collapses the tool in its actual bottom zone.");
         ToggleTool_Click(this, new RoutedEventArgs());
         await SampleChecks.SettleAsync();
         SampleChecks.Require(!selectedTool.IsAutoHidden && GetToolZone(selectedTool) == DockZone.BottomRight,
-            "Toggle 拖动后菜单再次展开当前工具仍使用实际区域。");
+            "After dragging, the menu expands the tool in its actual zone.");
         Manager.MoveAnchorableToZone(selectedTool, DockZone.RightBottom);
         await SampleChecks.SettleAsync();
-        checks.Record("Toggle 实际区域变化后状态栏同步通过。");
+        checks.Record("Toggle status follows actual zone changes.");
 
         selectedTool.Hide();
         await SampleChecks.SettleAsync();
-        SampleChecks.Require(Manager.Layout.Hidden.Contains(selectedTool), "Toggle 工具可以隐藏。");
+        SampleChecks.Require(Manager.Layout.Hidden.Contains(selectedTool), "Toggle tool can be hidden.");
         selectedTool.Show();
         await SampleChecks.SettleAsync();
-        SampleChecks.Require(!Manager.Layout.Hidden.Contains(selectedTool), "Toggle 隐藏工具可以恢复。");
-        checks.Record("Toggle 隐藏和恢复通过。");
+        SampleChecks.Require(!Manager.Layout.Hidden.Contains(selectedTool), "Toggle hidden tool can be restored.");
+        checks.Record("Toggle hide and restore passed.");
 
         MethodInfo hideFromMenu = typeof(ToggleDockingManager).GetMethod("HideAnchorableFromMenu", BindingFlags.Instance | BindingFlags.NonPublic)
-            ?? throw new InvalidOperationException("找不到 Toggle 菜单隐藏入口。");
+            ?? throw new InvalidOperationException("Toggle hide-menu entry was not found.");
         int canceledHides = 0;
         EventHandler<AnchorableHidingEventArgs> cancelHide = (_, args) =>
         {
@@ -331,18 +331,18 @@ public sealed partial class MainWindow : Window
             await SampleChecks.SettleAsync();
             SampleChecks.Require(canceledHides == 1 && !selectedTool.IsHidden
                 && PageRoot.FindVisualChildren<ToggleDockButton>().Any(button => ReferenceEquals(button.Anchorable, selectedTool)),
-                "Toggle 取消隐藏后保留原侧栏按钮。");
+                "A canceled hide preserves the Toggle sidebar button.");
 
             Manager.DetachAnchorableToWindow(selectedTool);
             await SampleChecks.SettleAsync();
-            SampleChecks.Require(Manager.IsDetached(selectedTool), "Toggle 工具已进入独立窗口。");
+            SampleChecks.Require(Manager.IsDetached(selectedTool), "Toggle tool entered a detached window.");
             hideFromMenu.Invoke(Manager, [selectedTool]);
             await SampleChecks.SettleAsync();
             SampleChecks.Require(canceledHides == 2 && Manager.IsDetached(selectedTool) && !selectedTool.IsHidden,
-                "Toggle 取消隐藏后保留独立窗口。");
+                "A canceled hide preserves the Toggle detached window.");
 
             MethodInfo floatFromMenu = typeof(ToggleDockingManager).GetMethod("FloatAnchorableFromMenu", BindingFlags.Instance | BindingFlags.NonPublic)
-                ?? throw new InvalidOperationException("找不到 Toggle 菜单浮动入口。");
+                ?? throw new InvalidOperationException("Toggle float-menu entry was not found.");
             int canceledFloats = 0;
             EventHandler<ContentFloatingEventArgs> cancelFloat = (_, args) =>
             {
@@ -355,7 +355,7 @@ public sealed partial class MainWindow : Window
                 floatFromMenu.Invoke(Manager, [selectedTool]);
                 await SampleChecks.SettleAsync();
                 SampleChecks.Require(canceledFloats == 1 && Manager.IsDetached(selectedTool) && !selectedTool.IsFloating,
-                    "Toggle 取消浮动后保留独立窗口。");
+                    "A canceled float preserves the Toggle detached window.");
             }
             finally
             {
@@ -368,7 +368,7 @@ public sealed partial class MainWindow : Window
             Manager.ReattachAnchorable(selectedTool);
         }
         await SampleChecks.SettleAsync();
-        checks.Record("Toggle 菜单隐藏与浮动取消时保留侧栏按钮和独立窗口。");
+        checks.Record("Toggle preserves sidebar buttons and detached windows when menu hide or float is canceled.");
 
         LayoutAnchorable secondTool = Manager.Layout.Descendents().OfType<LayoutAnchorable>()
             .First(tool => !ReferenceEquals(tool, selectedTool));
@@ -378,27 +378,27 @@ public sealed partial class MainWindow : Window
             Manager.DetachAnchorableToWindow(secondTool);
             await SampleChecks.SettleAsync();
             SampleChecks.Require(Manager.IsDetached(selectedTool) && Manager.IsDetached(secondTool),
-                "Toggle 两个工具可同时使用独立窗口。");
+                "Toggle allows two tools in detached windows at the same time.");
             selectedTool.IsActive = true;
             DetachTool_Click(this, new RoutedEventArgs());
             await SampleChecks.SettleAsync();
             SampleChecks.Require(!Manager.IsDetached(selectedTool) && Manager.IsDetached(secondTool),
-                "Toggle 附回当前工具不会附回其他独立窗口。");
+                "Reattaching the current Toggle tool leaves other detached windows alone.");
         }
         finally
         {
             Manager.ReattachAnchorable(selectedTool);
             Manager.ReattachAnchorable(secondTool);
         }
-        checks.Record("Toggle 当前工具附回仅影响选中工具。");
+        checks.Record("Reattaching the current Toggle tool affects only the selected tool.");
 
         bool originalFloating = Manager.AllowDetachedWindows;
         Manager.AllowDetachedWindows = false;
         Manager.AllowFloatingWindows = false;
-        SampleChecks.Require(!Manager.AllowDetachedWindows && !Manager.AllowFloatingWindows, "Toggle 窗口策略可以关闭。");
+        SampleChecks.Require(!Manager.AllowDetachedWindows && !Manager.AllowFloatingWindows, "Toggle window policies can be disabled.");
         Manager.AllowDetachedWindows = originalFloating;
         Manager.AllowFloatingWindows = originalFloating;
-        checks.Record("Toggle 窗口策略通过。");
+        checks.Record("Toggle window policy passed.");
 
         await CheckLayoutPrioritiesAsync(checks);
     }
@@ -409,18 +409,18 @@ public sealed partial class MainWindow : Window
             .Where(tool => tool.Content is WorkspaceTool)
             .ToDictionary(tool => ((WorkspaceTool)tool.Content!).Zone);
         Type overlayType = typeof(ToggleDockingManager).Assembly.GetType("AvalonDock.Controls.ToggleDockDragOverlay")
-            ?? throw new InvalidOperationException("找不到 Toggle 拖动指示层。");
+            ?? throw new InvalidOperationException("Toggle drag-indicator overlay was not found.");
         ConstructorInfo constructor = overlayType.GetConstructors(BindingFlags.Instance | BindingFlags.NonPublic)
             .Single();
         using IDisposable overlay = (IDisposable)constructor.Invoke([Manager, tools[DockZone.LeftTop]]);
         MethodInfo update = overlayType.GetMethod("Update", BindingFlags.Instance | BindingFlags.NonPublic)
-            ?? throw new InvalidOperationException("找不到 Toggle 指示层更新入口。");
+            ?? throw new InvalidOperationException("Toggle indicator update entry was not found.");
         MethodInfo hit = overlayType.GetMethod("Hit", BindingFlags.Instance | BindingFlags.NonPublic)
-            ?? throw new InvalidOperationException("找不到 Toggle 指示层命中入口。");
+            ?? throw new InvalidOperationException("Toggle indicator hit-test entry was not found.");
         FieldInfo zones = overlayType.GetField("zones", BindingFlags.Instance | BindingFlags.NonPublic)
-            ?? throw new InvalidOperationException("找不到 Toggle 指示区域。");
+            ?? throw new InvalidOperationException("Toggle indicator zones were not found.");
         PropertyInfo failure = overlayType.GetProperty("Failure", BindingFlags.Instance | BindingFlags.NonPublic)
-            ?? throw new InvalidOperationException("找不到 Toggle 指示层故障状态。");
+            ?? throw new InvalidOperationException("Toggle indicator failure state was not found.");
 
         (DockZone First, DockZone Second)[] pairs =
         [
@@ -438,14 +438,14 @@ public sealed partial class MainWindow : Window
             Manager.ToggleAnchorable(tools[first], first);
             await SampleChecks.SettleAsync();
             SampleChecks.Require(tools[first].IsAutoHidden && !tools[second].IsAutoHidden,
-                $"Toggle {first} 收起后仅 {second} 展开。");
+                $"After collapsing {first}, only {second} is expanded.");
             VerifyIndicators(first, second);
             VerifyPair(first, second, splitEvenly: true);
 
             Manager.ToggleAnchorable(tools[first], first);
             await SampleChecks.SettleAsync();
             SampleChecks.Require(!tools[first].IsAutoHidden && !tools[second].IsAutoHidden,
-                $"Toggle {first} 重新展开后两侧工具均已展开。");
+                $"After expanding {first} again, both tools are expanded.");
             VerifyIndicators(first, second);
             Manager.ActiveContent = tools[second].Content;
             await SampleChecks.SettleAsync();
@@ -453,14 +453,14 @@ public sealed partial class MainWindow : Window
             Manager.ToggleAnchorable(tools[second], second);
             await SampleChecks.SettleAsync();
             SampleChecks.Require(!tools[first].IsAutoHidden && tools[second].IsAutoHidden,
-                $"Toggle {second} 收起后仅 {first} 展开。");
+                $"After collapsing {second}, only {first} is expanded.");
             VerifyIndicators(first, second);
             VerifyPair(first, second, splitEvenly: true);
 
             Manager.ToggleAnchorable(tools[first], first);
             await SampleChecks.SettleAsync();
             SampleChecks.Require(tools[first].IsAutoHidden && tools[second].IsAutoHidden,
-                $"Toggle {first}/{second} 均已收起。");
+                $"Both {first} and {second} are collapsed.");
             VerifyIndicators(first, second);
             VerifyPair(first, second, splitEvenly: true);
 
@@ -470,9 +470,9 @@ public sealed partial class MainWindow : Window
             VerifyIndicators(first, second);
         }
 
-        SampleChecks.Require(failure.GetValue(overlay) == null, "Toggle 拖动指示层正常绘制。");
-        checks.Record("Toggle 六区指示在双窗格、单窗格和空白分组时正确切分并命中。");
-        checks.Record("Toggle 同侧工具反复收起、展开及切换活动内容后，展开按钮的选中标识仍可见，收起按钮的标识隐藏。");
+        SampleChecks.Require(failure.GetValue(overlay) == null, "Toggle drag indicators render correctly.");
+        checks.Record("Toggle six-zone indicators partition and hit-test correctly with two panes, one pane, or an empty group.");
+        checks.Record("Toggle indicators remain visible for expanded tools and hidden for collapsed tools after repeated same-side toggles.");
 
         void VerifyIndicators(DockZone first, DockZone second)
         {
@@ -486,7 +486,7 @@ public sealed partial class MainWindow : Window
                 SampleChecks.Require(button.IsChecked == expanded
                     && indicator.Visibility == (expanded ? Visibility.Visible : Visibility.Collapsed)
                     && (!expanded || indicator.ActualWidth > 0 && indicator.ActualHeight > 0),
-                    $"Toggle {zone} 按钮的实际选中标识与工具展开状态一致。");
+                    $"Toggle {zone} button indicator matches the tool expansion state.");
             }
         }
 
@@ -494,7 +494,7 @@ public sealed partial class MainWindow : Window
         {
             update.Invoke(overlay, [new Point(0, 0), true]);
             IEnumerable entries = (IEnumerable)(zones.GetValue(overlay)
-                ?? throw new InvalidOperationException("Toggle 指示区域尚未生成。"));
+                ?? throw new InvalidOperationException("Toggle indicator zones have not been generated."));
             Dictionary<DockZone, Rect> bounds = [];
             foreach (object entry in entries)
             {
@@ -505,9 +505,9 @@ public sealed partial class MainWindow : Window
                 }
 
                 DockZone target = (DockZone)(zoneType.GetProperty("Target")?.GetValue(entry)
-                    ?? throw new InvalidOperationException("Toggle 指示区域缺少目标。"));
+                    ?? throw new InvalidOperationException("Toggle indicator zone has no target."));
                 Rect rectangle = (Rect)(zoneType.GetProperty("Bounds")?.GetValue(entry)
-                    ?? throw new InvalidOperationException("Toggle 指示区域缺少边界。"));
+                    ?? throw new InvalidOperationException("Toggle indicator zone has no bounds."));
                 bounds.Add(target, rectangle);
             }
 
@@ -515,11 +515,11 @@ public sealed partial class MainWindow : Window
             Rect secondBounds = bounds[second];
             SampleChecks.Require(firstBounds.Width > 0 && firstBounds.Height > 0
                 && secondBounds.Width > 0 && secondBounds.Height > 0,
-                $"Toggle {first}/{second} 指示区域均非空。");
+                $"Toggle {first}/{second} indicator zones are nonempty.");
             Rect overlap = firstBounds;
             overlap.Intersect(secondBounds);
             SampleChecks.Require(overlap.IsEmpty || overlap.Width <= 0.5 || overlap.Height <= 0.5,
-                $"Toggle {first}/{second} 指示区域不重叠。");
+                $"Toggle {first}/{second} indicator zones do not overlap.");
 
             if (splitEvenly)
             {
@@ -529,7 +529,7 @@ public sealed partial class MainWindow : Window
                         && Math.Abs(firstBounds.Right - secondBounds.Left) <= 1.5
                         && Math.Abs(firstBounds.Top - secondBounds.Top) <= 1.5
                         && Math.Abs(firstBounds.Height - secondBounds.Height) <= 1.5,
-                        "Toggle 底部空白分组沿水平方向均分。");
+                        "Toggle empty bottom group splits evenly along the horizontal axis.");
                 }
                 else
                 {
@@ -537,7 +537,7 @@ public sealed partial class MainWindow : Window
                         && Math.Abs(firstBounds.Bottom - secondBounds.Top) <= 1.5
                         && Math.Abs(firstBounds.Left - secondBounds.Left) <= 1.5
                         && Math.Abs(firstBounds.Width - secondBounds.Width) <= 1.5,
-                        $"Toggle {first}/{second} 空白分组沿垂直方向均分。");
+                        $"Toggle {first}/{second} empty group splits evenly along the vertical axis.");
                 }
             }
 
@@ -545,7 +545,7 @@ public sealed partial class MainWindow : Window
             Point secondCenter = new(secondBounds.X + secondBounds.Width / 2, secondBounds.Y + secondBounds.Height / 2);
             SampleChecks.Require((DockZone?)hit.Invoke(overlay, [firstCenter]) == first
                 && (DockZone?)hit.Invoke(overlay, [secondCenter]) == second,
-                $"Toggle {first}/{second} 指示区域的中心命中正确。");
+                $"Toggle {first}/{second} indicator-zone centers hit the correct targets.");
         }
     }
 

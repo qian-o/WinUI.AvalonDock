@@ -141,6 +141,9 @@
   <data name="Anchorable_DockAsDocument" xml:space="preserve">
     <value>Ancrer comme Onglet de Document</value>
   </data>
+  <data name="Anchorable_DetachToWindow" xml:space="preserve">
+    <value>Fenêtre</value>
+  </data>
   <data name="Anchorable_Float" xml:space="preserve">
     <value>Flottante</value>
   </data>
@@ -180,8 +183,80 @@
   <data name="Document_NewVerticalTabGroup" xml:space="preserve">
     <value>Nouveau Groupe d'Onglets Vertical</value>
   </data>
+  <data name="A11y_AutoHideTool" xml:space="preserve">
+    <value>Masquer automatiquement l'outil</value>
+  </data>
+  <data name="A11y_HideTool" xml:space="preserve">
+    <value>Masquer l'outil</value>
+  </data>
+  <data name="A11y_DockLeft" xml:space="preserve">
+    <value>Ancrer à gauche</value>
+  </data>
+  <data name="A11y_DockTop" xml:space="preserve">
+    <value>Ancrer en haut</value>
+  </data>
+  <data name="A11y_DockRight" xml:space="preserve">
+    <value>Ancrer à droite</value>
+  </data>
+  <data name="A11y_DockBottom" xml:space="preserve">
+    <value>Ancrer en bas</value>
+  </data>
+  <data name="A11y_DockInside" xml:space="preserve">
+    <value>Ancrer à l'intérieur</value>
+  </data>
+  <data name="A11y_DockLeftAsToolPane" xml:space="preserve">
+    <value>Ancrer à gauche comme volet d'outils</value>
+  </data>
+  <data name="A11y_DockTopAsToolPane" xml:space="preserve">
+    <value>Ancrer en haut comme volet d'outils</value>
+  </data>
+  <data name="A11y_DockRightAsToolPane" xml:space="preserve">
+    <value>Ancrer à droite comme volet d'outils</value>
+  </data>
+  <data name="A11y_DockBottomAsToolPane" xml:space="preserve">
+    <value>Ancrer en bas comme volet d'outils</value>
+  </data>
+  <data name="Toggle_MoveTo" xml:space="preserve">
+    <value>Déplacer vers</value>
+  </data>
+  <data name="Toggle_ViewMode" xml:space="preserve">
+    <value>Mode d'affichage</value>
+  </data>
+  <data name="Toggle_Docked" xml:space="preserve">
+    <value>Ancré</value>
+  </data>
+  <data name="Toggle_Hidden" xml:space="preserve">
+    <value>Masqué</value>
+  </data>
+  <data name="Toggle_Options" xml:space="preserve">
+    <value>Options</value>
+  </data>
+  <data name="Toggle_Minimize" xml:space="preserve">
+    <value>Réduire</value>
+  </data>
+  <data name="Toggle_ShowHiddenToolWindows" xml:space="preserve">
+    <value>Afficher les fenêtres d'outils masquées</value>
+  </data>
+  <data name="Toggle_Zone_LeftTop" xml:space="preserve">
+    <value>Côté gauche en haut</value>
+  </data>
+  <data name="Toggle_Zone_LeftBottom" xml:space="preserve">
+    <value>Côté gauche en bas</value>
+  </data>
+  <data name="Toggle_Zone_RightTop" xml:space="preserve">
+    <value>Côté droit en haut</value>
+  </data>
+  <data name="Toggle_Zone_RightBottom" xml:space="preserve">
+    <value>Côté droit en bas</value>
+  </data>
+  <data name="Toggle_Zone_BottomLeft" xml:space="preserve">
+    <value>Bas à gauche</value>
+  </data>
+  <data name="Toggle_Zone_BottomRight" xml:space="preserve">
+    <value>Bas à droite</value>
+  </data>
   <data name="Window_Maximize" xml:space="preserve">
-    <value>Plein Écran</value>
+    <value>Agrandir</value>
   </data>
   <data name="Window_Restore" xml:space="preserve">
     <value>Restaurer</value>

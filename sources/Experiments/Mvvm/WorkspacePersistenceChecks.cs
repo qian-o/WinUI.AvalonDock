@@ -16,12 +16,12 @@ internal static class WorkspacePersistenceChecks
     public static async Task RunAsync(DockingManager manager, WorkspaceViewModel viewModel, SampleChecks checks)
     {
         WorkspaceDocument firstDocument = viewModel.Documents.Single();
-        WorkspaceDocument secondDocument = viewModel.OpenDocument("恢复后继续停靠", "检查非平凡 XML 布局恢复。 ");
-        WorkspaceDocument floatingDocument = viewModel.OpenDocument("浮动关闭检查", "检查浮动文档的取消关闭与策略。 ");
+        WorkspaceDocument secondDocument = viewModel.OpenDocument("Dock After Restore", "Check restoration of a nontrivial XML layout.");
+        WorkspaceDocument floatingDocument = viewModel.OpenDocument("Floating Close Check", "Check floating-document close cancellation and policy.");
         WorkspaceTool autoHideTool = viewModel.Tools.Single();
-        WorkspaceTool floatingTool = CreateTool("persist-floating", "浮动工具", DockZone.BottomLeft);
-        WorkspaceTool detachedTool = CreateTool("persist-detached", "独立工具", DockZone.LeftTop);
-        WorkspaceTool hiddenTool = CreateTool("persist-hidden", "隐藏工具", DockZone.RightBottom);
+        WorkspaceTool floatingTool = CreateTool("persist-floating", "Floating Tool", DockZone.BottomLeft);
+        WorkspaceTool detachedTool = CreateTool("persist-detached", "Detached Tool", DockZone.LeftTop);
+        WorkspaceTool hiddenTool = CreateTool("persist-hidden", "Hidden Tool", DockZone.RightBottom);
         viewModel.AddToolForScenario(floatingTool);
         viewModel.AddToolForScenario(detachedTool);
         viewModel.AddToolForScenario(hiddenTool);
@@ -89,16 +89,16 @@ internal static class WorkspacePersistenceChecks
 
         SampleChecks.Require(autoHide.IsAutoHidden && toolToHide.IsHidden
             && floating.IsFloating && toolToFloat.IsFloating && manager.IsDetached(toolToDetach),
-            "复杂布局包含自动隐藏、隐藏、文档浮动、工具浮动和独立工具窗口。 ");
+            "Complex layout includes auto hide, hidden items, floating documents and tools, and a detached tool window.");
         Dictionary<string, object> contents = manager.Layout.Descendents().OfType<LayoutContent>()
             .ToDictionary(item => item.ContentId!, item => item.Content!);
         using MemoryStream saved = new();
         new XmlLayoutSerializer(manager).Serialize(saved);
 
-        WorkspaceDocument addedAfterSave = viewModel.OpenDocument("保存后新增", "验证官方来源集合恢复时的合并语义。 ");
+        WorkspaceDocument addedAfterSave = viewModel.OpenDocument("Added After Save", "Check source-collection merge behavior during restore.");
         await SampleChecks.SettleAsync();
         SampleChecks.Require(manager.Layout.Descendents().OfType<LayoutDocument>()
-            .Any(item => ReferenceEquals(item.Content, addedAfterSave)), "保存后新文档已由 MVVM 来源集合加入布局。 ");
+            .Any(item => ReferenceEquals(item.Content, addedAfterSave)), "The MVVM source collection adds the new document to the layout after saving.");
         manager.DockAllFloatingWindows();
         manager.ReattachAllDetachedAnchorables();
         autoHide.ToggleAutoHide();
@@ -106,7 +106,7 @@ internal static class WorkspacePersistenceChecks
         documentGroup.Orientation = Orientation.Horizontal;
         await SampleChecks.SettleAsync();
         SampleChecks.Require(!manager.Layout.FloatingWindows.Any() && !manager.DetachedAnchorables.Any()
-            && !autoHide.IsAutoHidden && !toolToHide.IsHidden, "保存后已改变窗口和分组状态。 ");
+            && !autoHide.IsAutoHidden && !toolToHide.IsHidden, "Window and group states changed after saving.");
 
         XmlLayoutSerializer serializer = new(manager);
         serializer.LayoutSerializationCallback += (_, args) => args.Content = contents[args.Model.ContentId!];
@@ -117,7 +117,7 @@ internal static class WorkspacePersistenceChecks
         SampleChecks.Require(viewModel.Documents.Contains(addedAfterSave)
             && manager.Layout.Descendents().OfType<LayoutDocument>()
                 .Count(item => ReferenceEquals(item.Content, addedAfterSave)) == 1,
-            "官方反序列化保留来源集合中保存后新增的文档，且只导入一次。 ");
+            "Deserialization retains the document added to the source collection after saving exactly once.");
         CheckSourceIdentity(manager, viewModel);
 
         first = FindContent<LayoutDocument>(manager, firstDocument);
@@ -129,32 +129,32 @@ internal static class WorkspacePersistenceChecks
         toolToHide = FindContent<LayoutAnchorable>(manager, hiddenTool);
         LayoutDocumentPaneGroup restoredGroup = first.FindParent<LayoutDocumentPaneGroup>()!;
         SampleChecks.Require(restoredGroup.Orientation == Orientation.Vertical && restoredGroup.ChildrenCount == 2,
-            "XML 恢复文档上下分组。 ");
+            "XML restores vertically split document groups.");
         SampleChecks.Require(first.Parent is LayoutDocumentPane { DockHeight.IsStar: true, DockHeight.Value: 1 }
             && second.Parent is LayoutDocumentPane { DockHeight.IsStar: true, DockHeight.Value: 2 },
-            "XML 恢复文档组 1:2 星号尺寸。 ");
+            "XML restores the document groups' 1:2 star sizes.");
         SampleChecks.Require(autoHide.IsAutoHidden && autoHide.FindParent<LayoutAnchorSide>()?.Side == AnchorSide.Right
             && toolToHide.IsHidden && floating.IsFloating && toolToFloat.IsFloating
             && manager.IsDetached(toolToDetach) && manager.FloatingWindows.Count() == 2,
-            "XML 恢复各工具状态及两个真实浮动宿主、一个真实独立宿主。 ");
+            "XML restores tool states, two real floating hosts, and one real detached host.");
         SampleChecks.Require(autoHide.AutoHideMinWidth == 70 && autoHide.AutoHideMinHeight == 60
             && autoHide.AutoHideWidth == 80 && autoHide.AutoHideHeight == 90,
-            "XML 恢复低于默认最小值的公开自动隐藏尺寸。 ");
+            "XML restores public auto-hide sizes below the default minimum.");
         SampleChecks.Require(manager.Layout.Descendents().OfType<LayoutContent>().Count() == contents.Count
             + 1 && contents.Values.All(content => manager.Layout.Descendents().OfType<LayoutContent>()
                 .Count(item => ReferenceEquals(item.Content, content)) == 1),
-            "复杂 XML 恢复逐项保留同一内容引用，外加来源集合中的新文档，无重复节点。 ");
+            "Complex XML restore keeps the same content references plus the new source document without duplicate nodes.");
         ILayoutContainer? floatingPrevious = ((ILayoutPreviousContainer)floating).PreviousContainer;
         ILayoutContainer? toolPrevious = ((ILayoutPreviousContainer)toolToFloat).PreviousContainer;
         SampleChecks.Require(ReferenceEquals(floatingPrevious?.Root, manager.Layout),
-            $"恢复后文档浮动原容器引用指向当前布局（{Describe(floatingPrevious)}）。 ");
+            $"The floating document's previous container belongs to the current layout after restore ({Describe(floatingPrevious)}).");
         SampleChecks.Require(toolPrevious == null || ReferenceEquals(toolPrevious.Root, manager.Layout),
-            $"恢复后工具浮动原容器若存在则指向当前布局（{Describe(toolPrevious)}）。 ");
+            $"The floating tool's previous container, if present, belongs to the current layout after restore ({Describe(toolPrevious)}).");
         ILayoutContainer? autoHidePrevious = ((ILayoutPreviousContainer)autoHide.Parent!).PreviousContainer;
         SampleChecks.Require(autoHidePrevious is LayoutAnchorablePane { DockWidth.IsAbsolute: true, DockWidth.Value: 210 }
             && ReferenceEquals(autoHidePrevious.Root, manager.Layout),
-            "恢复后自动隐藏组重连当前布局中的 210 像素原窗格。 ");
-        checks.Record("复杂 XML 保存、改变布局、恢复分组/尺寸/隐藏/自动隐藏/浮动/独立窗口及内容引用通过。");
+            "The restored auto-hide group reconnects to its original 210-pixel pane in the current layout.");
+        checks.Record("Complex XML save, layout change, and restoration of groups, sizes, hidden, auto-hide, floating, detached windows, and content references");
 
         await CheckFloatingCancellationAsync(manager, floating, toolToFloat, checks);
         DetachedAnchorableWindow detachedWindow = GetDetachedWindow(manager, toolToDetach);
@@ -165,51 +165,51 @@ internal static class WorkspacePersistenceChecks
         await SampleChecks.SettleAsync();
         SampleChecks.Require(!manager.IsDetached(toolToDetach) && !toolToDetach.IsDetached
             && !toolToDetach.IsHidden && ReferenceEquals(toolToDetach.Parent, detachedPrevious),
-            $"关闭独立窗口后同一工具返回 XML 记录的原容器（关闭前 Parent：{Describe(detachedParent)}，Hidden={detachedHidden}；Previous：{Describe(detachedPrevious)}；实际：{Describe(toolToDetach.Parent)}；detached={manager.IsDetached(toolToDetach)}/{toolToDetach.IsDetached} hidden={toolToDetach.IsHidden}）。 ");
+            $"Closing a detached window returns the tool to its XML-recorded container (parent before close: {Describe(detachedParent)}, hidden={detachedHidden}; previous: {Describe(detachedPrevious)}; actual: {Describe(toolToDetach.Parent)}; detached={manager.IsDetached(toolToDetach)}/{toolToDetach.IsDetached}, hidden={toolToDetach.IsHidden}).");
         manager.DetachAnchorableToWindow(toolToDetach);
         viewModel.Layout.AllowDetachedWindows = false;
         await SampleChecks.SettleAsync();
         SampleChecks.Require(!manager.DetachedAnchorables.Any() && !toolToDetach.IsDetached
             && ReferenceEquals(toolToDetach.Parent, detachedPrevious),
-            "MVVM 禁止独立窗口会把同一工具附回原容器。 ");
+            "Disabling detached windows in MVVM reattaches the same tool to its original container.");
         viewModel.Layout.AllowDetachedWindows = true;
 
         autoHide.CanAutoHide = false;
         LayoutAnchorableItem item = (LayoutAnchorableItem)manager.GetLayoutItemFromModel(autoHide)!;
-        SampleChecks.Require(item.AutoHideCommand?.CanExecute(null) == false, "CanAutoHide=false 禁用固定命令。 ");
+        SampleChecks.Require(item.AutoHideCommand?.CanExecute(null) == false, "CanAutoHide=false disables the pin command.");
         item.AutoHideCommand?.Execute(null);
-        SampleChecks.Require(autoHide.IsAutoHidden, "禁用命令执行后自动隐藏状态保持。 ");
+        SampleChecks.Require(autoHide.IsAutoHidden, "Executing the disabled command preserves auto-hide state.");
         autoHide.CanAutoHide = true;
         item.AutoHideCommand?.Execute(null);
         SampleChecks.Require(!autoHide.IsAutoHidden && ReferenceEquals(autoHide.Parent?.Root, manager.Layout)
             && ReferenceEquals(autoHide.Parent, autoHidePrevious),
-            "XML 恢复后自动隐藏工具仍可固定回当前布局。 ");
+            "The auto-hidden tool can still be pinned to the current layout after XML restore.");
         toolToHide.Show();
         second.IsActive = true;
         SampleChecks.Require(ReferenceEquals(viewModel.Layout.ActiveDockable, secondDocument),
-            "XML 恢复后视图活动文档仍回写官方 MVVM 模型。 ");
+            "The view's active document still updates the MVVM model after XML restore.");
         second.CanFloat = false;
         LayoutItem documentItem = manager.GetLayoutItemFromModel(second)!;
-        SampleChecks.Require(documentItem.FloatCommand?.CanExecute(null) == false, "CanFloat=false 禁用浮动命令。 ");
+        SampleChecks.Require(documentItem.FloatCommand?.CanExecute(null) == false, "CanFloat=false disables the float command.");
         documentItem.FloatCommand?.Execute(null);
-        SampleChecks.Require(!second.IsFloating, "禁用浮动命令不会改变布局。 ");
+        SampleChecks.Require(!second.IsFloating, "Executing the disabled float command leaves the layout unchanged.");
         second.CanFloat = true;
         documentItem.FloatCommand?.Execute(null);
         await SampleChecks.SettleAsync();
         SampleChecks.Require(second.IsFloating && manager.FloatingWindows.Any(window => window.Model.Descendents().Contains(second)),
-            "XML 恢复后仍可创建真实浮动窗口。 ");
+            "A real floating window can still be created after XML restore.");
         viewModel.Layout.AllowFloatingWindows = false;
         await SampleChecks.SettleAsync();
         SampleChecks.Require(!manager.Layout.FloatingWindows.Any() && !manager.FloatingWindows.Any()
             && !second.IsFloating && ReferenceEquals(second.Root, manager.Layout),
-            "MVVM 禁止浮动会停回恢复后的文档并释放真实浮动宿主。 ");
+            "Disabling floating in MVVM docks the restored document and releases its real floating host.");
         viewModel.Layout.AllowFloatingWindows = true;
         await CheckNewWindowPolicyAsync(manager, viewModel, second, toolToDetach, checks);
         (WorkspaceTool Model, AnchorSide Side)[] toolsBySide =
         [
-            (CreateTool("persist-new-left", "新增左区工具", DockZone.LeftTop), AnchorSide.Left),
-            (CreateTool("persist-new-right", "新增右区工具", DockZone.RightTop), AnchorSide.Right),
-            (CreateTool("persist-new-bottom", "新增底区工具", DockZone.BottomLeft), AnchorSide.Bottom)
+            (CreateTool("persist-new-left", "New Left Tool", DockZone.LeftTop), AnchorSide.Left),
+            (CreateTool("persist-new-right", "New Right Tool", DockZone.RightTop), AnchorSide.Right),
+            (CreateTool("persist-new-bottom", "New Bottom Tool", DockZone.BottomLeft), AnchorSide.Bottom)
         ];
         foreach ((WorkspaceTool model, _) in toolsBySide)
         {
@@ -221,20 +221,20 @@ internal static class WorkspacePersistenceChecks
         {
             LayoutAnchorable added = FindContent<LayoutAnchorable>(manager, model);
             SampleChecks.Require(added.FindParent<LayoutAnchorSide>()?.Side == side,
-                $"来源集合新增的 {model.Title} 按 MVVM 对应区域停入 {side} 侧。 ");
+                $"The source collection docks the new {model.Title} tool on the MVVM {side} side.");
         }
 
         CheckSourceIdentity(manager, viewModel);
-        checks.Record("XML 恢复后的浮动/关闭取消、独立窗口关闭返回、策略命令及 MVVM 活动项继续使用通过。");
+        checks.Record("Floating and close cancellation, detached window return, policy commands, and MVVM active items after XML restore");
     }
 
     private static async Task CheckNewWindowPolicyAsync(DockingManager manager, WorkspaceViewModel viewModel,
         LayoutDocument document, LayoutAnchorable tool, SampleChecks checks)
     {
         LayoutItem documentItem = manager.GetLayoutItemFromModel(document)
-            ?? throw new InvalidOperationException("MVVM 策略检查的文档布局项不存在。 ");
+            ?? throw new InvalidOperationException("The document layout item for the MVVM policy check is missing.");
         LayoutAnchorableItem toolItem = manager.GetLayoutItemFromModel(tool) as LayoutAnchorableItem
-            ?? throw new InvalidOperationException("MVVM 策略检查的工具布局项不存在。 ");
+            ?? throw new InvalidOperationException("The tool layout item for the MVVM policy check is missing.");
         ILayoutContainer? documentHome = document.Parent;
         ILayoutContainer? toolHome = tool.Parent;
         int floatingRequested = 0;
@@ -272,7 +272,7 @@ internal static class WorkspacePersistenceChecks
             SampleChecks.Require(!manager.AllowFloatingWindows && !manager.AllowDetachedWindows
                 && documentItem.FloatCommand?.CanExecute(null) == false
                 && toolItem.DetachToWindowCommand?.CanExecute(null) == false,
-                "MVVM 窗口策略同步禁用文档浮动与工具独立窗口命令。 ");
+                "The MVVM window policy disables document float and tool detach commands.");
 
             documentItem.FloatCommand?.Execute(null);
             document.Float();
@@ -285,7 +285,7 @@ internal static class WorkspacePersistenceChecks
                 && !manager.Layout.FloatingWindows.Any() && !manager.FloatingWindows.Any()
                 && !manager.DetachedAnchorables.Any() && floatingRequested == 0 && floated == 0
                 && detachedChanges == 0,
-                "MVVM 禁止新窗口时，命令和直接请求均被拒绝；原窗格、真实宿主与开始/完成事件保持不变。 ");
+                "When new windows are disallowed, commands and direct requests are rejected without changing panes, hosts, or start/completion events.");
 
             viewModel.Layout.AllowFloatingWindows = true;
             viewModel.Layout.AllowDetachedWindows = true;
@@ -293,14 +293,14 @@ internal static class WorkspacePersistenceChecks
             SampleChecks.Require(manager.AllowFloatingWindows && manager.AllowDetachedWindows
                 && documentItem.FloatCommand?.CanExecute(null) == true
                 && toolItem.DetachToWindowCommand?.CanExecute(null) == true,
-                "MVVM 重新启用窗口策略后，文档浮动和工具独立窗口命令恢复可用。 ");
+                "Re-enabling the MVVM window policy restores document float and tool detach commands.");
 
             documentItem.FloatCommand!.Execute(null);
             await SampleChecks.SettleAsync();
             SampleChecks.Require(document.IsFloating && manager.FloatingWindows.Any(window =>
                     window.Model.Descendents().Contains(document))
                 && floatingRequested == 1 && floated == 1,
-                "MVVM 重新启用后，文档命令建立真实浮动窗口并各发送一次开始/完成事件。 ");
+                "After re-enabling, the document command creates a real floating window and emits one start and one completion event.");
             document.Dock();
             await SampleChecks.SettleAsync();
             document.Float();
@@ -308,7 +308,7 @@ internal static class WorkspacePersistenceChecks
             SampleChecks.Require(document.IsFloating && manager.FloatingWindows.Any(window =>
                     window.Model.Descendents().Contains(document))
                 && floatingRequested == 2 && floated == 2,
-                "MVVM 重新启用后，文档直接请求也建立真实浮动窗口。 ");
+                "After re-enabling, a direct document request also creates a real floating window.");
             document.Dock();
             await SampleChecks.SettleAsync();
 
@@ -317,23 +317,23 @@ internal static class WorkspacePersistenceChecks
             DetachedAnchorableWindow detachedWindow = GetDetachedWindow(manager, tool);
             SampleChecks.Require(manager.IsDetached(tool) && tool.IsDetached && !detachedWindow.IsClosed
                 && detachedWindow.HasView && detachedChanges == 1,
-                "MVVM 重新启用后，工具命令建立真实独立窗口并通知模型一次。 ");
+                "After re-enabling, the tool command creates a real detached window and notifies the model once.");
             manager.ReattachAnchorable(tool);
             await SampleChecks.SettleAsync();
             SampleChecks.Require(!manager.IsDetached(tool) && !tool.IsDetached
                 && ReferenceEquals(tool.Parent, toolHome),
-                "MVVM 策略检查完成后，工具返回原窗格。 ");
+                "The tool returns to its original pane after the MVVM policy check.");
             manager.DetachAnchorableToWindow(tool);
             await SampleChecks.SettleAsync();
             DetachedAnchorableWindow directWindow = GetDetachedWindow(manager, tool);
             SampleChecks.Require(manager.IsDetached(tool) && tool.IsDetached && !directWindow.IsClosed
                 && directWindow.HasView && detachedChanges == 3,
-                "MVVM 重新启用后，工具直接请求也建立真实独立窗口。 ");
+                "After re-enabling, a direct tool request also creates a real detached window.");
             manager.ReattachAnchorable(tool);
             await SampleChecks.SettleAsync();
             SampleChecks.Require(!manager.IsDetached(tool) && ReferenceEquals(tool.Parent, toolHome),
-                "MVVM 直接请求检查完成后，工具返回原窗格。 ");
-            checks.Record("MVVM 禁止新浮窗/独立窗时命令与直接请求被拒绝，启用后真实窗口请求成功（受控 R）。");
+                "The tool returns to its original pane after the direct-request check.");
+            checks.Record("MVVM commands and direct requests reject new floating and detached windows when disabled, then create real windows when enabled (controlled R)");
         }
         finally
         {
@@ -361,7 +361,7 @@ internal static class WorkspacePersistenceChecks
         document.CanClose = false;
         documentWindow.Close();
         await SampleChecks.SettleAsync();
-        SampleChecks.Require(document.IsFloating && IsHostVisible(documentWindow), "CanClose=false 阻止浮动文档系统关闭。 ");
+        SampleChecks.Require(document.IsFloating && IsHostVisible(documentWindow), "CanClose=false prevents system closing of a floating document.");
         document.CanClose = true;
         int documentClosingCount = 0;
         EventHandler<DocumentClosingEventArgs> cancelDocument = (_, args) =>
@@ -377,14 +377,14 @@ internal static class WorkspacePersistenceChecks
         await SampleChecks.SettleAsync();
         manager.DocumentClosing -= cancelDocument;
         SampleChecks.Require(documentClosingCount == 1 && document.IsFloating && IsHostVisible(documentWindow),
-            "取消浮动文档关闭只通知一次并保留真实可见窗口。 ");
+            "Canceling floating-document close notifies once and keeps the real window visible.");
 
         LayoutAnchorableFloatingWindowControl toolWindow = manager.FloatingWindows.OfType<LayoutAnchorableFloatingWindowControl>()
             .Single(window => window.Model.Descendents().Contains(tool));
         tool.CanHide = false;
         toolWindow.Close();
         await SampleChecks.SettleAsync();
-        SampleChecks.Require(tool.IsFloating && IsHostVisible(toolWindow), "CanHide=false 阻止默认不可关闭工具的系统关闭。 ");
+        SampleChecks.Require(tool.IsFloating && IsHostVisible(toolWindow), "CanHide=false prevents system closing of a tool that cannot be closed by default.");
         tool.CanClose = true;
         int toolClosingCount = 0;
         EventHandler<AnchorableClosingEventArgs> cancelToolClose = (_, args) =>
@@ -400,7 +400,7 @@ internal static class WorkspacePersistenceChecks
         await SampleChecks.SettleAsync();
         manager.AnchorableClosing -= cancelToolClose;
         SampleChecks.Require(toolClosingCount == 1 && tool.IsFloating && IsHostVisible(toolWindow),
-            "可关闭但不可隐藏工具的关闭取消保留真实窗口。 ");
+            "Canceling close on a closable but non-hideable tool keeps the real window.");
         tool.CanClose = false;
         tool.CanHide = true;
         int toolHidingCount = 0;
@@ -417,20 +417,20 @@ internal static class WorkspacePersistenceChecks
         await SampleChecks.SettleAsync();
         manager.AnchorableHiding -= cancelTool;
         SampleChecks.Require(toolHidingCount == 1 && tool.IsFloating && IsHostVisible(toolWindow),
-            "取消浮动工具隐藏只通知一次并保留真实可见窗口。 ");
+            "Canceling floating-tool hide notifies once and keeps the real window visible.");
         EventHandler<CancelEventArgs> cancelModelHide = (_, args) => args.Cancel = true;
         tool.Hiding += cancelModelHide;
         toolWindow.Close();
         await SampleChecks.SettleAsync();
         tool.Hiding -= cancelModelHide;
-        SampleChecks.Require(tool.IsFloating && IsHostVisible(toolWindow), "模型 Hiding 取消也保留浮动工具窗口。 ");
+        SampleChecks.Require(tool.IsFloating && IsHostVisible(toolWindow), "Canceling model Hiding also keeps the floating tool window.");
         toolWindow.Close();
         await SampleChecks.SettleAsync();
-        SampleChecks.Require(tool.IsHidden && !manager.FloatingWindows.Contains(toolWindow), "允许隐藏后释放工具浮动宿主。 ");
+        SampleChecks.Require(tool.IsHidden && !manager.FloatingWindows.Contains(toolWindow), "Allowing hide releases the tool's floating host.");
         documentWindow.Close();
         await SampleChecks.SettleAsync();
-        SampleChecks.Require(document.Root == null && !manager.FloatingWindows.Contains(documentWindow), "允许关闭后移除浮动文档及宿主。 ");
-        checks.Record("浮动文档 CanClose/DocumentClosing 和工具 AnchorableHiding/Hiding 取消通过。");
+        SampleChecks.Require(document.Root == null && !manager.FloatingWindows.Contains(documentWindow), "Allowing close removes the floating document and its host.");
+        checks.Record("Floating-document CanClose/DocumentClosing and tool AnchorableHiding/Hiding cancellation");
     }
 
     private static LayoutDocument CreateDocument(WorkspaceDocument model) => new()
@@ -453,7 +453,7 @@ internal static class WorkspacePersistenceChecks
         Title = title,
         Zone = zone,
         IsOpenByDefault = true,
-        Text = "用于布局持久化与窗口状态检查。 "
+        Text = "Used to check layout persistence and window state."
     };
 
     private static T FindContent<T>(DockingManager manager, object model) where T : LayoutContent =>
@@ -466,10 +466,10 @@ internal static class WorkspacePersistenceChecks
         SampleChecks.Require(actual.Length == expected.Length
             && actual.All(item => item != null && expected.Count(model => ReferenceEquals(model, item)) == 1)
             && expected.All(model => actual.Count(item => ReferenceEquals(item, model)) == 1),
-            "恢复后的官方 MVVM 文档/工具来源集合与布局内容引用双向严格相等。 ");
+            "The restored MVVM document/tool source collections and layout content references match exactly in both directions.");
     }
 
-    private static string Describe(ILayoutContainer? pane) => pane == null ? "空" :
+    private static string Describe(ILayoutContainer? pane) => pane == null ? "null" :
         $"{pane.GetType().Name} Root={pane.Root?.GetHashCode()} Parent={pane.Parent?.GetType().Name}";
 
     private static bool IsHostVisible(LayoutFloatingWindowControl window)

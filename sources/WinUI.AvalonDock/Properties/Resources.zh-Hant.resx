@@ -153,6 +153,78 @@
   <data name="Document_MoveToNextTabGroup" xml:space="preserve">
     <value>移到下一個標籤組</value>
   </data>
+  <data name="A11y_AutoHideTool" xml:space="preserve">
+    <value>自動隱藏工具視窗</value>
+  </data>
+  <data name="A11y_HideTool" xml:space="preserve">
+    <value>隱藏工具視窗</value>
+  </data>
+  <data name="A11y_DockLeft" xml:space="preserve">
+    <value>停駐到左側</value>
+  </data>
+  <data name="A11y_DockTop" xml:space="preserve">
+    <value>停駐到頂部</value>
+  </data>
+  <data name="A11y_DockRight" xml:space="preserve">
+    <value>停駐到右側</value>
+  </data>
+  <data name="A11y_DockBottom" xml:space="preserve">
+    <value>停駐到底部</value>
+  </data>
+  <data name="A11y_DockInside" xml:space="preserve">
+    <value>停駐到內部</value>
+  </data>
+  <data name="A11y_DockLeftAsToolPane" xml:space="preserve">
+    <value>停駐到左側工具窗格</value>
+  </data>
+  <data name="A11y_DockTopAsToolPane" xml:space="preserve">
+    <value>停駐到頂部工具窗格</value>
+  </data>
+  <data name="A11y_DockRightAsToolPane" xml:space="preserve">
+    <value>停駐到右側工具窗格</value>
+  </data>
+  <data name="A11y_DockBottomAsToolPane" xml:space="preserve">
+    <value>停駐到底部工具窗格</value>
+  </data>
+  <data name="Toggle_MoveTo" xml:space="preserve">
+    <value>移動到</value>
+  </data>
+  <data name="Toggle_ViewMode" xml:space="preserve">
+    <value>檢視模式</value>
+  </data>
+  <data name="Toggle_Docked" xml:space="preserve">
+    <value>已停駐</value>
+  </data>
+  <data name="Toggle_Hidden" xml:space="preserve">
+    <value>已隱藏</value>
+  </data>
+  <data name="Toggle_Options" xml:space="preserve">
+    <value>選項</value>
+  </data>
+  <data name="Toggle_Minimize" xml:space="preserve">
+    <value>最小化</value>
+  </data>
+  <data name="Toggle_ShowHiddenToolWindows" xml:space="preserve">
+    <value>顯示隱藏的工具視窗</value>
+  </data>
+  <data name="Toggle_Zone_LeftTop" xml:space="preserve">
+    <value>左上</value>
+  </data>
+  <data name="Toggle_Zone_LeftBottom" xml:space="preserve">
+    <value>左下</value>
+  </data>
+  <data name="Toggle_Zone_RightTop" xml:space="preserve">
+    <value>右上</value>
+  </data>
+  <data name="Toggle_Zone_RightBottom" xml:space="preserve">
+    <value>右下</value>
+  </data>
+  <data name="Toggle_Zone_BottomLeft" xml:space="preserve">
+    <value>底部左側</value>
+  </data>
+  <data name="Toggle_Zone_BottomRight" xml:space="preserve">
+    <value>底部右側</value>
+  </data>
   <data name="Window_Maximize" xml:space="preserve">
     <value>最大化</value>
   </data>
@@ -173,6 +245,9 @@
   </data>
   <data name="Document_NewVerticalTabGroup" xml:space="preserve">
     <value>新建垂直標籤組</value>
+  </data>
+  <data name="Anchorable_DetachToWindow" xml:space="preserve">
+    <value>視窗</value>
   </data>
   <data name="Anchorable_Float" xml:space="preserve">
     <value>浮動</value>

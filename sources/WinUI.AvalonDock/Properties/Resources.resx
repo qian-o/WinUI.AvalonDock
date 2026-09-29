@@ -183,6 +183,78 @@
   <data name="Document_NewVerticalTabGroup" xml:space="preserve">
     <value>New Vertical Tab Group</value>
   </data>
+  <data name="A11y_AutoHideTool" xml:space="preserve">
+    <value>Auto hide tool</value>
+  </data>
+  <data name="A11y_HideTool" xml:space="preserve">
+    <value>Hide tool</value>
+  </data>
+  <data name="A11y_DockLeft" xml:space="preserve">
+    <value>Dock left</value>
+  </data>
+  <data name="A11y_DockTop" xml:space="preserve">
+    <value>Dock top</value>
+  </data>
+  <data name="A11y_DockRight" xml:space="preserve">
+    <value>Dock right</value>
+  </data>
+  <data name="A11y_DockBottom" xml:space="preserve">
+    <value>Dock bottom</value>
+  </data>
+  <data name="A11y_DockInside" xml:space="preserve">
+    <value>Dock inside</value>
+  </data>
+  <data name="A11y_DockLeftAsToolPane" xml:space="preserve">
+    <value>Dock left as tool pane</value>
+  </data>
+  <data name="A11y_DockTopAsToolPane" xml:space="preserve">
+    <value>Dock top as tool pane</value>
+  </data>
+  <data name="A11y_DockRightAsToolPane" xml:space="preserve">
+    <value>Dock right as tool pane</value>
+  </data>
+  <data name="A11y_DockBottomAsToolPane" xml:space="preserve">
+    <value>Dock bottom as tool pane</value>
+  </data>
+  <data name="Toggle_MoveTo" xml:space="preserve">
+    <value>Move To</value>
+  </data>
+  <data name="Toggle_ViewMode" xml:space="preserve">
+    <value>View Mode</value>
+  </data>
+  <data name="Toggle_Docked" xml:space="preserve">
+    <value>Docked</value>
+  </data>
+  <data name="Toggle_Hidden" xml:space="preserve">
+    <value>Hidden</value>
+  </data>
+  <data name="Toggle_Options" xml:space="preserve">
+    <value>Options</value>
+  </data>
+  <data name="Toggle_Minimize" xml:space="preserve">
+    <value>Minimize</value>
+  </data>
+  <data name="Toggle_ShowHiddenToolWindows" xml:space="preserve">
+    <value>Show Hidden Tool Windows</value>
+  </data>
+  <data name="Toggle_Zone_LeftTop" xml:space="preserve">
+    <value>Left Top</value>
+  </data>
+  <data name="Toggle_Zone_LeftBottom" xml:space="preserve">
+    <value>Left Bottom</value>
+  </data>
+  <data name="Toggle_Zone_RightTop" xml:space="preserve">
+    <value>Right Top</value>
+  </data>
+  <data name="Toggle_Zone_RightBottom" xml:space="preserve">
+    <value>Right Bottom</value>
+  </data>
+  <data name="Toggle_Zone_BottomLeft" xml:space="preserve">
+    <value>Bottom Left</value>
+  </data>
+  <data name="Toggle_Zone_BottomRight" xml:space="preserve">
+    <value>Bottom Right</value>
+  </data>
   <data name="Window_Maximize" xml:space="preserve">
     <value>Maximize</value>
   </data>

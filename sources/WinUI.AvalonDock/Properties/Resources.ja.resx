@@ -141,6 +141,9 @@
   <data name="Anchorable_DockAsDocument" xml:space="preserve">
     <value>タブ付きドキュメントとしてドッキング</value>
   </data>
+  <data name="Anchorable_DetachToWindow" xml:space="preserve">
+    <value>ウィンドウ</value>
+  </data>
   <data name="Anchorable_Float" xml:space="preserve">
     <value>フローティング</value>
   </data>
@@ -179,6 +182,78 @@
   </data>
   <data name="Document_NewVerticalTabGroup" xml:space="preserve">
     <value>垂直タブ グループの新規作成</value>
+  </data>
+  <data name="A11y_AutoHideTool" xml:space="preserve">
+    <value>ツール ウィンドウを自動的に隠す</value>
+  </data>
+  <data name="A11y_HideTool" xml:space="preserve">
+    <value>ツール ウィンドウを隠す</value>
+  </data>
+  <data name="A11y_DockLeft" xml:space="preserve">
+    <value>左にドッキング</value>
+  </data>
+  <data name="A11y_DockTop" xml:space="preserve">
+    <value>上にドッキング</value>
+  </data>
+  <data name="A11y_DockRight" xml:space="preserve">
+    <value>右にドッキング</value>
+  </data>
+  <data name="A11y_DockBottom" xml:space="preserve">
+    <value>下にドッキング</value>
+  </data>
+  <data name="A11y_DockInside" xml:space="preserve">
+    <value>内側にドッキング</value>
+  </data>
+  <data name="A11y_DockLeftAsToolPane" xml:space="preserve">
+    <value>左にツール ペインとしてドッキング</value>
+  </data>
+  <data name="A11y_DockTopAsToolPane" xml:space="preserve">
+    <value>上にツール ペインとしてドッキング</value>
+  </data>
+  <data name="A11y_DockRightAsToolPane" xml:space="preserve">
+    <value>右にツール ペインとしてドッキング</value>
+  </data>
+  <data name="A11y_DockBottomAsToolPane" xml:space="preserve">
+    <value>下にツール ペインとしてドッキング</value>
+  </data>
+  <data name="Toggle_MoveTo" xml:space="preserve">
+    <value>移動先</value>
+  </data>
+  <data name="Toggle_ViewMode" xml:space="preserve">
+    <value>表示モード</value>
+  </data>
+  <data name="Toggle_Docked" xml:space="preserve">
+    <value>ドッキング済み</value>
+  </data>
+  <data name="Toggle_Hidden" xml:space="preserve">
+    <value>非表示</value>
+  </data>
+  <data name="Toggle_Options" xml:space="preserve">
+    <value>オプション</value>
+  </data>
+  <data name="Toggle_Minimize" xml:space="preserve">
+    <value>最小化</value>
+  </data>
+  <data name="Toggle_ShowHiddenToolWindows" xml:space="preserve">
+    <value>非表示のツール ウィンドウを表示</value>
+  </data>
+  <data name="Toggle_Zone_LeftTop" xml:space="preserve">
+    <value>左側上部</value>
+  </data>
+  <data name="Toggle_Zone_LeftBottom" xml:space="preserve">
+    <value>左側下部</value>
+  </data>
+  <data name="Toggle_Zone_RightTop" xml:space="preserve">
+    <value>右側上部</value>
+  </data>
+  <data name="Toggle_Zone_RightBottom" xml:space="preserve">
+    <value>右側下部</value>
+  </data>
+  <data name="Toggle_Zone_BottomLeft" xml:space="preserve">
+    <value>下部左側</value>
+  </data>
+  <data name="Toggle_Zone_BottomRight" xml:space="preserve">
+    <value>下部右側</value>
   </data>
   <data name="Window_Maximize" xml:space="preserve">
     <value>最大化</value>

@@ -12,21 +12,21 @@ public sealed class WorkspaceViewModel : INotifyPropertyChanged
 {
     private int nextDocumentNumber = 1;
     private int nextToolNumber = 1;
-    private string statusText = "MVVM：官方 DockLayoutService、RootDock 与模型内容。";
+    private string statusText = "MVVM workspace using DockLayoutService, RootDock, and model content.";
 
     public WorkspaceViewModel()
     {
         Documents = [];
         Tools =
         [
-            CreateTool("mvvm-files", "文件", DockZone.LeftTop, "左侧文件导航：由 ToolboxBase 模型提供。"),
-            CreateTool("mvvm-search", "搜索", DockZone.LeftBottom, "左侧搜索结果：由模型集合控制。"),
-            CreateTool("mvvm-inspector", "检查器", DockZone.RightTop, "右侧属性检查：跟随活动文档。"),
-            CreateTool("mvvm-output", "输出", DockZone.BottomLeft, "底部输出：适合构建和调试信息。")
+            CreateTool("mvvm-files", "Files", DockZone.LeftTop, "File navigation provided by a ToolboxBase model."),
+            CreateTool("mvvm-search", "Search", DockZone.LeftBottom, "Search results controlled by the model collection."),
+            CreateTool("mvvm-inspector", "Inspector", DockZone.RightTop, "Properties for the active document."),
+            CreateTool("mvvm-output", "Output", DockZone.BottomLeft, "Build and debug output appears here.")
         ];
         LayoutService = new DockLayoutService(Tools);
 
-        OpenCommand = new RelayCommand(_ => OpenDocument($"文档 {nextDocumentNumber}", "通过 ViewModel 创建的文档。\n\n可在编辑菜单标记文档为已修改。"));
+        OpenCommand = new RelayCommand(_ => OpenDocument($"Document {nextDocumentNumber}", "This document was created by the ViewModel.\n\nUse Edit to mark it as modified."));
         MarkModifiedCommand = new RelayCommand(_ => MarkActiveDocumentModified());
         SaveCommand = new RelayCommand(_ => SaveActiveDocument());
         CloseActiveCommand = new RelayCommand(_ => CloseActiveDocument());
@@ -38,8 +38,8 @@ public sealed class WorkspaceViewModel : INotifyPropertyChanged
         ResetToolsCommand = new RelayCommand(_ => ResetTools());
         ToggleFloatingCommand = new RelayCommand(_ => ToggleFloating());
 
-        OpenDocument("主文档", "这是由 DockLayoutService.OpenDocument 加入的便笺。\n\n在编辑菜单标记为已修改后，点击“保存活动文档”再测试关闭。\n\n拖动标签可以验证文档重排和停靠。\n");
-        OpenDocument("模型说明", "RootDock、DocumentDock 和 ToolDock 由官方 MVVM 包提供。\n\n窗口只绑定 DockLayout 和 ICommand，布局状态仍由模型树保存。\n");
+        OpenDocument("Main Document", "This note was added through DockLayoutService.OpenDocument.\n\nUse Edit to mark it as modified, then save it before closing.\n\nDrag the tab to rearrange or dock the document.\n");
+        OpenDocument("Model Overview", "RootDock, DocumentDock, and ToolDock come from the MVVM package.\n\nThe window binds DockLayout and ICommand while the model tree stores the layout state.\n");
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
@@ -136,7 +136,7 @@ public sealed class WorkspaceViewModel : INotifyPropertyChanged
         LayoutService.OpenDocument(document);
         Documents.Add(document);
         Layout.ActiveDockable = document;
-        SetStatus($"已打开 {document.Title}，文档模型数 {Documents.Count}。");
+        SetStatus($"Opened {document.Title}. Document models: {Documents.Count}.");
         return document;
     }
 
@@ -153,7 +153,7 @@ public sealed class WorkspaceViewModel : INotifyPropertyChanged
             return;
         }
 
-        SetStatus($"已关闭 {document.Title}，文档模型数 {Documents.Count}。");
+        SetStatus($"Closed {document.Title}. Document models: {Documents.Count}.");
         OnPropertyChanged(nameof(ActiveDocument));
     }
 
@@ -161,7 +161,7 @@ public sealed class WorkspaceViewModel : INotifyPropertyChanged
     {
         Layout.ActiveDockable = document;
         OnPropertyChanged(nameof(ActiveDocument));
-        SetStatus($"活动文档：{document.Title}。");
+        SetStatus($"Active document: {document.Title}.");
     }
 
     public void SetStatus(string message) => StatusText = message;
@@ -175,51 +175,51 @@ public sealed class WorkspaceViewModel : INotifyPropertyChanged
 
         Tools.Add(tool);
         AddToolToLayout(tool);
-        SetStatus($"已添加工具模型 {tool.Title}。");
+        SetStatus($"Added tool model {tool.Title}.");
     }
 
     public void RemoveToolForScenario(WorkspaceTool tool)
     {
         RemoveToolFromLayout(tool);
         Tools.Remove(tool);
-        SetStatus($"已移除工具模型 {tool.Title}。");
+        SetStatus($"Removed tool model {tool.Title}.");
     }
 
     private void SaveActiveDocument()
     {
         if (ActiveDocument is not { } document)
         {
-            SetStatus("当前没有活动文档。");
+            SetStatus("No active document.");
             return;
         }
 
         document.IsModified = false;
-        SetStatus($"已保存 {document.Title}。");
+        SetStatus($"Saved {document.Title}.");
     }
 
     private void MarkActiveDocumentModified()
     {
         if (ActiveDocument is not { } document)
         {
-            SetStatus("当前没有活动文档。");
+            SetStatus("No active document.");
             return;
         }
 
         document.IsModified = true;
-        SetStatus($"已标记 {document.Title} 为已修改。");
+        SetStatus($"Marked {document.Title} as modified.");
     }
 
     private void CloseActiveDocument()
     {
         if (ActiveDocument is not { } document)
         {
-            SetStatus("当前没有活动文档。");
+            SetStatus("No active document.");
             return;
         }
 
         if (document.IsModified)
         {
-            SetStatus($"{document.Title} 有未保存修改，请先保存。");
+            SetStatus($"{document.Title} has unsaved changes. Save it first.");
             return;
         }
 
@@ -230,7 +230,7 @@ public sealed class WorkspaceViewModel : INotifyPropertyChanged
     {
         if (Documents.Count == 0)
         {
-            SetStatus("当前没有文档。");
+            SetStatus("No documents are open.");
             return;
         }
 
@@ -242,7 +242,7 @@ public sealed class WorkspaceViewModel : INotifyPropertyChanged
     {
         if (ActiveDocument is not { } oldDocument)
         {
-            SetStatus("当前没有活动文档。");
+            SetStatus("No active document.");
             return;
         }
 
@@ -250,8 +250,8 @@ public sealed class WorkspaceViewModel : INotifyPropertyChanged
         WorkspaceDocument replacement = new()
         {
             Id = $"mvvm-document-{nextDocumentNumber++}",
-            Title = $"{oldDocument.Title}（替换）",
-            Text = "这个文档通过 ViewModel 的 Replace 命令重新接入布局。",
+            Title = $"{oldDocument.Title} (Replacement)",
+            Text = "The ViewModel's Replace command added this document to the layout.",
             IsModified = false
         };
         LayoutService.CloseDocument(oldDocument);
@@ -259,7 +259,7 @@ public sealed class WorkspaceViewModel : INotifyPropertyChanged
         LayoutService.OpenDocument(replacement);
         Documents.Insert(index, replacement);
         Layout.ActiveDockable = replacement;
-        SetStatus($"已替换 {oldDocument.Title}。");
+        SetStatus($"Replaced {oldDocument.Title}.");
     }
 
     private void ResetDocuments()
@@ -270,17 +270,17 @@ public sealed class WorkspaceViewModel : INotifyPropertyChanged
         }
 
         Documents.Clear();
-        OpenDocument("重置后的文档", "文档集合已通过 ViewModel 重置。\n\n现在可以继续打开、替换和保存文档。\n");
-        SetStatus("文档集合已重置。");
+        OpenDocument("Reset Document", "The ViewModel reset the document collection.\n\nYou can continue opening, replacing, and saving documents.\n");
+        SetStatus("Document collection reset.");
     }
 
     private void AddTool()
     {
         WorkspaceTool tool = CreateTool(
             $"mvvm-tool-{nextToolNumber}",
-            $"工具 {nextToolNumber}",
+            $"Tool {nextToolNumber}",
             DockZone.RightBottom,
-            "运行时添加的工具模型由 ToolDock 的 VisibleDockables 呈现。");
+            "A ToolDock displays this runtime tool through VisibleDockables.");
         nextToolNumber++;
         AddToolForScenario(tool);
     }
@@ -296,15 +296,15 @@ public sealed class WorkspaceViewModel : INotifyPropertyChanged
 
         WorkspaceTool replacement = CreateTool(
             $"mvvm-tool-{nextToolNumber}",
-            $"{oldTool.Title}（替换）",
+            $"{oldTool.Title} (Replacement)",
             oldTool.Zone,
-            "这个工具通过 ViewModel 的 Replace 命令重新接入布局。");
+            "The ViewModel's Replace command added this tool to the layout.");
         nextToolNumber++;
         int index = Tools.IndexOf(oldTool);
         RemoveToolFromLayout(oldTool);
         Tools[index] = replacement;
         AddToolToLayout(replacement);
-        SetStatus($"已替换工具 {oldTool.Title}。");
+        SetStatus($"Replaced tool {oldTool.Title}.");
     }
 
     private void ResetTools()
@@ -315,17 +315,17 @@ public sealed class WorkspaceViewModel : INotifyPropertyChanged
         }
 
         Tools.Clear();
-        WorkspaceTool resetTool = CreateTool("mvvm-reset-tool", "重置工具", DockZone.LeftTop, "工具集合已重置。");
+        WorkspaceTool resetTool = CreateTool("mvvm-reset-tool", "Reset Tool", DockZone.LeftTop, "The tool collection was reset.");
         Tools.Add(resetTool);
         AddToolToLayout(resetTool);
-        SetStatus("工具集合已重置。");
+        SetStatus("Tool collection reset.");
     }
 
     private void ToggleFloating()
     {
         Layout.AllowFloatingWindows = !Layout.AllowFloatingWindows;
         Layout.AllowDetachedWindows = Layout.AllowFloatingWindows;
-        SetStatus(Layout.AllowFloatingWindows ? "模型已允许浮动和独立窗口。" : "模型已禁止新的浮动和独立窗口。");
+        SetStatus(Layout.AllowFloatingWindows ? "Floating and detached windows are enabled." : "New floating and detached windows are disabled.");
     }
 
     private void AddToolToLayout(WorkspaceTool tool)

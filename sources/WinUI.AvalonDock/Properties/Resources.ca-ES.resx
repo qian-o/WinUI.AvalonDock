@@ -118,10 +118,10 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="Active_Files" xml:space="preserve">
-    <value>Archivos activos</value>
+    <value>Fitxers actius</value>
   </data>
   <data name="Active_ToolWindows" xml:space="preserve">
-    <value>Ventanas de herramientas activas</value>
+    <value>Finestres d'eines actives</value>
   </data>
   <data name="Anchorable_AutoHide" xml:space="preserve">
     <value>Amagar automàticament</value>
@@ -140,6 +140,9 @@
   </data>
   <data name="Anchorable_DockAsDocument" xml:space="preserve">
     <value>Ancorar com document en fitxa</value>
+  </data>
+  <data name="Anchorable_DetachToWindow" xml:space="preserve">
+    <value>Finestra</value>
   </data>
   <data name="Anchorable_Float" xml:space="preserve">
     <value>Finestra flotant</value>
@@ -179,6 +182,78 @@
   </data>
   <data name="Document_NewVerticalTabGroup" xml:space="preserve">
     <value>Nou grup de fitxes vertical</value>
+  </data>
+  <data name="A11y_AutoHideTool" xml:space="preserve">
+    <value>Amaga l'eina automàticament</value>
+  </data>
+  <data name="A11y_HideTool" xml:space="preserve">
+    <value>Amaga l'eina</value>
+  </data>
+  <data name="A11y_DockLeft" xml:space="preserve">
+    <value>Ancora a l'esquerra</value>
+  </data>
+  <data name="A11y_DockTop" xml:space="preserve">
+    <value>Ancora a dalt</value>
+  </data>
+  <data name="A11y_DockRight" xml:space="preserve">
+    <value>Ancora a la dreta</value>
+  </data>
+  <data name="A11y_DockBottom" xml:space="preserve">
+    <value>Ancora a baix</value>
+  </data>
+  <data name="A11y_DockInside" xml:space="preserve">
+    <value>Ancora a l'interior</value>
+  </data>
+  <data name="A11y_DockLeftAsToolPane" xml:space="preserve">
+    <value>Ancora a l'esquerra com a tauler d'eines</value>
+  </data>
+  <data name="A11y_DockTopAsToolPane" xml:space="preserve">
+    <value>Ancora a dalt com a tauler d'eines</value>
+  </data>
+  <data name="A11y_DockRightAsToolPane" xml:space="preserve">
+    <value>Ancora a la dreta com a tauler d'eines</value>
+  </data>
+  <data name="A11y_DockBottomAsToolPane" xml:space="preserve">
+    <value>Ancora a baix com a tauler d'eines</value>
+  </data>
+  <data name="Toggle_MoveTo" xml:space="preserve">
+    <value>Mou a</value>
+  </data>
+  <data name="Toggle_ViewMode" xml:space="preserve">
+    <value>Mode de visualització</value>
+  </data>
+  <data name="Toggle_Docked" xml:space="preserve">
+    <value>Ancorat</value>
+  </data>
+  <data name="Toggle_Hidden" xml:space="preserve">
+    <value>Amagat</value>
+  </data>
+  <data name="Toggle_Options" xml:space="preserve">
+    <value>Opcions</value>
+  </data>
+  <data name="Toggle_Minimize" xml:space="preserve">
+    <value>Minimitza</value>
+  </data>
+  <data name="Toggle_ShowHiddenToolWindows" xml:space="preserve">
+    <value>Mostra les finestres d'eines amagades</value>
+  </data>
+  <data name="Toggle_Zone_LeftTop" xml:space="preserve">
+    <value>Costat esquerre superior</value>
+  </data>
+  <data name="Toggle_Zone_LeftBottom" xml:space="preserve">
+    <value>Costat esquerre inferior</value>
+  </data>
+  <data name="Toggle_Zone_RightTop" xml:space="preserve">
+    <value>Costat dret superior</value>
+  </data>
+  <data name="Toggle_Zone_RightBottom" xml:space="preserve">
+    <value>Costat dret inferior</value>
+  </data>
+  <data name="Toggle_Zone_BottomLeft" xml:space="preserve">
+    <value>Part inferior esquerra</value>
+  </data>
+  <data name="Toggle_Zone_BottomRight" xml:space="preserve">
+    <value>Part inferior dreta</value>
   </data>
   <data name="Window_Maximize" xml:space="preserve">
     <value>Maximitzar</value>
