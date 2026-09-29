@@ -97,6 +97,7 @@
     </Style>
     <Style TargetType="controls:ToggleAnchorablePaneTitle">
         <Setter Property="Height" Value="32" />
+        <Setter Property="Background" Value="Transparent" />
         <Setter Property="FontFamily" Value="{ThemeResource DockFontFamily}" />
         <Setter Property="FontSize" Value="{ThemeResource DockFontSize}" />
         <Setter Property="Foreground" Value="{ThemeResource DockTextBrush}" />

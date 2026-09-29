@@ -421,6 +421,7 @@ public sealed partial class MainWindow : Window
             ?? throw new InvalidOperationException("Toggle indicator zones were not found.");
         PropertyInfo failure = overlayType.GetProperty("Failure", BindingFlags.Instance | BindingFlags.NonPublic)
             ?? throw new InvalidOperationException("Toggle indicator failure state was not found.");
+        double? leftSplitGap = null;
 
         (DockZone First, DockZone Second)[] pairs =
         [
@@ -472,6 +473,7 @@ public sealed partial class MainWindow : Window
 
         SampleChecks.Require(failure.GetValue(overlay) == null, "Toggle drag indicators render correctly.");
         checks.Record("Toggle six-zone indicators partition and hit-test correctly with two panes, one pane, or an empty group.");
+        checks.Record("Toggle left and right split indicators preserve the same spacing when the sidebar navigation is present.");
         checks.Record("Toggle indicators remain visible for expanded tools and hidden for collapsed tools after repeated same-side toggles.");
 
         void VerifyIndicators(DockZone first, DockZone second)
@@ -521,31 +523,50 @@ public sealed partial class MainWindow : Window
             SampleChecks.Require(overlap.IsEmpty || overlap.Width <= 0.5 || overlap.Height <= 0.5,
                 $"Toggle {first}/{second} indicator zones do not overlap.");
 
+            if (first is DockZone.LeftTop or DockZone.RightTop)
+            {
+                double splitGap = secondBounds.Top - firstBounds.Bottom;
+                if (first == DockZone.LeftTop)
+                {
+                    leftSplitGap = splitGap;
+                }
+                else
+                {
+                    double baseline = leftSplitGap ?? throw new InvalidOperationException(
+                        "Toggle right-side split indicators have a left-side spacing baseline.");
+                    SampleChecks.Require(Math.Abs(splitGap - baseline) <= 1.5,
+                        $"Toggle left and right split indicators keep equal spacing ({baseline:F1} vs {splitGap:F1} pixels).");
+                }
+            }
+
             if (splitEvenly)
             {
                 if (first is DockZone.BottomLeft)
                 {
+                    double expectedGap = Manager.GridSplitterWidth * Manager.XamlRoot.RasterizationScale;
                     SampleChecks.Require(Math.Abs(firstBounds.Width - secondBounds.Width) <= 1.5
-                        && Math.Abs(firstBounds.Right - secondBounds.Left) <= 1.5
+                        && Math.Abs(secondBounds.Left - firstBounds.Right - expectedGap) <= 1.5
                         && Math.Abs(firstBounds.Top - secondBounds.Top) <= 1.5
                         && Math.Abs(firstBounds.Height - secondBounds.Height) <= 1.5,
-                        "Toggle empty bottom group splits evenly along the horizontal axis.");
+                        $"Toggle empty bottom group splits evenly with a {expectedGap:F1}-pixel splitter gap along the horizontal axis.");
                 }
                 else
                 {
+                    double expectedGap = Manager.GridSplitterHeight * Manager.XamlRoot.RasterizationScale;
                     SampleChecks.Require(Math.Abs(firstBounds.Height - secondBounds.Height) <= 1.5
-                        && Math.Abs(firstBounds.Bottom - secondBounds.Top) <= 1.5
+                        && Math.Abs(secondBounds.Top - firstBounds.Bottom - expectedGap) <= 1.5
                         && Math.Abs(firstBounds.Left - secondBounds.Left) <= 1.5
                         && Math.Abs(firstBounds.Width - secondBounds.Width) <= 1.5,
-                        $"Toggle {first}/{second} empty group splits evenly along the vertical axis.");
+                        $"Toggle {first}/{second} empty group splits evenly with a {expectedGap:F1}-pixel splitter gap along the vertical axis.");
                 }
             }
 
             Point firstCenter = new(firstBounds.X + firstBounds.Width / 2, firstBounds.Y + firstBounds.Height / 2);
             Point secondCenter = new(secondBounds.X + secondBounds.Width / 2, secondBounds.Y + secondBounds.Height / 2);
-            SampleChecks.Require((DockZone?)hit.Invoke(overlay, [firstCenter]) == first
-                && (DockZone?)hit.Invoke(overlay, [secondCenter]) == second,
-                $"Toggle {first}/{second} indicator-zone centers hit the correct targets.");
+            SampleChecks.Require((DockZone?)hit.Invoke(overlay, [firstCenter]) == first,
+                $"Toggle {first} indicator-zone center hits its target.");
+            SampleChecks.Require((DockZone?)hit.Invoke(overlay, [secondCenter]) == second,
+                $"Toggle {second} indicator-zone center hits its target.");
         }
     }
 

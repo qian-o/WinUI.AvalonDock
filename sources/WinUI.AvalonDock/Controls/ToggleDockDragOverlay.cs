@@ -398,15 +398,19 @@ internal sealed class ToggleDockDragOverlay : IDisposable
         Rect area = hasFirst ? first : hasSecond ? second : fallback;
         if (vertical)
         {
-            double half = area.Height / 2;
+            // Synthesized zones need the same splitter-sized gap that separate
+            // panes already expose through their measured bounds.
+            double splitter = Math.Clamp(manager.GridSplitterHeight * scale, 0, area.Height);
+            double half = Math.Max(0, (area.Height - splitter) / 2);
             pendingZones.Add(new(new Rect(area.Left, area.Top, area.Width, half), firstZone, firstLabel));
-            pendingZones.Add(new(new Rect(area.Left, area.Top + half, area.Width, half), secondZone, secondLabel));
+            pendingZones.Add(new(new Rect(area.Left, area.Top + half + splitter, area.Width, half), secondZone, secondLabel));
         }
         else
         {
-            double half = area.Width / 2;
+            double splitter = Math.Clamp(manager.GridSplitterWidth * scale, 0, area.Width);
+            double half = Math.Max(0, (area.Width - splitter) / 2);
             pendingZones.Add(new(new Rect(area.Left, area.Top, half, area.Height), firstZone, firstLabel));
-            pendingZones.Add(new(new Rect(area.Left + half, area.Top, half, area.Height), secondZone, secondLabel));
+            pendingZones.Add(new(new Rect(area.Left + half + splitter, area.Top, half, area.Height), secondZone, secondLabel));
         }
     }
     private void AddBar(FrameworkElement? frame, ToggleDockButtonBar? bar)

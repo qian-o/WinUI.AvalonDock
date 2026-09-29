@@ -106,7 +106,7 @@ public partial class ToggleDockingManager
         {
             Height = 1,
             Margin = new Thickness(4, 6, 4, 6),
-            Background = (Brush)Application.Current.Resources["DividerStrokeColorDefaultBrush"]
+            Background = (Brush)Application.Current.Resources["SurfaceStrokeColorDefaultBrush"]
         };
         if (left)
         {
