@@ -1,11 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-    <PropertyGroup>
-        <GenerateLibraryLayout>true</GenerateLibraryLayout>
-    </PropertyGroup>
-
     <PropertyGroup Condition="'$(Configuration)' == 'Release'">
-        <IsPackable>true</IsPackable>
         <Version>0.1.0-alpha</Version>
         <Authors>qian-o</Authors>
         <Description>An unofficial WinUI 3 adaptation of AvalonDock for model-driven docking workspaces.</Description>
