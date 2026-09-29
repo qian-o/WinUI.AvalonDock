@@ -1,7 +1,28 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
         <GenerateLibraryLayout>true</GenerateLibraryLayout>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="'$(Configuration)' == 'Release'">
+        <IsPackable>true</IsPackable>
+        <Version>0.1.0-alpha</Version>
+        <Authors>qian-o</Authors>
+        <Description>An unofficial WinUI 3 adaptation of AvalonDock for model-driven docking workspaces.</Description>
+
+        <RepositoryType>git</RepositoryType>
+        <RepositoryUrl>https://github.com/qian-o/WinUI.AvalonDock</RepositoryUrl>
+
+        <PackageLicenseFile>LICENSE</PackageLicenseFile>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+        <PackageTags>WinUI;WinUI3;AvalonDock;Docking</PackageTags>
+        <PackageProjectUrl>https://github.com/qian-o/WinUI.AvalonDock</PackageProjectUrl>
+
+        <IncludeSymbols>true</IncludeSymbols>
+        <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+        <PublishRepositoryUrl>true</PublishRepositoryUrl>
+
+        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     </PropertyGroup>
 
     <ItemGroup>
@@ -12,6 +33,9 @@
         </EmbeddedResource>
     </ItemGroup>
 
-    <Import Project="..\..\NuGet.Packaging.props" />
+    <ItemGroup Condition="'$(Configuration)' == 'Release'">
+        <None Include="..\..\LICENSE" Pack="true" PackagePath="\" />
+        <None Include="..\..\README.md" Pack="true" PackagePath="\" />
+    </ItemGroup>
 
 </Project>
