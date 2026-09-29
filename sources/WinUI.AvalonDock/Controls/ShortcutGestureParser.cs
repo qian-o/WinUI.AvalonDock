@@ -1,5 +1,6 @@
 // Parsing/validation rules adapted from dotnet/wpf v10.0.0 KeyGestureConverter,
-// KeyConverter, ModifierKeysConverter and KeyGesture (MIT); see THIRD-PARTY-NOTICES.md.
+// KeyConverter, ModifierKeysConverter and KeyGesture (MIT).
+// License: https://github.com/dotnet/wpf/blob/v10.0.0/LICENSE.TXT
 using System.ComponentModel;
 using System.Globalization;
 using Windows.System;

@@ -82,7 +82,8 @@
                     </Grid>
                 </ControlTemplate>
     <!-- Ported from WPFUI e8a3da4, Styles/LayoutAnchorControl.xaml.
-         MIT, Copyright (c) 2024 qian-o; see THIRD-PARTY-NOTICES.md.
+         MIT, Copyright (c) 2024 qian-o.
+         License: https://github.com/qian-o/AvalonDock.Themes.WPFUI/blob/e8a3da4e9761ff549e5a2afca2bdf891a681baf2/LICENSE
          Side states preserve the rotated WPF layout without WinUI LayoutTransform. -->
     <Style TargetType="controls:LayoutAnchorControl">
         <Setter Property="Background" Value="Transparent" />

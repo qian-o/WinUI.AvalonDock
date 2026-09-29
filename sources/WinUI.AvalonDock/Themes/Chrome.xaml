@@ -2,7 +2,8 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:primitives="using:Microsoft.UI.Xaml.Controls.Primitives">
     <!-- Compact chrome adapted from qian-o/AvalonDock.Themes.WPFUI at ffff79a.
-         MIT, Copyright (c) 2024 qian-o. See THIRD-PARTY-NOTICES.md. -->
+         MIT, Copyright (c) 2024 qian-o.
+         License: https://github.com/qian-o/AvalonDock.Themes.WPFUI/blob/ffff79aefd2139c34a3a87a0f1059bb036f1a0dc/LICENSE -->
     <SolidColorBrush x:Key="DockDocumentSurfaceBrush" Color="{ThemeResource SolidBackgroundFillColorTertiary}" />
     <FontFamily x:Key="DockFontFamily">Segoe UI Variable Text, Segoe UI</FontFamily>
     <x:Double x:Key="DockFontSize">12</x:Double>

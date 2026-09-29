@@ -1,5 +1,6 @@
 // Ported from qian-o/AvalonDock.Themes.WPFUI e8a3da4e9761ff549e5a2afca2bdf891a681baf2,
-// Controls/DockPaneSurface.cs. MIT, Copyright (c) 2024 qian-o; see THIRD-PARTY-NOTICES.md.
+// Controls/DockPaneSurface.cs. MIT, Copyright (c) 2024 qian-o.
+// License: https://github.com/qian-o/AvalonDock.Themes.WPFUI/blob/e8a3da4e9761ff549e5a2afca2bdf891a681baf2/LICENSE
 using AvalonDock.Layout;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;

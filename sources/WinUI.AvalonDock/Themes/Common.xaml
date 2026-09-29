@@ -1,5 +1,6 @@
 <!-- Ported from qian-o/AvalonDock.Themes.WPFUI e8a3da4, Styles/Common.xaml.
-     MIT, Copyright (c) 2024 qian-o. See THIRD-PARTY-NOTICES.md. -->
+     MIT, Copyright (c) 2024 qian-o.
+     License: https://github.com/qian-o/AvalonDock.Themes.WPFUI/blob/e8a3da4e9761ff549e5a2afca2bdf891a681baf2/LICENSE -->
 <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:themes="using:AvalonDock.Themes">

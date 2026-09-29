@@ -1,5 +1,6 @@
 <!-- Ported from qian-o/AvalonDock.Themes.WPFUI at e8a3da4e9761ff549e5a2afca2bdf891a681baf2,
-     Styles/OverlayWindow.xaml and Common.xaml. MIT, Copyright (c) 2024 qian-o; see THIRD-PARTY-NOTICES.md.
+     Styles/OverlayWindow.xaml and Common.xaml. MIT, Copyright (c) 2024 qian-o.
+     License: https://github.com/qian-o/AvalonDock.Themes.WPFUI/blob/e8a3da4e9761ff549e5a2afca2bdf891a681baf2/LICENSE
      Original glyph geometry is retained. WinUI visual states replace WPF IsTargeted triggers. -->
 <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:converters="using:AvalonDock.Converters" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <ResourceDictionary.MergedDictionaries>

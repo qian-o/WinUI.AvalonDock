@@ -1,5 +1,6 @@
 <!-- Metrics adapted from AvalonDock.Themes.WPFUI/Styles/FluentResources.xaml at ffff79a.
-     MIT, Copyright (c) 2024 qian-o. See THIRD-PARTY-NOTICES.md.
+     MIT, Copyright (c) 2024 qian-o.
+     License: https://github.com/qian-o/AvalonDock.Themes.WPFUI/blob/ffff79aefd2139c34a3a87a0f1059bb036f1a0dc/LICENSE
      Native TabView states, accessibility and theme palettes remain supplied by WinUI. -->
 <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">

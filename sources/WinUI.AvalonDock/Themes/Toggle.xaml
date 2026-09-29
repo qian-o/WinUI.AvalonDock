@@ -1,6 +1,7 @@
 <!-- Ported from qian-o/AvalonDock.Themes.WPFUI ffff79a,
-     Styles/ToggleDockingManager.xaml. MIT, Copyright (c) 2024 qian-o;
-     see THIRD-PARTY-NOTICES.md. WinUI visual states replace WPF triggers. -->
+     Styles/ToggleDockingManager.xaml. MIT, Copyright (c) 2024 qian-o.
+     License: https://github.com/qian-o/AvalonDock.Themes.WPFUI/blob/ffff79aefd2139c34a3a87a0f1059bb036f1a0dc/LICENSE
+     WinUI visual states replace WPF triggers. -->
 <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:controls="using:AvalonDock.Controls"

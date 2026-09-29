@@ -1,6 +1,6 @@
 <!-- Adapted from Microsoft WinUI 2.3.9 DefaultMenuFlyoutItemStyle (MIT).
      Copyright (c) Microsoft Corporation. All rights reserved.
-     Full MIT notice and pinned source correspondence: THIRD-PARTY-NOTICES.md.
+     License: https://github.com/microsoft/microsoft-ui-xaml/blob/8463f45162149de0ec3ad7df752596893fe3e13e/LICENSE
      Native states/metrics remain; icon and header use AvalonDock arbitrary content. -->
 <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:controls="using:AvalonDock.Controls">
     <Style TargetType="controls:MenuItemEx">

@@ -1,5 +1,6 @@
 // Drag lifecycle adapted from Dirkster.AvalonDock v5.0.0 (MS-PL), Controls/ToggleDockButtonBar.cs.
-// Preview geometry and presentation ported from qian-o/AvalonDock.Themes.WPFUI ffff79a (MIT); see THIRD-PARTY-NOTICES.md.
+// Preview geometry and presentation ported from qian-o/AvalonDock.Themes.WPFUI ffff79a (MIT).
+// License: https://github.com/qian-o/AvalonDock.Themes.WPFUI/blob/ffff79aefd2139c34a3a87a0f1059bb036f1a0dc/LICENSE
 using System.Runtime.InteropServices.WindowsRuntime;
 using AvalonDock.Core;
 using AvalonDock.Layout;
