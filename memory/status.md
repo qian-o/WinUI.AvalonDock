@@ -1,38 +1,15 @@
-# 当前状态
+# Current scope and verification
 
-更新于 2026-09-28。验收基线为固定的 [Dirkster.AvalonDock v5.0.0](https://github.com/Dirkster99/AvalonDock/tree/408dc2896e2f41f3bb79a15207f160edee8a6792) 普通 Windows 工作流；默认外观参考固定的 [AvalonDock.Themes.WPFUI 1.2.2](https://github.com/qian-o/AvalonDock.Themes.WPFUI/tree/fc0592716eb6e3de2c2becdbc48e67de6e331474)。验收分别记录实际界面、受控真实窗口检查和源码对照，不以构建通过推断视觉正确。
+The project targets ordinary AvalonDock v5.0.0 desktop workflows on Windows with WinUI 3. Its maintained examples exercise Classic docking, Toggle docking, and MVVM integration. The product uses the official Core package; the examples use the official MVVM and XML serialization packages as needed. The pinned sources and responsibility map are listed in [upstream.md](upstream.md).
 
-## 本轮发现与修复
+## Behavior to preserve
 
-- 用户截图所示的上下文档组：浮出下方文档后，剩余窗格扩展，但中央停靠指示器仍在旧上半区。修复拖动期间 drop area 旧边界、旧窗格视图缓存及活动预览没有随布局更新的问题。对照情形的上下分组、左右分组和空文档组已在 WinUI 实际窗口显示指示器、预览，并检查释放后落位。
-- 修复 WinUI `PointerPressed` 晚于实际按下位置到达时，Windows 输入服务用当前鼠标位置当起点导致文档标签拖不出浮窗的问题；实际鼠标已重演标签浮出、浮窗标题回停和分隔条调整。
-- 修复浮动工具取消隐藏后窗口被错误关闭、从新建 MVVM 工具推断的停靠侧与实际侧不一致、自动隐藏恢复的最小尺寸被后续宽高覆盖，以及 Toggle 示例拖动后状态文字没有按实际位置刷新。
-- Classic 示例给右侧自动隐藏工具设置能显示其说明文字的初始宽高；产品层仍遵循原版模型尺寸。修复了示例中窄弹窗内容截断。
-- 修复 Toggle 侧栏同侧工具收起、展开后，仍展开工具的选中标识被焦点状态回退覆盖的问题。选中状态独立控制标识显隐，焦点状态只控制颜色；左侧、右侧、底部成对工具均加入真实窗口检查，左侧按用户截图操作已实测。
-- 修复深色文档浮窗外周亮边：Windows 原生窗框与浮窗 XAML 外框使用低对比深灰；直接托管在浮窗中的文档使用非强调色描边，回停后恢复活动窗格描边。深色浮出、菜单回停及浅色再次浮出已在实际界面检查；原生缩放边框仍保留。
+- Documents and tools: activation, closing, reordering, grouping, splitting, docking, floating, and returning to the layout.
+- Tool visibility: hide, show, auto-hide, pin, and side placement.
+- Dragging: eligible drop targets, indicators, previews, and the resulting layout, including layouts that change while a drag is in progress.
+- Integration: source collection changes, cancelable events, commands, templates, floating-window policy, and XML layout restoration.
+- Presentation: Classic and Toggle layouts, Light/Dark themes, floating windows, menus, and keyboard navigation.
 
-## 已取得的证据
+Changes to these paths should be checked through the affected example's real WinUI window. Build and smoke checks exercise model and window behavior, while visual and pointer interactions require inspection in the running application. A successful build alone does not establish visual correctness.
 
-| 范围 | 当前证据 |
-| --- | --- |
-| 19 种原版 drop target | 受控真实 WinUI 窗口逐项检查目标、指示器命中、预览绘制、释放后布局；补充工具作为文档来源的 5 种复用路径，共 24 条通过。22 条有逐项截图，第 1 条有运行检查，第 15 条另有空组截图与运行检查。目标出现条件、浮窗间合并也有运行检查。 |
-| Classic | 真实鼠标和截图覆盖文档标签浮出、浮窗标题回停、纵横分割条、文档/工具菜单、浮窗最大化/还原/关闭、标签重排、导航器显示与反向选择、Light/Dark、右侧自动隐藏弹出/固定。受控场景同时覆盖源集合、可取消事件、XML 保存恢复。 |
-| ToggleDocking | 实际界面覆盖侧栏开关、同区互斥、多工具窗格、左侧至右侧/底部等拖动和深色外观；六个 `DockZone` 的单窗格、双窗格、空窗格目标边界由真实窗口场景检查。 |
-| MVVM | 实际界面覆盖文档新建、修改关闭取消、保存关闭、工具 Add/Replace/Reset、文档 Replace/Reset、深色、浮窗策略和保存后改变布局再恢复；受控复杂 XML 场景核对内容对象身份、隐藏/自动隐藏尺寸、文档与工具浮窗、独立工具窗口及恢复后的继续操作。 |
-| 上游对照 | 已在仓库外运行固定版 WPF 与 WPFUI 示例，保存外观和拖动状态截图；产品直接引用官方 Core，MVVM 与 XML 使用官方包，未运行时依赖 WPF 主库。 |
-
-## 证据边界
-
-- `Ctrl+Tab` 导航器的可见状态、反向选择、Escape 取消并保留原文档、释放 Ctrl 确认并激活候选文档均已在实际窗口操作并截图。
-- Toggle 的三种布局优先级已用同一份不对称布局在真实窗口展开工具，分别读取可见窗格屏幕边界并断言：Default 底部仅在左块，BottomFullWidth 底部跨全宽，SidesFullHeight 左侧栏全高；日志为仓库外 `toggle-priority-smoke.txt`。初态只切菜单的三张截图本身不证明几何差异。独立窗口已有同一个工具在实际界面拆分、从窗口自身附回的截图，且受控场景检查通过。
-- MVVM 禁止新浮窗与独立窗后，对仍停靠的文档和工具分别执行命令及直接 API 请求，真实窗口检查确认无新宿主、原容器与事件未变；重新启用后两类请求都建出真实宿主并能归位，日志为仓库外 `mvvm-policy-smoke.txt`。禁用期间的纯鼠标菜单拒绝尚无截图。
-- 自定义文档/工具头、内容模板选择器和浮窗标题模板在 Classic 主窗、文档浮窗、双工具浮窗及 XML 恢复后均经真实窗口可视树检查：对应标记已加载、可见、有正尺寸，数据项匹配；日志为仓库外的 `classic-template-final.txt`。浮窗标题与子窗口内容分别位于两个 XAML 可视根，检查已各自定位。
-- 这些证据覆盖原版常用正常工作流，不能表述为所有 WPF API、极端组合、多显示器或 Uno 平台均已验收。
-
-## 构建与工作树
-
-功能验收基线之上的代码整理已完成。拖拽路径合并每帧目标测量并复用区域/覆盖层工作缓冲，窗格与标签布局减少重复遍历和资源字典加载；调整尺寸时跳过相同预览矩形的原生窗口更新；Toggle 图标和区域覆盖层避免无变化时重复重建。`LayoutItem`、Windows 窗口宿主和 Toggle 管理器按职责拆分，公共接口、事件顺序和停靠规则保持。样式提取共用 Setter，并对照展开后的有效样式与模板树。
-
-最终解决方案 Debug 构建为 0 警告、0 错误；Classic、ToggleDocking、Mvvm 三个实际 WinUI 窗口 smoke 分别 58、18、18 条通过，报告无失败项。Classic 覆盖 24 条目标、纵横分组变化、空文档组及目标门控，并检查文档/工具浮窗的深浅主题切换、深色 XAML 外框和活动文档实际描边的低对比颜色；Toggle 覆盖六区、三种布局优先级及同侧工具反复展开后的选中标识；MVVM 覆盖内容集合、窗口策略与 XML 恢复。`dotnet format whitespace --verify-no-changes` 和 `git diff --check` 均通过。此次视觉修复日志位于仓库外 `%TEMP%/WinUI.AvalonDock-visual-fixes-20260928/`。本次修复未提交、推送或发布。
-
-仍有按实时几何要求执行的覆盖层 `Measure/Arrange/UpdateLayout` 和每帧目标快照分配；本轮没有可比的前后帧率数据，不宣称量化的流畅度提升。后续若要进一步压缩这两处成本，应先记录拖拽期间的帧时间及目标变化，再保留动态布局的正确性做针对性修改。
+The current implementation and verification target Windows. No Uno backend or cross-platform verification is claimed. Performance changes should preserve docking geometry and interaction behavior; do not claim measured frame-rate improvements without comparable measurements.

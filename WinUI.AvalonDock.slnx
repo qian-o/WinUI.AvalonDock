@@ -1,8 +1,12 @@
 <Solution>
 	<Folder Name="/Solution Items/">
-		<File Path="sources/Directory.Build.props" />
-		<File Path="sources/Directory.Packages.props" />
-		<File Path="sources/NuGet.Packaging.props" />
+		<File Path="Directory.Build.props" />
+		<File Path="Directory.Packages.props" />
+		<File Path="LICENSE" />
+		<File Path="NuGet.Packaging.props" />
+		<File Path="README.md" />
+		<File Path="THIRD-PARTY-NOTICES.md" />
+		<File Path="sources/Experiments/Directory.Build.props" />
 	</Folder>
 	<Project Path="sources/WinUI.AvalonDock/WinUI.AvalonDock.csproj" />
 	<Folder Name="/Experiments/">

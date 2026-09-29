@@ -1,5 +1,4 @@
 <Project>
-
     <PropertyGroup>
         <IsPackable>true</IsPackable>
         <Version>0.1.0-alpha.1</Version>
@@ -11,16 +10,16 @@
         <PackageTags>WinUI;WinUI3;AvalonDock;Docking</PackageTags>
         <PackageLicenseFile>LICENSE</PackageLicenseFile>
         <PackageReadmeFile>README.md</PackageReadmeFile>
-        <PackageOutputPath>$(MSBuildThisFileDirectory)..\.nuget</PackageOutputPath>
+        <PackageOutputPath>$(MSBuildThisFileDirectory).nuget</PackageOutputPath>
         <IncludeSymbols>true</IncludeSymbols>
         <SymbolPackageFormat>snupkg</SymbolPackageFormat>
         <PublishRepositoryUrl>true</PublishRepositoryUrl>
     </PropertyGroup>
 
     <ItemGroup Condition="'$(Configuration)' == 'Release'">
-        <None Include="$(MSBuildThisFileDirectory)..\LICENSE" Pack="true" PackagePath="\" />
-        <None Include="$(MSBuildThisFileDirectory)..\README.md" Pack="true" PackagePath="\" />
-        <None Include="$(MSBuildThisFileDirectory)..\THIRD-PARTY-NOTICES.md" Pack="true" PackagePath="\" />
+        <None Include="$(MSBuildThisFileDirectory)LICENSE" Pack="true" PackagePath="\" />
+        <None Include="$(MSBuildThisFileDirectory)README.md" Pack="true" PackagePath="\" />
+        <None Include="$(MSBuildThisFileDirectory)THIRD-PARTY-NOTICES.md" Pack="true" PackagePath="\" />
     </ItemGroup>
 
 </Project>

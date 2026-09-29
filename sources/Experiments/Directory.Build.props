@@ -1,0 +1,19 @@
+<Project>
+    <Import Project="$(MSBuildThisFileDirectory)..\..\Directory.Build.props" />
+
+    <PropertyGroup>
+        <OutputType>WinExe</OutputType>
+        <WindowsPackageType>None</WindowsPackageType>
+        <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
+        <RuntimeIdentifier>win-x64</RuntimeIdentifier>
+        <PlatformTarget>x64</PlatformTarget>
+        <IsPackable>false</IsPackable>
+        <ApplicationManifest>app.manifest</ApplicationManifest>
+        <DefineConstants>$(DefineConstants);DISABLE_XAML_GENERATED_MAIN</DefineConstants>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="$(MSBuildThisFileDirectory)..\WinUI.AvalonDock\WinUI.AvalonDock.csproj" />
+        <Compile Include="$(MSBuildThisFileDirectory)Shared\*.cs" Link="Shared/%(Filename)%(Extension)" />
+    </ItemGroup>
+</Project>

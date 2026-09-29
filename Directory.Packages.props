@@ -1,5 +1,4 @@
 <Project>
-
     <PropertyGroup>
         <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
     </PropertyGroup>
@@ -11,5 +10,4 @@
         <PackageVersion Include="Microsoft.WindowsAppSDK" Version="2.5.1" />
         <PackageVersion Include="Roslynator.Analyzers" Version="5.0.0" />
     </ItemGroup>
-
 </Project>

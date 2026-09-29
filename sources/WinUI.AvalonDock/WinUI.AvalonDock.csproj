@@ -1,9 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>$(StandardTargetFramework)-windows10.0.19041.0</TargetFramework>
-        <TargetPlatformMinVersion>10.0.19041.0</TargetPlatformMinVersion>
-        <UseWinUI>true</UseWinUI>
         <GenerateLibraryLayout>true</GenerateLibraryLayout>
     </PropertyGroup>
 
@@ -15,6 +12,6 @@
         </EmbeddedResource>
     </ItemGroup>
 
-    <Import Project="..\NuGet.Packaging.props" />
+    <Import Project="..\..\NuGet.Packaging.props" />
 
 </Project>

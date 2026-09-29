@@ -1,12 +1,12 @@
-# 第三方代码与资源声明
+# Third-party notices
 
-以下版权与许可原文按上游要求保留。列出的改编文件如在后续重构中删除，应同步更新本声明。
+The license texts and copyright notices below are reproduced from their respective upstream projects. Update these attributions if the listed adaptations or assets change.
 
-## Microsoft WinUI 控件模板
+## Microsoft WinUI control templates
 
-`sources/WinUI.AvalonDock/Themes/TabControlEx.xaml` 改编了 Microsoft WinUI 的默认 TabView 模板。[固定源码](https://github.com/microsoft/microsoft-ui-xaml/blob/8463f45162149de0ec3ad7df752596893fe3e13e/controls/dev/TabView/TabView.xaml)。
+`sources/WinUI.AvalonDock/Themes/TabControlEx.xaml` adapts the default TabView template from [Microsoft WinUI](https://github.com/microsoft/microsoft-ui-xaml/blob/8463f45162149de0ec3ad7df752596893fe3e13e/controls/dev/TabView/TabView.xaml).
 
-`sources/WinUI.AvalonDock/Themes/MenuItemEx.xaml` 改编了 Microsoft WinUI 的 `DefaultMenuFlyoutItemStyle`。这些改编部分适用下列 MIT 许可，与本仓库主许可分别计算。
+`sources/WinUI.AvalonDock/Themes/MenuItemEx.xaml` adapts WinUI's `DefaultMenuFlyoutItemStyle`. These adaptations are covered by the following MIT license, separately from this repository's main license.
 
 MIT License
 
@@ -30,11 +30,11 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
-## .NET WPF 快捷键解析规则
+## .NET WPF shortcut parsing rules
 
-`sources/WinUI.AvalonDock/Controls/ShortcutGestureParser.cs` 改编了 [dotnet/wpf v10.0.0](https://github.com/dotnet/wpf/tree/v10.0.0/src/Microsoft.DotNet.Wpf/src) 的 `KeyGestureConverter`、`KeyGesture`、`KeyConverter` 和 `ModifierKeysConverter` 规则。`ShortcutKeyNames.g.cs` 保存相应按键名称与虚拟键映射；产品不引用 WPF 程序集。
+`sources/WinUI.AvalonDock/Controls/ShortcutGestureParser.cs` adapts the `KeyGestureConverter`, `KeyGesture`, `KeyConverter`, and `ModifierKeysConverter` rules from [dotnet/wpf v10.0.0](https://github.com/dotnet/wpf/tree/v10.0.0/src/Microsoft.DotNet.Wpf/src). `ShortcutKeyNames.g.cs` contains the corresponding key names and virtual-key mappings. The product does not reference WPF assemblies.
 
-这些改编部分适用下列 MIT 许可。
+These adaptations are covered by the following MIT license.
 The MIT License (MIT)
 
 Copyright (c) .NET Foundation and Contributors
@@ -59,9 +59,9 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
-## AvalonDock.Themes.WPFUI 外观
+## AvalonDock.Themes.WPFUI appearance
 
-`sources/WinUI.AvalonDock/Themes/` 下的停靠资源、窗格和标签模板、自动隐藏、导航器、浮动窗口与覆盖层，以及 `Controls/DockPaneSurface.cs` 和 `Controls/ToggleDockDragOverlay.cs`，改编了 [固定版本的 AvalonDock.Themes.WPFUI](https://github.com/qian-o/AvalonDock.Themes.WPFUI/tree/fc0592716eb6e3de2c2becdbc48e67de6e331474) 的视觉结构、尺寸和部分图形路径。WinUI 原生状态和控件机制替代 WPF 专用的触发器与绘制接口。改编部分适用下列 MIT 许可。
+Docking resources, pane and tab templates, auto-hide, navigator, floating-window and overlay assets under `sources/WinUI.AvalonDock/Themes/`, together with `Controls/DockPaneSurface.cs` and `Controls/ToggleDockDragOverlay.cs`, adapt visual structure, dimensions, and some geometry paths from this [AvalonDock.Themes.WPFUI revision](https://github.com/qian-o/AvalonDock.Themes.WPFUI/tree/fc0592716eb6e3de2c2becdbc48e67de6e331474). WinUI states and controls replace WPF-specific triggers and rendering interfaces. These adaptations are covered by the following MIT license.
 
 MIT License
 
@@ -86,9 +86,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 
 
-## Fluent System Icons 图标路径
+## Fluent System Icons geometry paths
 
-浮动窗口、工具标题和文档窗格使用 [Microsoft Fluent System Icons 固定版本](https://github.com/microsoft/fluentui-system-icons/tree/8512d0121f6abd6c8c40f0bc4eb502ccd66ce6e7) 中的最大化、还原、关闭、固定、下拉等图标路径。改编部分适用下列 MIT 许可。
+Floating windows, tool headers, and document panes use maximize, restore, close, pin, and dropdown icon paths adapted from this [Microsoft Fluent System Icons revision](https://github.com/microsoft/fluentui-system-icons/tree/8512d0121f6abd6c8c40f0bc4eb502ccd66ce6e7). These adaptations are covered by the following MIT license.
 
 MIT License
 
@@ -111,4 +111,3 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
-

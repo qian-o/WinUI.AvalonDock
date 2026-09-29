@@ -1,4 +1,4 @@
-# 本地构建、IDE 与诊断输出
+# IDE state and build output
 .vs/
 .idea/
 .vscode/
@@ -12,23 +12,27 @@ AppPackages/
 *.user
 *.suo
 *.rsuser
+*.DotSettings.user
 *.binlog
 *.trx
 *.log
+*.coverage
+*.coveragexml
 *.nupkg
 *.snupkg
 *.appx
 *.appxbundle
 *.msix
 *.msixbundle
+*.msixupload
 
-# 本地配置与签名材料
+# Local configuration and signing material
 .env
 .env.*
 *.pfx
 *.publishsettings
 *.pubxml
 
-# 操作系统临时文件
+# OS metadata
 .DS_Store
 Thumbs.db
