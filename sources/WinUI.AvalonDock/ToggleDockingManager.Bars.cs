@@ -216,7 +216,6 @@ public partial class ToggleDockingManager
         }
         UpdateNavigationPanelVisibility();
     }
-    internal void RemoveButtonFromAllBars(LayoutAnchorable anchorable) => RemoveFromAllBars(anchorable);
     private void RemoveFromAllBars(LayoutAnchorable anchorable)
     {
         foreach (ToggleDockButtonBar bar in Bars)

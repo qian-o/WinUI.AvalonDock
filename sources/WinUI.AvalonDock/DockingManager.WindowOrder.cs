@@ -16,18 +16,6 @@ public partial class DockingManager
             host.HideOverlayWindow();
         }
     }
-    internal IEnumerable<LayoutFloatingWindowControl> GetFloatingWindowsByZOrder()
-    {
-        foreach (WindowOrderEntry entry in PlatformServices.WindowOrder.GetWindowsByZOrder(this, floatingControls.Cast<Window>().ToArray()))
-        {
-            LayoutFloatingWindowControl ctrl = (LayoutFloatingWindowControl)entry.Window;
-            if (ctrl.Model.Root != null && ctrl.Model.Root.Manager == this)
-            {
-                yield return ctrl;
-            }
-        }
-    }
-
     internal void GetOverlayWindowHostsByZOrder(ref List<IOverlayWindowHost> overlayWindowHosts, LayoutFloatingWindowControl dragFloatingWindow)
     {
         overlayWindowHosts.Clear();

@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Xml.Serialization;
 using Microsoft.UI.Xaml.Markup;
@@ -124,14 +123,12 @@ public class LayoutAnchorableFloatingWindow : LayoutFloatingWindow, ILayoutEleme
     /// <inheritdoc/>
     public override void RemoveChild(ILayoutElement element)
     {
-        Debug.Assert(ReferenceEquals(element, RootPanel) && element != null);
         RootPanel = null;
     }
 
     /// <inheritdoc/>
     public override void ReplaceChild(ILayoutElement oldElement, ILayoutElement newElement)
     {
-        Debug.Assert(ReferenceEquals(oldElement, RootPanel) && oldElement != null);
         RootPanel = newElement as LayoutAnchorablePaneGroup;
     }
 
@@ -140,17 +137,6 @@ public class LayoutAnchorableFloatingWindow : LayoutFloatingWindow, ILayoutEleme
 
     /// <inheritdoc/>
     public override bool IsValid => RootPanel != null;
-
-#if TRACE
-    /// <inheritdoc />
-    public override void ConsoleDump(int tab)
-    {
-        System.Diagnostics.Trace.Write(new string(' ', tab * 4));
-        System.Diagnostics.Trace.WriteLine("FloatingAnchorableWindow()");
-
-        RootPanel?.ConsoleDump(tab + 1);
-    }
-#endif
 
     /// <summary>
     /// Executes the root panel children tree changed operation.

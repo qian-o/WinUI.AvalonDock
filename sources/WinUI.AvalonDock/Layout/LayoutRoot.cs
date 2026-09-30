@@ -4,10 +4,8 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using System.Text;
 using System.Xml.Serialization;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Markup;
@@ -360,32 +358,6 @@ public class LayoutRoot : LayoutElement, ILayoutContainer, ILayoutRoot, Core.Ser
             RaisePropertyChanged(nameof(Manager));
         }
     }
-#if TRACE
-    /// <inheritdoc/>
-    public override void ConsoleDump(int tab)
-    {
-        System.Diagnostics.Trace.Write(new string(' ', tab * 4));
-        System.Diagnostics.Trace.WriteLine("RootPanel()");
-
-        RootPanel.ConsoleDump(tab + 1);
-
-        System.Diagnostics.Trace.Write(new string(' ', tab * 4));
-        System.Diagnostics.Trace.WriteLine("FloatingWindows()");
-
-        foreach (LayoutFloatingWindow fw in FloatingWindows)
-        {
-            fw.ConsoleDump(tab + 1);
-        }
-
-        System.Diagnostics.Trace.Write(new string(' ', tab * 4));
-        System.Diagnostics.Trace.WriteLine("Hidden()");
-
-        foreach (LayoutAnchorable hidden in Hidden)
-        {
-            hidden.ConsoleDump(tab + 1);
-        }
-    }
-#endif
 
     /// <summary>
     /// Removes the child.
@@ -652,39 +624,9 @@ public class LayoutRoot : LayoutElement, ILayoutContainer, ILayoutRoot, Core.Ser
         }
         while (!exitFlag);
 
-        ////do
-        ////{
-        ////  exitFlag = true;
-        ////  //for each panel that has only one child
-        ////  foreach( var panelToCollapse in this.Descendents().OfType<LayoutPanel>().Where( p => p.ChildrenCount == 1 && p.Children[ 0 ] is LayoutPanel ).ToArray() )
-        ////  {
-        ////    var singleChild = panelToCollapse.Children[ 0 ] as LayoutPanel;
-        ////    panelToCollapse.Orientation = singleChild.Orientation;
-        ////    panelToCollapse.RemoveChild( singleChild );
-        ////    ILayoutPanelElement[] singleChildChildren = new ILayoutPanelElement[ singleChild.ChildrenCount ];
-        ////    singleChild.Children.CopyTo( singleChildChildren, 0 );
-        ////    while( singleChild.ChildrenCount > 0 )
-        ////    {
-        ////      panelToCollapse.InsertChildAt(
-        ////          panelToCollapse.ChildrenCount, singleChildChildren[ panelToCollapse.ChildrenCount ] );
-        ////    }
-
-        ////    exitFlag = false;
-        ////    break;
-        ////  }
-        ////}
-        ////while( !exitFlag );
-
         // Update ActiveContent and LastFocusedDocument properties
         UpdateActiveContentProperty();
 
-#if DEBUG
-        Debug.Assert(!this.Descendents().OfType<LayoutAnchorablePane>().Any(a => a.ChildrenCount == 0 && a.IsVisible));
-        // DumpTree(true);
-#if TRACE
-        RootPanel.ConsoleDump(4);
-#endif
-#endif
     }
 
     /// <summary>
@@ -880,42 +822,6 @@ public class LayoutRoot : LayoutElement, ILayoutContainer, ILayoutRoot, Core.Ser
             InternalSetActiveContent(activeContent, null);
         }
     }
-
-#if DEBUG
-
-    /// <summary>
-    /// Dumps the current layout tree to the debug output.
-    /// </summary>
-    /// <param name="shortPropertyNames">If set to <see langword="true"/>, uses abbreviated property labels.</param>
-    public void DumpTree(bool shortPropertyNames = false)
-    {
-        void DumpElement(ILayoutElement element, StringBuilder indent, int childID, bool isLastChild)
-        {
-            Debug.Write($"{indent}{(indent.Length > 0 ? isLastChild ? " └─ " : " ├─ " : string.Empty)}{childID:D2} 0x{element.GetHashCode():X8} " +
-                            $"{element.GetType().Name} {(shortPropertyNames ? "P" : "Parent")}:0x{element.Parent?.GetHashCode() ?? 0:X8} " +
-                            $"{(shortPropertyNames ? "R" : "Root")}:0x{element.Root?.GetHashCode() ?? 0:X8}");
-            if (!(element is ILayoutContainer containerElement))
-            {
-                Debug.WriteLine(string.Empty);
-                return;
-            }
-
-            Debug.WriteLine($" {(shortPropertyNames ? "C" : "Children")}:{containerElement.ChildrenCount}");
-            int nrChild = 0;
-            indent.Append(isLastChild ? "   " : " │ ");
-            foreach (ILayoutElement child in containerElement.Children)
-            {
-                bool lastChild = nrChild == containerElement.ChildrenCount - 1;
-                DumpElement(child, indent, nrChild++, lastChild);
-            }
-
-            indent.Remove(indent.Length - 3, 3);
-        }
-
-        DumpElement(this, new StringBuilder(), 0, true);
-    }
-
-#endif
 
     /// <inheritdoc/>
     IEnumerable<Core.Serialization.ISerializableLayoutElement> Core.Serialization.ISerializableLayoutRoot.Descendents()

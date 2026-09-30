@@ -2,7 +2,6 @@
 // Upstream: 408dc2896e2f41f3bb79a15207f160edee8a6792 / source/Components/AvalonDock/Layout/Extensions.cs
 
 using System.Collections.Generic;
-using System.Diagnostics;
 
 namespace AvalonDock.Layout;
 
@@ -139,8 +138,6 @@ public static class Extensions
                 return element.IsInAnchorablePaneAtStartOfPanel(layoutPanel) ? AnchorSide.Top : AnchorSide.Bottom;
             }
         }
-
-        Debug.Fail("Unable to find the side for an element, possible layout problem!");
         return AnchorSide.Right;
     }
 

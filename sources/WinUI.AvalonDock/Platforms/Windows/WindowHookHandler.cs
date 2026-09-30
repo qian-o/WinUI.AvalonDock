@@ -5,10 +5,9 @@ using System.Runtime.InteropServices;
 
 namespace AvalonDock.Platforms.Windows;
 
-internal sealed class FocusChangeEventArgs(nint gotFocusWinHandle, nint lostFocusWinHandle) : EventArgs
+internal sealed class FocusChangeEventArgs(nint gotFocusWinHandle) : EventArgs
 {
     internal nint GotFocusWinHandle { get; } = gotFocusWinHandle;
-    internal nint LostFocusWinHandle { get; } = lostFocusWinHandle;
 }
 
 internal sealed class WindowHookHandler
@@ -43,15 +42,14 @@ internal sealed class WindowHookHandler
         hookProc = null;
     }
 
-    // LRESULT is pointer-sized on Windows x64. The original focus branch and hook
-    // chaining remain; its commented-out activation branch has no live subscriber.
+    // LRESULT is pointer-sized on Windows x64; preserve the native hook chain.
     private nint HookProc(int code, nint wParam, nint lParam)
     {
         if (code == 9 /* HCBT_SETFOCUS */)
         {
             if (FocusChanged != null)
             {
-                FocusChanged(this, new FocusChangeEventArgs(wParam, lParam));
+                FocusChanged(this, new FocusChangeEventArgs(wParam));
             }
         }
         return CallNextHookEx(windowHook, code, wParam, lParam);

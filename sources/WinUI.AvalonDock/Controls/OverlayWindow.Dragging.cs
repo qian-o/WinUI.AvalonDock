@@ -21,7 +21,6 @@ public partial class OverlayWindow : IOverlayWindow
     }
 
     internal LayoutFloatingWindowControl? DraggingWindow => floatingWindow;
-    internal IOverlayWindowHost? Host => overlayHost;
     private void ClearDragAreas()
     {
         currentDropTarget?.DragLeave();

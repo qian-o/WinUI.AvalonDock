@@ -160,8 +160,6 @@ public partial class DockingManager
 
             createdHost = CreatePublicWindowHost(fw, destPane.SelectedContent?.Title, new Rect(fwLeft, fwTop, fwWidth, fwHeight), isContentImmutable);
             fwc = controlsByHost[createdHost];
-            // fwc.Owner = Window.GetWindow(this);
-            // fwc.SetParentToMainWindowOf(this);
             RegisterFloatingHost(fw, createdHost);
             Layout.CollectGarbage();
             InvalidateArrange();
@@ -309,8 +307,6 @@ public partial class DockingManager
                 fwc = controlsByHost[createdHost];
             }
 
-            // fwc.Owner = Window.GetWindow(this);
-            // fwc.SetParentToMainWindowOf(this);
             RegisterFloatingHost(fw, createdHost);
             Layout.CollectGarbage();
             UpdateLayout();

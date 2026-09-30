@@ -37,11 +37,6 @@ public partial class DockingManager
         });
     }
 
-    internal void HideFloatingPreviews()
-    {
-        dockingOverlay.Hide();
-    }
-
     internal void BeginContentDrag(LayoutContent content, FrameworkElement origin, Point? pressPosition = null)
     {
         if (this is ToggleDockingManager toggle && content is LayoutAnchorable tool && tool.CanMove && !IsDetached(tool))
@@ -334,10 +329,6 @@ public partial class DockingManager
         content.IsSelected = true;
         content.IsActive = true;
     }
-
-
-
-
 
     private void EndContentDrag(bool keepOverlaySource = false)
     {

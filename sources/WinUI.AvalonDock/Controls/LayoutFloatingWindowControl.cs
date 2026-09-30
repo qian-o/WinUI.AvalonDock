@@ -264,9 +264,10 @@ public abstract partial class LayoutFloatingWindowControl : Window, ILayoutContr
                 PlatformServices.Coordinates.ActivateWindow(Manager);
             }
         }
-        catch (Exception exception)
+        catch (Exception)
         {
-            System.Diagnostics.Debug.WriteLine(exception);
+            // Owner activation can fail during native destruction; allow the close to continue.
+            return;
         }
     }
     protected virtual void OnClosed(EventArgs e)

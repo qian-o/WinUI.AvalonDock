@@ -70,8 +70,6 @@ internal class DocumentPaneGroupDropTarget : DropTarget<LayoutDocumentPaneGroupC
                     int i = 0;
                     foreach (LayoutAnchorable? anchorableToImport in layoutAnchorablePaneGroup.Descendents().OfType<LayoutAnchorable>().ToArray())
                     {
-                        // BD: 18.07.2020 Remove that bodge and handle CanClose=false && CanHide=true in XAML
-                        // anchorableToImport.SetCanCloseInternal(true);
                         paneModel.Children.Insert(i, anchorableToImport);
                         i++;
                     }

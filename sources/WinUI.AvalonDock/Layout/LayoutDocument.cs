@@ -93,14 +93,6 @@ public class LayoutDocument : LayoutContent, Core.Serialization.ISerializableLay
             CloseDocument();
         }
     }
-#if TRACE
-    /// <inheritdoc/>
-    public override void ConsoleDump(int tab)
-    {
-        System.Diagnostics.Trace.Write(new string(' ', tab * 4));
-        System.Diagnostics.Trace.WriteLine("Document()");
-    }
-#endif
 
     /// <inheritdoc/>
     protected override void InternalDock()

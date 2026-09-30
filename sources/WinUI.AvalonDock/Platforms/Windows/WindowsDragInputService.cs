@@ -47,10 +47,9 @@ internal sealed class WindowsDragInputService(FrameworkElement origin) : IDragIn
             }
             return Session.TryCreate(window, origin.DispatcherQueue, onUpdate, initialPosition);
         }
-        catch (EntryPointNotFoundException exception)
+        catch (EntryPointNotFoundException)
         {
             // The desktop host must activate Common Controls v6 for the supported subclass APIs.
-            Debug.WriteLine($"Native docking input is unavailable: {exception.Message}");
             return null;
         }
     }

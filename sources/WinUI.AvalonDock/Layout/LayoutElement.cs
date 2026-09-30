@@ -92,17 +92,6 @@ public abstract class LayoutElement : DependencyObject, ILayoutElement, Core.Ser
             return parent as ILayoutRoot;
         }
     }
-#if TRACE
-    /// <summary>
-    /// Dumps this layout element to the trace output.
-    /// </summary>
-    /// <param name="tab">The indentation level.</param>
-    public virtual void ConsoleDump(int tab)
-    {
-        System.Diagnostics.Trace.Write(new string(' ', tab * 4));
-        System.Diagnostics.Trace.WriteLine(ToString());
-    }
-#endif
 
     /// <summary>
     /// Executes the fix cached root on deserialize operation.

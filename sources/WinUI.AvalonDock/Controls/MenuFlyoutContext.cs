@@ -136,7 +136,6 @@ internal static class MenuFlyoutContext
         state.Context = context;
         state.Apply();
     }
-    internal static object? GetContext(MenuFlyout menu) => States.TryGetValue(menu, out State? state) ? state.Context : null;
     private sealed class State
     {
         private static readonly AnchorableContextMenuHideVisibilityConverter HideVisibility = new();

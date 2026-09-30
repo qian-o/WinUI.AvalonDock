@@ -15,8 +15,4 @@ dotnet build .\WinUI.AvalonDock.slnx -c Debug
 dotnet run --project .\sources\Experiments\Docking\Docking.csproj -c Debug
 ```
 
-Replace `Docking` with `ToggleDocking` or `Mvvm` to run another sample. Each sample also supports `--smoke-test <absolute-report-path>` for its focused, real-window checks. For example:
-
-```powershell
-dotnet run --project .\sources\Experiments\ToggleDocking\ToggleDocking.csproj -c Debug -- --smoke-test "$env:TEMP\ToggleDocking-smoke.txt"
-```
+Replace `Docking` with `ToggleDocking` or `Mvvm` to run another sample.

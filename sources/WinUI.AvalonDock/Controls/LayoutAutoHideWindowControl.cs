@@ -82,7 +82,6 @@ public class LayoutAutoHideWindowControl : ChildWindowHost, ILayoutControl
     }
     public ILayoutElement? Model => model;
     internal bool IsResizing => resizing;
-    internal FrameworkElement? RootVisual => grid;
     internal bool IsPointerWithin => grid != null && PlatformServices.Coordinates.IsPointerOver(grid)
         || anchor != null && PlatformServices.Coordinates.IsPointerOver(anchor);
 

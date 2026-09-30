@@ -40,17 +40,6 @@ internal class FullWeakDictionary<K, V>
     }
 
     /// <summary>
-    /// Contains key.
-    /// </summary>
-    /// <param name="key">The key.</param>
-    /// <returns>true if the collection contains the specified item; otherwise, false.</returns>
-    public bool ContainsKey(K key)
-    {
-        CollectGarbage();
-        return -1 != keys.FindIndex(k => k.GetValueOrDefault<K>() == key);
-    }
-
-    /// <summary>
     /// Sets the value.
     /// </summary>
     /// <param name="key">The key.</param>

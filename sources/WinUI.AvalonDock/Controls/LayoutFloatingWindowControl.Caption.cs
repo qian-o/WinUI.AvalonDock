@@ -247,8 +247,6 @@ public abstract partial class LayoutFloatingWindowControl
         MenuFlyoutContext.Show(menu, target, item, new FlyoutShowOptions { Position = local });
         request.Handled = true;
     }
-    internal void ShowCaptionContext(WindowCaptionContextRequest request) => OnCaptionContextRequested(this, request);
-
     private void ReleaseCaptionObservers()
     {
         if (captionManager != null)

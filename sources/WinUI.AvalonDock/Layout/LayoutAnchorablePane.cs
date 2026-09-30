@@ -185,20 +185,6 @@ public class LayoutAnchorablePane : LayoutPositionableGroup<LayoutAnchorable>, I
         base.OnParentChanged(oldValue, newValue);
     }
 
-#if TRACE
-    /// <inheritdoc />
-    public override void ConsoleDump(int tab)
-    {
-        System.Diagnostics.Trace.Write(new string(' ', tab * 4));
-        System.Diagnostics.Trace.WriteLine("AnchorablePane()");
-
-        foreach (LayoutElement child in Children)
-        {
-            child.ConsoleDump(tab + 1);
-        }
-    }
-#endif
-
     /// <summary>
     /// Executes the index of operation.
     /// </summary>
@@ -223,7 +209,6 @@ public class LayoutAnchorablePane : LayoutPositionableGroup<LayoutAnchorable>, I
         {
             LayoutAnchorableFloatingWindow? parentFloatingWindow = this.FindParent<LayoutAnchorableFloatingWindow>();
             return parentFloatingWindow != null && parentFloatingWindow.IsSinglePane;
-            // return Parent != null && Parent.ChildrenCount == 1 && Parent.Parent is LayoutFloatingWindow;
         }
     }
 

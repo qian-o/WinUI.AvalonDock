@@ -18,10 +18,6 @@ internal sealed class WindowIconPresenter : IDisposable
     private bool rendering;
     private bool disposed;
     private long revision;
-    internal Exception? Failure
-    {
-        get; private set;
-    }
     internal WindowIconPresenter(Window window, Grid root)
     {
         this.root = root;
@@ -83,16 +79,12 @@ internal sealed class WindowIconPresenter : IDisposable
             if (!disposed && current == revision && image.Source != null)
             {
                 surface.SetIcon(pixels.ToArray(), bitmap.PixelWidth, bitmap.PixelHeight);
-                Failure = null;
             }
         }
-        catch (Exception exception)
+        catch (Exception)
         {
-            if (!disposed)
-            {
-                Failure = exception;
-                System.Diagnostics.Debug.WriteLine($"Window icon rendering failed: {exception}");
-            }
+            // Keep the current native icon when its bitmap cannot be rendered.
+            return;
         }
         finally
         {

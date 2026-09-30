@@ -25,8 +25,6 @@ public class LayoutAnchorableItem : LayoutItem
     private readonly ReentrantFlag visibilityReentrantFlag = new();
     private readonly ReentrantFlag anchorableVisibilityReentrantFlag = new();
 
-
-
     /// <summary>
     /// Initializes a new instance of the <see cref="LayoutAnchorableItem"/> class.
     /// </summary>
@@ -64,9 +62,6 @@ public class LayoutAnchorableItem : LayoutItem
     {
     }
 
-    /// <summary>Coerces the <see cref="HideCommand"/> value.</summary>
-    private static object CoerceHideCommandValue(DependencyObject d, object value) => value;
-
     private bool CanExecuteHideCommand(object parameter) => LayoutElement != null && anchorable?.CanHide == true;
 
     private void ExecuteHideCommand(object parameter) => anchorable?.Root?.Manager?.ExecuteHideCommand(anchorable);
@@ -103,9 +98,6 @@ public class LayoutAnchorableItem : LayoutItem
     protected virtual void OnDetachToWindowCommandChanged(DependencyPropertyChangedEventArgs e)
     {
     }
-
-    /// <summary>Coerces the <see cref="DetachToWindowCommand"/> value.</summary>
-    private static object CoerceDetachToWindowCommandValue(DependencyObject d, object value) => value;
 
     private bool CanExecuteDetachToWindowCommand(object parameter) =>
         LayoutElement != null
@@ -161,9 +153,6 @@ public class LayoutAnchorableItem : LayoutItem
     {
     }
 
-    /// <summary>Coerces the <see cref="AutoHideCommand"/> value.</summary>
-    private static object CoerceAutoHideCommandValue(DependencyObject d, object value) => value;
-
     private bool CanExecuteAutoHideCommand(object parameter)
     {
         if (LayoutElement == null)
@@ -209,9 +198,6 @@ public class LayoutAnchorableItem : LayoutItem
     protected virtual void OnDockCommandChanged(DependencyPropertyChangedEventArgs e)
     {
     }
-
-    /// <summary>Coerces the <see cref="DockCommand"/> value.</summary>
-    private static object CoerceDockCommandValue(DependencyObject d, object value) => value;
 
     private bool CanExecuteDockCommand(object parameter) => LayoutElement?.FindParent<LayoutAnchorableFloatingWindow>() != null;
 

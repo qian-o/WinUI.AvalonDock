@@ -34,7 +34,6 @@ public class BoolToVisibilityConverter : MarkupExtension, IValueConverter
 
             default:
                 return Visibility.Visible;
-                // throw new ArgumentException("Invalid argument/return type. Expected argument: bool and return type: Visibility");
         }
     }
 

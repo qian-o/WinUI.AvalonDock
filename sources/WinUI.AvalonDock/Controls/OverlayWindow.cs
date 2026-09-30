@@ -233,12 +233,6 @@ public partial class OverlayWindow : Window
     {
         get; private set;
     }
-    internal int PresentedFrames
-    {
-        get; private set;
-    }
-    internal Canvas? TargetCanvas => canvas;
-    internal IReadOnlyList<OverlayTarget> CurrentTargets => targets;
     internal void CloseHost()
     {
         if (closed)
@@ -287,8 +281,6 @@ public partial class OverlayWindow : Window
             view.Style = candidate;
         }
     }
-
-
 
     private IReadOnlyList<FrameworkElement> TemplateParts() => templateParts;
 
@@ -488,7 +480,6 @@ public partial class OverlayWindow : Window
 
                 surface.Present(pixels, bitmap.PixelWidth, bitmap.PixelHeight);
                 renderedRevision = current;
-                PresentedFrames++;
                 RenderFailure = null;
             }
         }
@@ -497,7 +488,6 @@ public partial class OverlayWindow : Window
             // Do not let an asynchronous render resurrect a cancelled session or leave an opaque window.
             RenderFailure = exception;
             Hide();
-            System.Diagnostics.Trace.TraceError("AvalonDock overlay rendering failed: {0}", exception);
         }
         finally { rendering = false; }
     }

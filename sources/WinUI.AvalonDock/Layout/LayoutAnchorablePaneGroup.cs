@@ -105,20 +105,6 @@ public class LayoutAnchorablePaneGroup : LayoutPositionableGroup<ILayoutAnchorab
         base.OnChildrenCollectionChanged();
     }
 
-#if TRACE
-    /// <inheritdoc />
-    public override void ConsoleDump(int tab)
-    {
-        System.Diagnostics.Trace.Write(new string(' ', tab * 4));
-        System.Diagnostics.Trace.WriteLine(string.Format("AnchorablePaneGroup({0})", Orientation));
-
-        foreach (LayoutElement child in Children)
-        {
-            child.ConsoleDump(tab + 1);
-        }
-    }
-#endif
-
     /// <summary>
     /// Updates the parent visibility.
     /// </summary>

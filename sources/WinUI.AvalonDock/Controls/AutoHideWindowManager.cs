@@ -64,10 +64,6 @@ internal class AutoHideWindowManager : IDisposable
         {
             StopCloseTimer();
         }
-        else
-        {
-            System.Diagnostics.Debug.Assert(false);
-        }
     }
 
     private void SetupCloseTimer()

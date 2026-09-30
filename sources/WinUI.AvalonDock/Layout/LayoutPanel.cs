@@ -83,18 +83,4 @@ public class LayoutPanel : LayoutPositionableGroup<ILayoutPanelElement>, ILayout
     /// <inheritdoc/>
     protected override bool GetVisibility() => Children.Any(c => c.IsVisible);
 
-#if TRACE
-    /// <inheritdoc />
-    public override void ConsoleDump(int tab)
-    {
-        System.Diagnostics.Trace.Write(new string(' ', tab * 4));
-        System.Diagnostics.Trace.WriteLine(string.Format("Panel({0})", Orientation));
-
-        foreach (LayoutElement child in Children)
-        {
-            child.ConsoleDump(tab + 1);
-        }
-    }
-#endif
-
 }

@@ -45,14 +45,6 @@ internal sealed class ToggleDockDragOverlay : IDisposable
     private bool failed;
     private Zone? selectedZone;
     private Rect dragLabelBounds;
-    internal Exception? Failure
-    {
-        get; private set;
-    }
-    internal int PresentedFrames
-    {
-        get; private set;
-    }
     internal ToggleDockDragOverlay(ToggleDockingManager manager, LayoutAnchorable tool)
     {
         this.manager = manager;
@@ -286,11 +278,10 @@ internal sealed class ToggleDockDragOverlay : IDisposable
                 dragLabelRendered = true;
             }
         }
-        catch (Exception exception)
+        catch (Exception)
         {
             if (!disposed)
             {
-                Failure = exception;
                 failed = true;
                 zones.Clear();
                 surface.Hide();
@@ -495,10 +486,18 @@ internal sealed class ToggleDockDragOverlay : IDisposable
             if (!disposed && current == revision)
             {
                 surface.Present(pixels.ToArray(), bitmap.PixelWidth, bitmap.PixelHeight);
-                PresentedFrames++;
             }
         }
-        catch (Exception exception) { if (!disposed) { Failure = exception; failed = true; zones.Clear(); surface.Hide(); dragLabelSurface.Hide(); } }
+        catch (Exception)
+        {
+            if (!disposed)
+            {
+                failed = true;
+                zones.Clear();
+                surface.Hide();
+                dragLabelSurface.Hide();
+            }
+        }
         finally
         {
             rendering = false;

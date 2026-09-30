@@ -24,8 +24,6 @@ public class LayoutAnchorable : LayoutContent, Core.Serialization.ISerializableL
     private bool canAutoHide = true;
     private bool isDetached;
     private bool canDockAsTabbedDocument = true;
-    // BD: 17.08.2020 Remove that bodge and handle CanClose=false && CanHide=true in XAML
-    // private bool _canCloseValueBeforeInternalSet;
     private bool canMove = true;
 
     /// <summary>
@@ -347,14 +345,6 @@ public class LayoutAnchorable : LayoutContent, Core.Serialization.ISerializableL
             CloseAnchorable();
         }
     }
-#if TRACE
-    /// <inheritdoc />
-    public override void ConsoleDump(int tab)
-    {
-        System.Diagnostics.Trace.Write(new string(' ', tab * 4));
-        System.Diagnostics.Trace.WriteLine("Anchorable()");
-    }
-#endif
 
     /// <summary>
     /// Executes the on hiding operation.
@@ -922,17 +912,6 @@ public class LayoutAnchorable : LayoutContent, Core.Serialization.ISerializableL
         CloseInternal();
         return true;
     }
-
-    // BD: 17.08.2020 Remove that bodge and handle CanClose=false && CanHide=true in XAML
-    // internal void SetCanCloseInternal(bool canClose)
-    // {
-    //     _canCloseValueBeforeInternalSet = canClose;
-    //     canClose = canClose;
-    // }
-    // internal void ResetCanCloseInternal()
-    // {
-    //     canClose = _canCloseValueBeforeInternalSet;
-    // }
 
     /// <summary>
     /// Executes the notify is visible changed operation.

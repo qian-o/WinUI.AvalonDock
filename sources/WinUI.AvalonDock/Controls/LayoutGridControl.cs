@@ -392,7 +392,6 @@ public abstract class LayoutGridControl<T> : Grid, ILayoutControl, IAdjustableSi
             }
 
             FixChildrenDockLengths();
-            // Debug.Assert(layoutChildren.Count == model.ChildrenCount + (model.ChildrenCount - 1));
             RowDefinitions.Clear();
             ColumnDefinitions.Clear();
             if (Orientation == Orientation.Horizontal)
@@ -454,9 +453,6 @@ public abstract class LayoutGridControl<T> : Grid, ILayoutControl, IAdjustableSi
                     });
                     Grid.SetRow(layoutChildren[iChild], iRow);
 
-                    // if (RowDefinitions.Last().Height.Value == 0.0)
-                    //    System.Diagnostics.Debugger.Break();
-
                     // append row for splitter (if necessary)
                     if (iChild >= layoutChildren.Count - 1)
                     {
@@ -483,8 +479,6 @@ public abstract class LayoutGridControl<T> : Grid, ILayoutControl, IAdjustableSi
                     {
                         Height = childModel.IsVisible && nextChildModelVisibleExist ? new GridLength(manager.GridSplitterHeight) : new GridLength(0.0, GridUnitType.Pixel)
                     });
-                    // if (RowDefinitions.Last().Height.Value == 0.0)
-                    //    System.Diagnostics.Debugger.Break();
                     Grid.SetRow(layoutChildren[iChild], iRow);
                 }
             }

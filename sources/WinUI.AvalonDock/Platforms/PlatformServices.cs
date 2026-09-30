@@ -7,7 +7,7 @@ namespace AvalonDock.Platforms;
 /// </summary>
 internal static class PlatformServices
 {
-    private static IPlatformServices current = new Windows.WindowsPlatformServices();
+    private static readonly IPlatformServices current = new Windows.WindowsPlatformServices();
 
     internal static IFocusService Focus => current.Focus;
     internal static IKeyboardInputService Keyboard => current.Keyboard;
@@ -15,8 +15,6 @@ internal static class PlatformServices
     internal static IWindowGeometryService WindowGeometry => current.WindowGeometry;
     internal static ICoordinateService Coordinates => current.Coordinates;
     internal static IPointerGestureService PointerGestures => current.PointerGestures;
-
-    internal static void Configure(IPlatformServices services) => current = services ?? throw new ArgumentNullException(nameof(services));
 
     internal static IDragInputService CreateDragInputService(FrameworkElement origin) => current.CreateDragInputService(origin);
     internal static IWindowHostService CreateWindowHostService(FrameworkElement owner) => current.CreateWindowHostService(owner);

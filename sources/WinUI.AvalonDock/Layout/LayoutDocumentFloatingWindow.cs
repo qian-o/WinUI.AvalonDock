@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Xml.Serialization;
 using Microsoft.UI.Xaml.Markup;
@@ -94,7 +93,6 @@ public class LayoutDocumentFloatingWindow : LayoutFloatingWindow, ILayoutElement
             }
 
             LayoutDocumentPane singlePane = RootPanel.Descendents().OfType<LayoutDocumentPane>().Single(p => p.IsVisible);
-            // singlePane.UpdateIsDirectlyHostedInFloatingWindow();
             return singlePane;
         }
     }
@@ -135,14 +133,12 @@ public class LayoutDocumentFloatingWindow : LayoutFloatingWindow, ILayoutElement
     /// <inheritdoc/>
     public override void RemoveChild(ILayoutElement element)
     {
-        Debug.Assert(ReferenceEquals(element, RootPanel) && element != null);
         RootPanel = null;
     }
 
     /// <inheritdoc/>
     public override void ReplaceChild(ILayoutElement oldElement, ILayoutElement newElement)
     {
-        Debug.Assert(ReferenceEquals(oldElement, RootPanel) && oldElement != null);
         RootPanel = newElement as LayoutDocumentPaneGroup;
     }
 
@@ -154,16 +150,5 @@ public class LayoutDocumentFloatingWindow : LayoutFloatingWindow, ILayoutElement
 
     /// <inheritdoc/>
     public override bool IsValid => RootPanel != null;
-
-#if TRACE
-    /// <inheritdoc/>
-    public override void ConsoleDump(int tab)
-    {
-        System.Diagnostics.Trace.Write(new string(' ', tab * 4));
-        System.Diagnostics.Trace.WriteLine("FloatingDocumentWindow()");
-
-        RootPanel?.ConsoleDump(tab + 1);
-    }
-#endif
 
 }

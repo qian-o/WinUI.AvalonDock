@@ -1,5 +1,4 @@
 using System.ComponentModel;
-using System.Diagnostics;
 using System.Runtime.InteropServices;
 using AvalonDock.Controls;
 using Microsoft.UI;
@@ -80,9 +79,9 @@ internal sealed partial class WindowsWindowHostService
                     target.ReleaseOwnerHook();
                 }
             }
-            catch (Exception exception)
+            catch (Exception)
             {
-                Debug.WriteLine($"Floating owner lifecycle failed: {exception}");
+                // Exceptions must not escape the native window procedure.
                 if (message == 0x0082)
                 {
                     target?.ReleaseOwnerHook();
@@ -198,16 +197,19 @@ internal sealed partial class WindowsWindowHostService
                     }
                 }
             }
-            catch (Exception exception)
+            catch (Exception)
             {
-                Debug.WriteLine($"Floating-window message processing failed: {exception}");
                 if (message == 0x0082)
                 {
                     try
                     {
                         target?.ReleaseSubclass(true);
                     }
-                    catch (Exception cleanup) { Debug.WriteLine($"Floating-window hook cleanup failed: {cleanup}"); }
+                    catch (Exception)
+                    {
+                        // The native window can already be destroyed while its hook is released.
+                        return DefSubclassProc(hwnd, message, wParam, lParam);
+                    }
                 }
             }
             return DefSubclassProc(hwnd, message, wParam, lParam);
@@ -282,9 +284,10 @@ internal sealed partial class WindowsWindowHostService
                 {
                     MoveChanged?.Invoke(this, update);
                 }
-                catch (Exception exception)
+                catch (Exception)
                 {
-                    Debug.WriteLine($"Floating-window move completion failed: {exception}");
+                    // A docking callback must not interrupt native move-loop cleanup.
+                    return;
                 }
             });
         }
