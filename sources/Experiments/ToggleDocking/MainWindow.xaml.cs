@@ -226,6 +226,7 @@ public sealed partial class MainWindow : Window
 
     public async Task RunScenarioChecksAsync(SampleChecks checks)
     {
+        LayoutEngineChecks.Run(checks);
         await SampleChecks.SettleAsync();
         SampleChecks.Require(layoutService.Anchorables.Count() == 6, "Toggle created six initial tool models.");
         SampleChecks.Require(layoutService.Documents.Count() == 2, "Toggle created the initial document models.");

@@ -49,7 +49,7 @@ public partial class LayoutDocumentFloatingWindowControl : LayoutFloatingWindowC
     }
     public void HideOverlayWindow()
     {
-        dropAreas = null;
+        ClearDropAreaCache();
         Manager?.HideOverlayWindow(this);
     }
 
@@ -111,92 +111,18 @@ public partial class LayoutDocumentFloatingWindowControl : LayoutFloatingWindowC
         CloseWindowCommand.Execute(null);
         args.Cancel = Model.Descendents().OfType<LayoutContent>().Any();
     }
-    private bool CanExecuteHideWindowCommand(object parameter)
-    {
-        ILayoutRoot? root = Model?.Root;
-        DockingManager? manager = root?.Manager;
-        if (manager == null)
-        {
-            return false;
-        }
+    private bool CanExecuteHideWindowCommand(object parameter) =>
+        CanExecuteContentCommand<LayoutContent, LayoutItem>(parameter,
+            static content => (content is not LayoutAnchorable anchorable || anchorable.CanHide) && content.CanClose,
+            static item => item.CloseCommand);
 
-        bool canExecute = false;
-        foreach (LayoutContent? content in Model.Descendents().OfType<LayoutContent>().ToArray())
-        {
-            if (content is LayoutAnchorable anchorable && !anchorable.CanHide || !content.CanClose)
-            {
-                canExecute = false;
-                break;
-            }
+    private void OnExecuteHideWindowCommand(object parameter) =>
+        ExecuteContentCommand<LayoutContent, LayoutItem>(parameter, static item => item.CloseCommand);
 
-            if (!(manager.GetLayoutItemFromModel(content) is LayoutItem layoutItem) || layoutItem.CloseCommand == null || !layoutItem.CloseCommand.CanExecute(parameter))
-            {
-                canExecute = false;
-                break;
-            }
+    private bool CanExecuteCloseWindowCommand(object parameter) =>
+        CanExecuteContentCommand<LayoutDocument, LayoutDocumentItem>(parameter,
+            static content => content.CanClose, static item => item.CloseCommand);
 
-            canExecute = true;
-        }
-
-        return canExecute;
-    }
-
-    private void OnExecuteHideWindowCommand(object parameter)
-    {
-        DockingManager? manager = Model.Root?.Manager;
-        if (manager == null)
-        {
-            return;
-        }
-        foreach (LayoutContent? content in Model.Descendents().OfType<LayoutContent>().ToArray())
-        {
-            if (manager.GetLayoutItemFromModel(content) is LayoutItem layoutItem)
-            {
-                layoutItem.CloseCommand?.Execute(parameter);
-            }
-        }
-    }
-
-    private bool CanExecuteCloseWindowCommand(object parameter)
-    {
-        DockingManager? manager = Model?.Root?.Manager;
-        if (manager == null)
-        {
-            return false;
-        }
-
-        bool canExecute = false;
-        foreach (LayoutDocument? document in Model.Descendents().OfType<LayoutDocument>().ToArray())
-        {
-            if (!document.CanClose)
-            {
-                canExecute = false;
-                break;
-            }
-
-            if (!(manager.GetLayoutItemFromModel(document) is LayoutDocumentItem documentLayoutItem) || documentLayoutItem.CloseCommand == null || !documentLayoutItem.CloseCommand.CanExecute(parameter))
-            {
-                canExecute = false;
-                break;
-            }
-
-            canExecute = true;
-        }
-
-        return canExecute;
-    }
-
-    private void OnExecuteCloseWindowCommand(object parameter)
-    {
-        DockingManager? manager = Model.Root?.Manager;
-        if (manager == null)
-        {
-            return;
-        }
-        foreach (LayoutDocument? document in Model.Descendents().OfType<LayoutDocument>().ToArray())
-        {
-            LayoutDocumentItem? documentLayoutItem = manager.GetLayoutItemFromModel(document) as LayoutDocumentItem;
-            documentLayoutItem?.CloseCommand?.Execute(parameter);
-        }
-    }
+    private void OnExecuteCloseWindowCommand(object parameter) =>
+        ExecuteContentCommand<LayoutDocument, LayoutDocumentItem>(parameter, static item => item.CloseCommand);
 }

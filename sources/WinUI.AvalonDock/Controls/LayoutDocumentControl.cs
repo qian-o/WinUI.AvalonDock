@@ -5,7 +5,6 @@ using AvalonDock.Layout;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
-using Microsoft.UI.Xaml.Media;
 using ReadOnlyPropertyGuard = AvalonDock.Compatibility.ReadOnlyPropertyGuard;
 
 namespace AvalonDock.Controls;
@@ -13,13 +12,14 @@ namespace AvalonDock.Controls;
 /// <summary>Displays a document through its manager-owned layout item.</summary>
 public class LayoutDocumentControl : Control
 {
-    private ContentPresenter? contentHost;
+    private readonly LayoutContentViewHost viewHost;
     private bool observeModel = true;
 
     /// <summary>Initializes a document content control.</summary>
     public LayoutDocumentControl()
     {
         DefaultStyleKey = typeof(LayoutDocumentControl);
+        viewHost = new LayoutContentViewHost(this, LayoutItemProperty);
         IsTabStop = true;
         Loaded += OnLoaded;
         Unloaded += OnUnloaded;
@@ -45,7 +45,7 @@ public class LayoutDocumentControl : Control
 
     private void OnNativeModelChanged(DependencyPropertyChangedEventArgs e)
     {
-        ReleaseView(preserveBinding: true);
+        viewHost.Release(preserveBinding: true);
         if (e.OldValue is LayoutContent previous)
         {
             previous.PropertyChanged -= NativeModelParentChanged;
@@ -198,14 +198,14 @@ public class LayoutDocumentControl : Control
             Model.PropertyChanged -= Model_PropertyChanged;
             Model.PropertyChanged -= NativeModelParentChanged;
         }
-        ReleaseView(preserveBinding: true);
+        viewHost.Release(preserveBinding: true);
         SetLayoutItem(null);
         DispatcherQueue.TryEnqueue(() => { if (IsLoaded && !observeModel) { OnLoaded(this, null); } });
     }
 
     private void OnTemplateChanged(DependencyObject sender, DependencyProperty property)
     {
-        ReleaseView();
+        viewHost.Release();
         if (IsLoaded)
         {
             DispatcherQueue.TryEnqueue(AttachView);
@@ -220,74 +220,14 @@ public class LayoutDocumentControl : Control
         }
 
         ApplyTemplate();
-        ContentPresenter? nextHost = GetTemplateChild("PART_ContentHost") as ContentPresenter;
-        if (nextHost == null)
-        {
-            return;
-        }
-
-        if (!ReferenceEquals(contentHost, nextHost))
-        {
-            ReleaseView();
-            contentHost = nextHost;
-        }
-        ContentPresenter? view = LayoutItem?.View;
-        if (ReferenceEquals(contentHost.Content, view))
-        {
-            return;
-        }
-
-        if (view != null)
-        {
-            DetachView(view);
-        }
-
-        contentHost.Content = view;
+        viewHost.Attach(GetTemplateChild("PART_ContentHost") as ContentPresenter);
     }
 
     private void RememberBoundTemplateHost(object? sender, object args)
     {
-        if (contentHost != null || !observeModel || LayoutItem?.IsViewExists() != true)
+        if (observeModel)
         {
-            return;
-        }
-        // Original consumer templates bind LayoutItem.View without a named part. WinUI
-        // disconnects their tree before Template changes; retain only the actual owner
-        // so the existing release path can clear its old native binding and parent.
-        ContentPresenter view = LayoutItem.View;
-        contentHost = this.FindVisualChildren<ContentPresenter>().FirstOrDefault(host => ReferenceEquals(host.Content, view));
-    }
-
-    private void ReleaseView(bool preserveBinding = false)
-    {
-        // A still-current consumer template follows the LayoutItem DP change itself;
-        // only a retired template must have that binding explicitly disconnected.
-        if (contentHost != null && (!preserveBinding || contentHost.GetBindingExpression(ContentPresenter.ContentProperty) == null))
-        {
-            contentHost.Content = null;
-        }
-
-        contentHost = null;
-    }
-
-    private static void DetachView(ContentPresenter view)
-    {
-        DependencyObject parent = view.Parent ?? VisualTreeHelper.GetParent(view);
-        if (parent is ContentPresenter presenter && ReferenceEquals(presenter.Content, view))
-        {
-            presenter.Content = null;
-        }
-        else if (parent is ContentControl control && ReferenceEquals(control.Content, view))
-        {
-            control.Content = null;
-        }
-        else if (parent is Border border && ReferenceEquals(border.Child, view))
-        {
-            border.Child = null;
-        }
-        else if (parent is Panel panel)
-        {
-            panel.Children.Remove(view);
+            viewHost.RememberBoundTemplateHost();
         }
     }
 }

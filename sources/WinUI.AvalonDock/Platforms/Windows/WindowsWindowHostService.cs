@@ -128,9 +128,7 @@ internal sealed partial class WindowsWindowHostService(FrameworkElement owner) :
                 if (!SetWindowSubclass(ownerHandle, OwnerProcedure, unchecked((nuint)handle), unchecked((nuint)GCHandle.ToIntPtr(ownerReference))))
                 {
                     ownerReference.Free();
-                    appWindow.Closing -= OnClosing;
-                    appWindow.Changed -= OnChanged;
-                    window.Closed -= OnClosed;
+                    UnsubscribeWindowEvents();
                     throw new Win32Exception(Marshal.GetLastWin32Error());
                 }
                 ownerHookInstalled = true;
@@ -154,9 +152,7 @@ internal sealed partial class WindowsWindowHostService(FrameworkElement owner) :
                         selfHandle.Free();
                     }
 
-                    window.AppWindow.Closing -= OnClosing;
-                    window.AppWindow.Changed -= OnChanged;
-                    window.Closed -= OnClosed;
+                    UnsubscribeWindowEvents();
                     ReleaseOwnerHook();
                     throw;
                 }
@@ -326,9 +322,7 @@ internal sealed partial class WindowsWindowHostService(FrameworkElement owner) :
             captionDragRegions = [];
             captionInteractiveRegions = [];
             ReleaseSubclass(false);
-            appWindow.Closing -= OnClosing;
-            appWindow.Changed -= OnChanged;
-            window.Closed -= OnClosed;
+            UnsubscribeWindowEvents();
             UIElement? content = window is LayoutFloatingWindowControl floating ? floating.Content : window.Content;
             // Native owner destruction may precede WinUI's Closed notification. Changing
             // AppWindow 关闭后释放内容时，需避免访问已销毁的原生窗口。
@@ -339,6 +333,13 @@ internal sealed partial class WindowsWindowHostService(FrameworkElement owner) :
 
             Controls.LayoutViewBuilder.Release(content);
             Closed?.Invoke(this, EventArgs.Empty);
+        }
+
+        private void UnsubscribeWindowEvents()
+        {
+            appWindow.Closing -= OnClosing;
+            appWindow.Changed -= OnChanged;
+            window.Closed -= OnClosed;
         }
 
     }

@@ -60,210 +60,25 @@ internal class AnchorablePaneDropTarget : DropTarget<LayoutAnchorablePaneControl
         }
 
         LayoutAnchorable? anchorableActive = floatingPanel.Descendents().OfType<LayoutAnchorable>().FirstOrDefault();
-
-        switch (Type)
+        (Microsoft.UI.Xaml.Controls.Orientation Orientation, bool InsertAfter)? placement = Type switch
         {
-            case DropTargetType.AnchorablePaneDockBottom:
-                {
-                    int insertToIndex = parentModel.IndexOfChild(targetModel);
-
-                    if (parentModelOrientable.Orientation != Microsoft.UI.Xaml.Controls.Orientation.Vertical &&
-                        parentModel.ChildrenCount == 1)
-                    {
-                        parentModelOrientable.Orientation = Microsoft.UI.Xaml.Controls.Orientation.Vertical;
-                    }
-
-                    if (parentModelOrientable.Orientation == Microsoft.UI.Xaml.Controls.Orientation.Vertical)
-                    {
-                        LayoutAnchorablePaneGroup layoutAnchorablePaneGroup = floatingPanel;
-                        if (layoutAnchorablePaneGroup != null &&
-                            (layoutAnchorablePaneGroup.Children.Count == 1 ||
-                                layoutAnchorablePaneGroup.Orientation == Microsoft.UI.Xaml.Controls.Orientation.Vertical))
-                        {
-                            ILayoutAnchorablePane[] anchorablesToMove = layoutAnchorablePaneGroup.Children.ToArray();
-                            for (int i = 0; i < anchorablesToMove.Length; i++)
-                            {
-                                parentModel.InsertChildAt(insertToIndex + 1 + i, anchorablesToMove[i]);
-                            }
-                        }
-                        else
-                        {
-                            parentModel.InsertChildAt(insertToIndex + 1, floatingPanel);
-                        }
-                    }
-                    else
-                    {
-                        LayoutAnchorablePane targetModelAsPositionableElement = targetModel;
-                        LayoutAnchorablePaneGroup newOrientedPanel = new()
-                        {
-                            Orientation = Microsoft.UI.Xaml.Controls.Orientation.Vertical,
-                            DockWidth = targetModelAsPositionableElement.DockWidth,
-                            DockHeight = targetModelAsPositionableElement.DockHeight,
-                        };
-
-                        parentModel.InsertChildAt(insertToIndex, newOrientedPanel);
-                        newOrientedPanel.Children.Add(targetModel);
-                        newOrientedPanel.Children.Add(floatingPanel);
-                    }
-                }
-
-                break;
-
-            case DropTargetType.AnchorablePaneDockTop:
-                {
-                    int insertToIndex = parentModel.IndexOfChild(targetModel);
-
-                    if (parentModelOrientable.Orientation != Microsoft.UI.Xaml.Controls.Orientation.Vertical &&
-                        parentModel.ChildrenCount == 1)
-                    {
-                        parentModelOrientable.Orientation = Microsoft.UI.Xaml.Controls.Orientation.Vertical;
-                    }
-
-                    if (parentModelOrientable.Orientation == Microsoft.UI.Xaml.Controls.Orientation.Vertical)
-                    {
-                        LayoutAnchorablePaneGroup layoutAnchorablePaneGroup = floatingPanel;
-                        if (layoutAnchorablePaneGroup != null &&
-                            (layoutAnchorablePaneGroup.Children.Count == 1 ||
-                                layoutAnchorablePaneGroup.Orientation == Microsoft.UI.Xaml.Controls.Orientation.Vertical))
-                        {
-                            ILayoutAnchorablePane[] anchorablesToMove = layoutAnchorablePaneGroup.Children.ToArray();
-                            for (int i = 0; i < anchorablesToMove.Length; i++)
-                            {
-                                parentModel.InsertChildAt(insertToIndex + i, anchorablesToMove[i]);
-                            }
-                        }
-                        else
-                        {
-                            parentModel.InsertChildAt(insertToIndex, floatingPanel);
-                        }
-                    }
-                    else
-                    {
-                        LayoutAnchorablePane targetModelAsPositionableElement = targetModel;
-                        LayoutAnchorablePaneGroup newOrientedPanel = new()
-                        {
-                            Orientation = Microsoft.UI.Xaml.Controls.Orientation.Vertical,
-                            DockWidth = targetModelAsPositionableElement.DockWidth,
-                            DockHeight = targetModelAsPositionableElement.DockHeight,
-                        };
-
-                        parentModel.InsertChildAt(insertToIndex, newOrientedPanel);
-                        // the floating window must be added after the target modal as it could be raise a CollectGarbage call
-                        newOrientedPanel.Children.Add(targetModel);
-                        newOrientedPanel.Children.Insert(0, floatingPanel);
-                    }
-                }
-
-                break;
-
-            case DropTargetType.AnchorablePaneDockLeft:
-                {
-                    int insertToIndex = parentModel.IndexOfChild(targetModel);
-
-                    if (parentModelOrientable.Orientation != Microsoft.UI.Xaml.Controls.Orientation.Horizontal &&
-                        parentModel.ChildrenCount == 1)
-                    {
-                        parentModelOrientable.Orientation = Microsoft.UI.Xaml.Controls.Orientation.Horizontal;
-                    }
-
-                    if (parentModelOrientable.Orientation == Microsoft.UI.Xaml.Controls.Orientation.Horizontal)
-                    {
-                        LayoutAnchorablePaneGroup layoutAnchorablePaneGroup = floatingPanel;
-                        if (layoutAnchorablePaneGroup != null &&
-                            (layoutAnchorablePaneGroup.Children.Count == 1 ||
-                                layoutAnchorablePaneGroup.Orientation == Microsoft.UI.Xaml.Controls.Orientation.Horizontal))
-                        {
-                            ILayoutAnchorablePane[] anchorablesToMove = layoutAnchorablePaneGroup.Children.ToArray();
-                            for (int i = 0; i < anchorablesToMove.Length; i++)
-                            {
-                                parentModel.InsertChildAt(insertToIndex + i, anchorablesToMove[i]);
-                            }
-                        }
-                        else
-                        {
-                            parentModel.InsertChildAt(insertToIndex, floatingPanel);
-                        }
-                    }
-                    else
-                    {
-                        LayoutAnchorablePane targetModelAsPositionableElement = targetModel;
-                        LayoutAnchorablePaneGroup newOrientedPanel = new()
-                        {
-                            Orientation = Microsoft.UI.Xaml.Controls.Orientation.Horizontal,
-                            DockWidth = targetModelAsPositionableElement.DockWidth,
-                            DockHeight = targetModelAsPositionableElement.DockHeight,
-                        };
-
-                        parentModel.InsertChildAt(insertToIndex, newOrientedPanel);
-                        // the floating window must be added after the target modal as it could be raise a CollectGarbage call
-                        newOrientedPanel.Children.Add(targetModel);
-                        newOrientedPanel.Children.Insert(0, floatingPanel);
-                    }
-                }
-
-                break;
-
-            case DropTargetType.AnchorablePaneDockRight:
-                {
-                    int insertToIndex = parentModel.IndexOfChild(targetModel);
-
-                    if (parentModelOrientable.Orientation != Microsoft.UI.Xaml.Controls.Orientation.Horizontal &&
-                        parentModel.ChildrenCount == 1)
-                    {
-                        parentModelOrientable.Orientation = Microsoft.UI.Xaml.Controls.Orientation.Horizontal;
-                    }
-
-                    if (parentModelOrientable.Orientation == Microsoft.UI.Xaml.Controls.Orientation.Horizontal)
-                    {
-                        LayoutAnchorablePaneGroup layoutAnchorablePaneGroup = floatingPanel;
-                        if (layoutAnchorablePaneGroup != null &&
-                            (layoutAnchorablePaneGroup.Children.Count == 1 ||
-                                layoutAnchorablePaneGroup.Orientation == Microsoft.UI.Xaml.Controls.Orientation.Horizontal))
-                        {
-                            ILayoutAnchorablePane[] anchorablesToMove = layoutAnchorablePaneGroup.Children.ToArray();
-                            for (int i = 0; i < anchorablesToMove.Length; i++)
-                            {
-                                parentModel.InsertChildAt(insertToIndex + 1 + i, anchorablesToMove[i]);
-                            }
-                        }
-                        else
-                        {
-                            parentModel.InsertChildAt(insertToIndex + 1, floatingPanel);
-                        }
-                    }
-                    else
-                    {
-                        LayoutAnchorablePane targetModelAsPositionableElement = targetModel;
-                        LayoutAnchorablePaneGroup newOrientedPanel = new()
-                        {
-                            Orientation = Microsoft.UI.Xaml.Controls.Orientation.Horizontal,
-                            DockWidth = targetModelAsPositionableElement.DockWidth,
-                            DockHeight = targetModelAsPositionableElement.DockHeight,
-                        };
-
-                        parentModel.InsertChildAt(insertToIndex, newOrientedPanel);
-                        newOrientedPanel.Children.Add(targetModel);
-                        newOrientedPanel.Children.Add(floatingPanel);
-                    }
-                }
-
-                break;
-
-            case DropTargetType.AnchorablePaneDockInside:
-                {
-                    LayoutAnchorablePane paneModel = targetModel;
-                    LayoutAnchorablePaneGroup layoutAnchorablePaneGroup = floatingPanel;
-
-                    int i = tabIndex == -1 ? 0 : tabIndex;
-                    foreach (LayoutAnchorable? anchorableToImport in
-                        layoutAnchorablePaneGroup.Descendents().OfType<LayoutAnchorable>().ToArray())
-                    {
-                        paneModel.Children.Insert(i, anchorableToImport);
-                        i++;
-                    }
-                }
-
-                break;
+            DropTargetType.AnchorablePaneDockLeft => (Microsoft.UI.Xaml.Controls.Orientation.Horizontal, false),
+            DropTargetType.AnchorablePaneDockRight => (Microsoft.UI.Xaml.Controls.Orientation.Horizontal, true),
+            DropTargetType.AnchorablePaneDockTop => (Microsoft.UI.Xaml.Controls.Orientation.Vertical, false),
+            DropTargetType.AnchorablePaneDockBottom => (Microsoft.UI.Xaml.Controls.Orientation.Vertical, true),
+            _ => null,
+        };
+        if (placement is { } edge)
+        {
+            DockAtEdge(targetModel, parentModel, parentModelOrientable, floatingPanel, edge.Orientation, edge.InsertAfter);
+        }
+        else if (Type == DropTargetType.AnchorablePaneDockInside)
+        {
+            int i = tabIndex == -1 ? 0 : tabIndex;
+            foreach (LayoutAnchorable anchorableToImport in floatingPanel.Descendents().OfType<LayoutAnchorable>().ToArray())
+            {
+                targetModel.Children.Insert(i++, anchorableToImport);
+            }
         }
 
         if (anchorableActive is not null)
@@ -272,6 +87,56 @@ internal class AnchorablePaneDropTarget : DropTarget<LayoutAnchorablePaneControl
         }
 
         base.Drop(floatingWindow);
+    }
+
+    private static void DockAtEdge(LayoutAnchorablePane targetModel, ILayoutGroup parentModel,
+        ILayoutOrientableGroup parentModelOrientable, LayoutAnchorablePaneGroup floatingPanel,
+        Microsoft.UI.Xaml.Controls.Orientation orientation, bool insertAfter)
+    {
+        int insertToIndex = parentModel.IndexOfChild(targetModel);
+        if (parentModelOrientable.Orientation != orientation && parentModel.ChildrenCount == 1)
+        {
+            parentModelOrientable.Orientation = orientation;
+        }
+
+        if (parentModelOrientable.Orientation == orientation)
+        {
+            int firstIndex = insertToIndex + (insertAfter ? 1 : 0);
+            if (floatingPanel.Children.Count == 1 || floatingPanel.Orientation == orientation)
+            {
+                ILayoutAnchorablePane[] anchorablesToMove = floatingPanel.Children.ToArray();
+                for (int i = 0; i < anchorablesToMove.Length; i++)
+                {
+                    parentModel.InsertChildAt(firstIndex + i, anchorablesToMove[i]);
+                }
+            }
+            else
+            {
+                parentModel.InsertChildAt(firstIndex, floatingPanel);
+            }
+        }
+        else
+        {
+            LayoutAnchorablePaneGroup newOrientedPanel = new()
+            {
+                Orientation = orientation,
+                DockWidth = targetModel.DockWidth,
+                DockHeight = targetModel.DockHeight,
+            };
+
+            parentModel.InsertChildAt(insertToIndex, newOrientedPanel);
+            // Attach the target before transferring floating contents: the transfer
+            // can synchronously collect empty layout groups.
+            newOrientedPanel.Children.Add(targetModel);
+            if (insertAfter)
+            {
+                newOrientedPanel.Children.Add(floatingPanel);
+            }
+            else
+            {
+                newOrientedPanel.Children.Insert(0, floatingPanel);
+            }
+        }
     }
 
     /// <inheritdoc/>

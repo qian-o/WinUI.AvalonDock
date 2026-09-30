@@ -15,6 +15,7 @@ internal static class WorkspacePersistenceChecks
 {
     public static async Task RunAsync(DockingManager manager, WorkspaceViewModel viewModel, SampleChecks checks)
     {
+        SourceCollectionChecks.Run(checks);
         WorkspaceDocument firstDocument = viewModel.Documents.Single();
         WorkspaceDocument secondDocument = viewModel.OpenDocument("Dock After Restore", "Check restoration of a nontrivial XML layout.");
         WorkspaceDocument floatingDocument = viewModel.OpenDocument("Floating Close Check", "Check floating-document close cancellation and policy.");

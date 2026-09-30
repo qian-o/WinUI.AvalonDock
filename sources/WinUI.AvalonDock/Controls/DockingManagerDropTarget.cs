@@ -4,6 +4,7 @@ using System;
 using System.Linq;
 using AvalonDock.Layout;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
 using Windows.Foundation;
 
@@ -39,174 +40,71 @@ internal class DockingManagerDropTarget : DropTarget<DockingManager>
             return;
         }
 
-        switch (Type)
+        (Orientation Orientation, bool InsertAfter)? placement = Type switch
         {
-            case DropTargetType.DockingManagerDockLeft:
-                {
-                    if (manager.Layout.RootPanel.Orientation != Microsoft.UI.Xaml.Controls.Orientation.Horizontal &&
-                        manager.Layout.RootPanel.Children.Count == 1)
-                    {
-                        manager.Layout.RootPanel.Orientation = Microsoft.UI.Xaml.Controls.Orientation.Horizontal;
-                    }
-
-                    if (manager.Layout.RootPanel.Orientation == Microsoft.UI.Xaml.Controls.Orientation.Horizontal)
-                    {
-                        LayoutAnchorablePaneGroup layoutAnchorablePaneGroup = floatingPanel as LayoutAnchorablePaneGroup;
-                        if (layoutAnchorablePaneGroup != null &&
-                            layoutAnchorablePaneGroup.Orientation == Microsoft.UI.Xaml.Controls.Orientation.Horizontal)
-                        {
-                            ILayoutAnchorablePane[] childrenToTransfer = layoutAnchorablePaneGroup.Children.ToArray();
-                            for (int i = 0; i < childrenToTransfer.Length; i++)
-                            {
-                                manager.Layout.RootPanel.Children.Insert(i, childrenToTransfer[i]);
-                            }
-                        }
-                        else
-                        {
-                            manager.Layout.RootPanel.Children.Insert(0, floatingPanel);
-                        }
-                    }
-                    else
-                    {
-                        LayoutPanel newOrientedPanel = new()
-                        {
-                            Orientation = Microsoft.UI.Xaml.Controls.Orientation.Horizontal
-                        };
-
-                        newOrientedPanel.Children.Add(floatingPanel);
-                        newOrientedPanel.Children.Add(manager.Layout.RootPanel);
-
-                        manager.Layout.RootPanel = newOrientedPanel;
-                    }
-                }
-
-                break;
-
-            case DropTargetType.DockingManagerDockRight:
-                {
-                    if (manager.Layout.RootPanel.Orientation != Microsoft.UI.Xaml.Controls.Orientation.Horizontal &&
-                        manager.Layout.RootPanel.Children.Count == 1)
-                    {
-                        manager.Layout.RootPanel.Orientation = Microsoft.UI.Xaml.Controls.Orientation.Horizontal;
-                    }
-
-                    if (manager.Layout.RootPanel.Orientation == Microsoft.UI.Xaml.Controls.Orientation.Horizontal)
-                    {
-                        LayoutAnchorablePaneGroup layoutAnchorablePaneGroup = floatingPanel as LayoutAnchorablePaneGroup;
-                        if (layoutAnchorablePaneGroup != null &&
-                            layoutAnchorablePaneGroup.Orientation == Microsoft.UI.Xaml.Controls.Orientation.Horizontal)
-                        {
-                            ILayoutAnchorablePane[] childrenToTransfer = layoutAnchorablePaneGroup.Children.ToArray();
-                            for (int i = 0; i < childrenToTransfer.Length; i++)
-                            {
-                                manager.Layout.RootPanel.Children.Add(childrenToTransfer[i]);
-                            }
-                        }
-                        else
-                        {
-                            manager.Layout.RootPanel.Children.Add(floatingPanel);
-                        }
-                    }
-                    else
-                    {
-                        LayoutPanel newOrientedPanel = new()
-                        {
-                            Orientation = Microsoft.UI.Xaml.Controls.Orientation.Horizontal
-                        };
-
-                        newOrientedPanel.Children.Add(floatingPanel);
-                        newOrientedPanel.Children.Insert(0, manager.Layout.RootPanel);
-
-                        manager.Layout.RootPanel = newOrientedPanel;
-                    }
-                }
-
-                break;
-
-            case DropTargetType.DockingManagerDockTop:
-                {
-                    if (manager.Layout.RootPanel.Orientation != Microsoft.UI.Xaml.Controls.Orientation.Vertical &&
-                        manager.Layout.RootPanel.Children.Count == 1)
-                    {
-                        manager.Layout.RootPanel.Orientation = Microsoft.UI.Xaml.Controls.Orientation.Vertical;
-                    }
-
-                    if (manager.Layout.RootPanel.Orientation == Microsoft.UI.Xaml.Controls.Orientation.Vertical)
-                    {
-                        LayoutAnchorablePaneGroup layoutAnchorablePaneGroup = floatingPanel as LayoutAnchorablePaneGroup;
-                        if (layoutAnchorablePaneGroup != null &&
-                            layoutAnchorablePaneGroup.Orientation == Microsoft.UI.Xaml.Controls.Orientation.Vertical)
-                        {
-                            ILayoutAnchorablePane[] childrenToTransfer = layoutAnchorablePaneGroup.Children.ToArray();
-                            for (int i = 0; i < childrenToTransfer.Length; i++)
-                            {
-                                manager.Layout.RootPanel.Children.Insert(i, childrenToTransfer[i]);
-                            }
-                        }
-                        else
-                        {
-                            manager.Layout.RootPanel.Children.Insert(0, floatingPanel);
-                        }
-                    }
-                    else
-                    {
-                        LayoutPanel newOrientedPanel = new()
-                        {
-                            Orientation = Microsoft.UI.Xaml.Controls.Orientation.Vertical
-                        };
-
-                        newOrientedPanel.Children.Add(floatingPanel);
-                        newOrientedPanel.Children.Add(manager.Layout.RootPanel);
-
-                        manager.Layout.RootPanel = newOrientedPanel;
-                    }
-                }
-
-                break;
-
-            case DropTargetType.DockingManagerDockBottom:
-                {
-                    if (manager.Layout.RootPanel.Orientation != Microsoft.UI.Xaml.Controls.Orientation.Vertical &&
-                        manager.Layout.RootPanel.Children.Count == 1)
-                    {
-                        manager.Layout.RootPanel.Orientation = Microsoft.UI.Xaml.Controls.Orientation.Vertical;
-                    }
-
-                    if (manager.Layout.RootPanel.Orientation == Microsoft.UI.Xaml.Controls.Orientation.Vertical)
-                    {
-                        LayoutAnchorablePaneGroup layoutAnchorablePaneGroup = floatingPanel as LayoutAnchorablePaneGroup;
-                        if (layoutAnchorablePaneGroup != null &&
-                            layoutAnchorablePaneGroup.Orientation == Microsoft.UI.Xaml.Controls.Orientation.Vertical)
-                        {
-                            ILayoutAnchorablePane[] childrenToTransfer = layoutAnchorablePaneGroup.Children.ToArray();
-                            for (int i = 0; i < childrenToTransfer.Length; i++)
-                            {
-                                manager.Layout.RootPanel.Children.Add(childrenToTransfer[i]);
-                            }
-                        }
-                        else
-                        {
-                            manager.Layout.RootPanel.Children.Add(floatingPanel);
-                        }
-                    }
-                    else
-                    {
-                        LayoutPanel newOrientedPanel = new()
-                        {
-                            Orientation = Microsoft.UI.Xaml.Controls.Orientation.Vertical
-                        };
-
-                        newOrientedPanel.Children.Add(floatingPanel);
-                        newOrientedPanel.Children.Insert(0, manager.Layout.RootPanel);
-
-                        manager.Layout.RootPanel = newOrientedPanel;
-                    }
-                }
-
-                break;
+            DropTargetType.DockingManagerDockLeft => (Orientation.Horizontal, false),
+            DropTargetType.DockingManagerDockRight => (Orientation.Horizontal, true),
+            DropTargetType.DockingManagerDockTop => (Orientation.Vertical, false),
+            DropTargetType.DockingManagerDockBottom => (Orientation.Vertical, true),
+            _ => null,
+        };
+        if (placement is { } edge)
+        {
+            DockAtEdge(floatingPanel, edge.Orientation, edge.InsertAfter);
         }
 
         base.Drop(floatingWindow);
+    }
+
+    private void DockAtEdge(LayoutAnchorablePaneGroup floatingPanel, Orientation orientation, bool insertAfter)
+    {
+        if (manager.Layout.RootPanel.Orientation != orientation && manager.Layout.RootPanel.Children.Count == 1)
+        {
+            manager.Layout.RootPanel.Orientation = orientation;
+        }
+
+        if (manager.Layout.RootPanel.Orientation == orientation)
+        {
+            if (floatingPanel.Orientation == orientation)
+            {
+                ILayoutAnchorablePane[] childrenToTransfer = floatingPanel.Children.ToArray();
+                for (int i = 0; i < childrenToTransfer.Length; i++)
+                {
+                    if (insertAfter)
+                    {
+                        manager.Layout.RootPanel.Children.Add(childrenToTransfer[i]);
+                    }
+                    else
+                    {
+                        manager.Layout.RootPanel.Children.Insert(i, childrenToTransfer[i]);
+                    }
+                }
+            }
+            else if (insertAfter)
+            {
+                manager.Layout.RootPanel.Children.Add(floatingPanel);
+            }
+            else
+            {
+                manager.Layout.RootPanel.Children.Insert(0, floatingPanel);
+            }
+        }
+        else
+        {
+            LayoutPanel newOrientedPanel = new() { Orientation = orientation };
+            // Retain the original mutation order: the floating group is attached first.
+            newOrientedPanel.Children.Add(floatingPanel);
+            if (insertAfter)
+            {
+                newOrientedPanel.Children.Insert(0, manager.Layout.RootPanel);
+            }
+            else
+            {
+                newOrientedPanel.Children.Add(manager.Layout.RootPanel);
+            }
+
+            manager.Layout.RootPanel = newOrientedPanel;
+        }
     }
 
     /// <inheritdoc/>

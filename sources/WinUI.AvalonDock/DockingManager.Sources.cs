@@ -69,14 +69,7 @@ public partial class DockingManager : Core.IDockingManager
             return;
         }
 
-        syncBridge?.Detach();
-        syncBridge = null;
-        if (installedAlignmentStrategy != null && LayoutUpdateStrategy == installedAlignmentStrategy)
-        {
-            LayoutUpdateStrategy = null;
-        }
-
-        installedAlignmentStrategy = null;
+        DetachDockLayout();
 
         if (newValue != null)
         {
@@ -153,6 +146,11 @@ public partial class DockingManager : Core.IDockingManager
         }
 
         // 永久释放只断开同步，不移除已导入的用户布局节点。
+        DetachDockLayout();
+    }
+
+    private void DetachDockLayout()
+    {
         syncBridge?.Detach();
         syncBridge = null;
         if (installedAlignmentStrategy != null && LayoutUpdateStrategy == installedAlignmentStrategy)
@@ -241,14 +239,7 @@ public partial class DockingManager : Core.IDockingManager
         {
             if (e.OldItems != null)
             {
-                HashSet<object?> oldItems = new(e.OldItems.Cast<object>(), ReferenceEqualityComparer.Default);
-                LayoutDocument[] documentsToRemove = Layout.Descendents().OfType<LayoutDocument>().Where(d => oldItems.Contains(d.Content)).ToArray();
-                foreach (LayoutDocument? documentToRemove in documentsToRemove)
-                {
-                    documentToRemove.Content = null;
-                    documentToRemove.Parent?.RemoveChild(documentToRemove);
-                    RemoveViewFromLogicalChild(documentToRemove);
-                }
+                RemoveSourceItems<LayoutDocument>(Layout, e.OldItems, clearContent: true);
             }
         }
 
@@ -261,13 +252,7 @@ public partial class DockingManager : Core.IDockingManager
         if (e.Action == NotifyCollectionChangedAction.Reset)
         {
             object[] contents = DocumentsSource?.Cast<object>().ToArray() ?? [];
-            LayoutDocument[] documentsToRemove = GetItemsToRemoveAfterReset<LayoutDocument>(contents);
-            foreach (LayoutDocument documentToRemove in documentsToRemove)
-            {
-                (documentToRemove.Parent as ILayoutContainer)?.RemoveChild(
-                    documentToRemove);
-                RemoveViewFromLogicalChild(documentToRemove);
-            }
+            RemoveLayoutContents(GetItemsToRemoveAfterReset<LayoutDocument>(contents), clearContent: false);
             HashSet<object?> imported = new(Layout.Descendents().OfType<LayoutDocument>().Select(item => item.Content), ReferenceEqualityComparer.Default);
             ImportDocuments(Layout, contents.Where(item => !imported.Contains(item)), true);
         }
@@ -287,16 +272,7 @@ public partial class DockingManager : Core.IDockingManager
             return;
         }
 
-        HashSet<object?> sourceItems = new(documentsSource.Cast<object>(), ReferenceEqualityComparer.Default);
-        LayoutDocument[] documentsToRemove = layout.Descendents().OfType<LayoutDocument>()
-            .Where(d => sourceItems.Contains(d.Content)).ToArray();
-
-        foreach (LayoutDocument? documentToRemove in documentsToRemove)
-        {
-            (documentToRemove.Parent as ILayoutContainer)?.RemoveChild(
-                documentToRemove);
-            RemoveViewFromLogicalChild(documentToRemove);
-        }
+        RemoveSourceItems<LayoutDocument>(layout, documentsSource, clearContent: false);
 
         if (documentsSource is INotifyCollectionChanged documentsSourceAsNotifier)
         {
@@ -393,14 +369,7 @@ public partial class DockingManager : Core.IDockingManager
         {
             if (e.OldItems != null)
             {
-                HashSet<object?> oldItems = new(e.OldItems.Cast<object>(), ReferenceEqualityComparer.Default);
-                LayoutAnchorable[] anchorablesToRemove = Layout.Descendents().OfType<LayoutAnchorable>().Where(d => oldItems.Contains(d.Content)).ToArray();
-                foreach (LayoutAnchorable? anchorableToRemove in anchorablesToRemove)
-                {
-                    anchorableToRemove.Content = null;
-                    anchorableToRemove.Parent?.RemoveChild(anchorableToRemove);
-                    RemoveViewFromLogicalChild(anchorableToRemove);
-                }
+                RemoveSourceItems<LayoutAnchorable>(Layout, e.OldItems, clearContent: true);
             }
         }
 
@@ -413,13 +382,7 @@ public partial class DockingManager : Core.IDockingManager
         if (e.Action == NotifyCollectionChangedAction.Reset)
         {
             object[] contents = AnchorablesSource?.Cast<object>().ToArray() ?? [];
-            LayoutAnchorable[] anchorablesToRemove = GetItemsToRemoveAfterReset<LayoutAnchorable>(contents);
-            foreach (LayoutAnchorable anchorableToRemove in anchorablesToRemove)
-            {
-                (anchorableToRemove.Parent as ILayoutContainer)?.RemoveChild(
-                    anchorableToRemove);
-                RemoveViewFromLogicalChild(anchorableToRemove);
-            }
+            RemoveLayoutContents(GetItemsToRemoveAfterReset<LayoutAnchorable>(contents), clearContent: false);
             HashSet<object?> imported = new(Layout.Descendents().OfType<LayoutAnchorable>().Select(item => item.Content), ReferenceEqualityComparer.Default);
             ImportAnchorables(Layout, contents.Where(item => !imported.Contains(item)), true);
         }
@@ -439,19 +402,36 @@ public partial class DockingManager : Core.IDockingManager
             return;
         }
 
-        HashSet<object?> sourceItems = new(anchorablesSource.Cast<object>(), ReferenceEqualityComparer.Default);
-        LayoutAnchorable[] anchorablesToRemove = layout.Descendents().OfType<LayoutAnchorable>()
-            .Where(d => sourceItems.Contains(d.Content)).ToArray();
-
-        foreach (LayoutAnchorable? anchorableToRemove in anchorablesToRemove)
-        {
-            anchorableToRemove.Parent?.RemoveChild(anchorableToRemove);
-            RemoveViewFromLogicalChild(anchorableToRemove);
-        }
+        RemoveSourceItems<LayoutAnchorable>(layout, anchorablesSource, clearContent: false);
 
         if (anchorablesSource is INotifyCollectionChanged anchorablesSourceAsNotifier)
         {
             anchorablesSourceAsNotifier.CollectionChanged -= AnchorablesSourceElementsChanged;
+        }
+    }
+
+    private void RemoveSourceItems<TLayoutType>(LayoutRoot layout, IEnumerable source, bool clearContent)
+        where TLayoutType : LayoutContent
+    {
+        HashSet<object?> sourceItems = new(source.Cast<object>(), ReferenceEqualityComparer.Default);
+        TLayoutType[] items = layout.Descendents().OfType<TLayoutType>()
+            .Where(item => sourceItems.Contains(item.Content)).ToArray();
+        RemoveLayoutContents(items, clearContent);
+    }
+
+    private void RemoveLayoutContents(LayoutContent[] items, bool clearContent)
+    {
+        // Snapshot selection happens before any layout notifications. Remove/Replace clears
+        // Content before detaching; Reset and source replacement retain it on removed nodes.
+        foreach (LayoutContent item in items)
+        {
+            if (clearContent)
+            {
+                item.Content = null;
+            }
+
+            item.Parent?.RemoveChild(item);
+            RemoveViewFromLogicalChild(item);
         }
     }
 

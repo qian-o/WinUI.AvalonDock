@@ -165,65 +165,14 @@ internal sealed class LayoutSyncBridge
     }
 
     private void OnDocumentCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
-    {
-        if (isSyncing || documentModels == null)
-        {
-            return;
-        }
-
-        isSyncing = true;
-        try
-        {
-            switch (e.Action)
-            {
-                case NotifyCollectionChangedAction.Add:
-                    foreach (object item in e.NewItems?.OfType<object>() ?? [])
-                    {
-                        if (!ContainsReference(documentModels, item))
-                        {
-                            documentModels.Add(item);
-                        }
-                    }
-
-                    break;
-                case NotifyCollectionChangedAction.Remove:
-                    foreach (object item in e.OldItems?.OfType<object>() ?? [])
-                    {
-                        RemoveReference(documentModels, item);
-                    }
-
-                    break;
-                case NotifyCollectionChangedAction.Replace:
-                    foreach (object item in e.OldItems?.OfType<object>() ?? [])
-                    {
-                        RemoveReference(documentModels, item);
-                    }
-
-                    foreach (object item in e.NewItems?.OfType<object>() ?? [])
-                    {
-                        if (!ContainsReference(documentModels, item))
-                        {
-                            documentModels.Add(item);
-                        }
-                    }
-
-                    break;
-                case NotifyCollectionChangedAction.Move:
-                    break;
-                case NotifyCollectionChangedAction.Reset:
-                    RebuildDocuments();
-                    break;
-            }
-        }
-        finally
-        {
-            isSyncing = false;
-        }
-    }
+        => OnCollectionChanged(sender, e, documentModels, isDocument: true);
 
     private void OnAnchorableCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+        => OnCollectionChanged(sender, e, anchorableModels, isDocument: false);
+
+    private void OnCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e, ObservableCollection<object> models, bool isDocument)
     {
-        if (isSyncing || anchorableModels == null)
+        if (isSyncing)
         {
             return;
         }
@@ -231,56 +180,47 @@ internal sealed class LayoutSyncBridge
         isSyncing = true;
         try
         {
-            switch (e.Action)
+            if (e.Action is NotifyCollectionChangedAction.Remove or NotifyCollectionChangedAction.Replace)
             {
-                case NotifyCollectionChangedAction.Add:
-                    AnchorSide? addSide = FindSideForSender(sender);
-                    foreach (object item in e.NewItems?.OfType<object>() ?? [])
+                foreach (object item in e.OldItems?.OfType<object>() ?? [])
+                {
+                    RemoveReference(models, item);
+                    if (!isDocument)
                     {
-                        if (addSide.HasValue)
-                        {
-                            contentToSide[item] = addSide.Value;
-                        }
-
-                        if (!ContainsReference(anchorableModels, item))
-                        {
-                            anchorableModels.Add(item);
-                        }
-                    }
-
-                    break;
-                case NotifyCollectionChangedAction.Remove:
-                    foreach (object item in e.OldItems?.OfType<object>() ?? [])
-                    {
-                        RemoveReference(anchorableModels, item);
                         contentToSide.Remove(item);
                     }
-                    break;
-                case NotifyCollectionChangedAction.Replace:
-                    foreach (object item in e.OldItems?.OfType<object>() ?? [])
-                    {
-                        RemoveReference(anchorableModels, item);
-                        contentToSide.Remove(item);
-                    }
-                    AnchorSide? replacementSide = FindSideForSender(sender);
-                    foreach (object item in e.NewItems?.OfType<object>() ?? [])
-                    {
-                        if (replacementSide.HasValue)
-                        {
-                            contentToSide[item] = replacementSide.Value;
-                        }
+                }
+            }
 
-                        if (!ContainsReference(anchorableModels, item))
-                        {
-                            anchorableModels.Add(item);
-                        }
+            if (e.Action is NotifyCollectionChangedAction.Add or NotifyCollectionChangedAction.Replace)
+            {
+                AnchorSide? side = isDocument ? null : FindSideForSender(sender);
+                foreach (object item in e.NewItems?.OfType<object>() ?? [])
+                {
+                    // The insertion strategy consumes this map synchronously when models.Add
+                    // notifies the manager, so publish the side before adding the model.
+                    if (side.HasValue)
+                    {
+                        contentToSide[item] = side.Value;
                     }
-                    break;
-                case NotifyCollectionChangedAction.Move:
-                    break;
-                case NotifyCollectionChangedAction.Reset:
+
+                    if (!ContainsReference(models, item))
+                    {
+                        models.Add(item);
+                    }
+                }
+            }
+
+            if (e.Action == NotifyCollectionChangedAction.Reset)
+            {
+                if (isDocument)
+                {
+                    RebuildDocuments();
+                }
+                else
+                {
                     RebuildAnchorables();
-                    break;
+                }
             }
         }
         finally
@@ -377,12 +317,12 @@ internal sealed class LayoutSyncBridge
 
     private bool RemoveDockableFromTree(IDockable node, IDockable target, bool isDocument)
     {
-        if (isDocument && node is IDocumentDock docDock && RemoveDockableReference(docDock.VisibleDockables, target))
+        if (isDocument && node is IDocumentDock docDock && RemoveReference(docDock.VisibleDockables, target))
         {
             return true;
         }
 
-        if (!isDocument && node is IToolDock toolDock && RemoveDockableReference(toolDock.VisibleDockables, target))
+        if (!isDocument && node is IToolDock toolDock && RemoveReference(toolDock.VisibleDockables, target))
         {
             return true;
         }
@@ -436,21 +376,7 @@ internal sealed class LayoutSyncBridge
     {
         List<object> current = new();
         CollectDocumentsFromTree(rootDock, current);
-        foreach (object? item in documentModels.ToArray())
-        {
-            if (!ContainsReference(current, item))
-            {
-                RemoveReference(documentModels, item);
-            }
-        }
-
-        foreach (object item in current)
-        {
-            if (!ContainsReference(documentModels, item))
-            {
-                documentModels.Add(item);
-            }
-        }
+        ReconcileModels(documentModels, current);
     }
 
     private static void CollectDocumentsFromTree(IDockable node, List<object> documents)
@@ -489,19 +415,24 @@ internal sealed class LayoutSyncBridge
             contentToSide.Add(side.Key, side.Value);
         }
 
-        foreach (object? item in anchorableModels.ToArray())
+        ReconcileModels(anchorableModels, current);
+    }
+
+    private static void ReconcileModels(ObservableCollection<object> models, List<object> current)
+    {
+        foreach (object item in models.ToArray())
         {
             if (!ContainsReference(current, item))
             {
-                RemoveReference(anchorableModels, item);
+                RemoveReference(models, item);
             }
         }
 
         foreach (object item in current)
         {
-            if (!ContainsReference(anchorableModels, item))
+            if (!ContainsReference(models, item))
             {
-                anchorableModels.Add(item);
+                models.Add(item);
             }
         }
     }
@@ -569,21 +500,7 @@ internal sealed class LayoutSyncBridge
     private static bool ContainsReference(IEnumerable<object> source, object? item) =>
         source.Any(candidate => ReferenceEquals(candidate, item));
 
-    private static void RemoveReference(ObservableCollection<object> source, object? item)
-    {
-        for (int index = 0; index < source.Count; index++)
-        {
-            if (!ReferenceEquals(source[index], item))
-            {
-                continue;
-            }
-
-            source.RemoveAt(index);
-            return;
-        }
-    }
-
-    private static bool RemoveDockableReference(IList<IDockable>? source, IDockable target)
+    private static bool RemoveReference<T>(IList<T>? source, T? item) where T : class
     {
         if (source == null)
         {
@@ -592,7 +509,7 @@ internal sealed class LayoutSyncBridge
 
         for (int index = 0; index < source.Count; index++)
         {
-            if (!ReferenceEquals(source[index], target))
+            if (!ReferenceEquals(source[index], item))
             {
                 continue;
             }

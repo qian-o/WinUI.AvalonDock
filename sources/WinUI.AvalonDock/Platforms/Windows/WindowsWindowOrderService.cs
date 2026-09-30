@@ -33,7 +33,12 @@ internal sealed class WindowsWindowOrderService : IWindowOrderService
 
         nint parent = Win32Interop.GetWindowFromWindowId(owner.XamlRoot.ContentIslandEnvironment.AppWindowId);
         parent = GetAncestor(parent, 2 /* GA_ROOT */);
-        (Window Window, nint Handle)[] candidates = windows.Select(window => (Window: window, Handle: WinRT.Interop.WindowNative.GetWindowHandle(window))).ToArray();
+        Dictionary<nint, Window> candidates = new(windows.Count);
+        foreach (Window window in windows)
+        {
+            // Preserve the first candidate for duplicate handles, as the original scan did.
+            candidates.TryAdd(WinRT.Interop.WindowNative.GetWindowHandle(window), window);
+        }
         List<WindowOrderEntry> result = new();
         bool aboveOwner = true;
         // The original GetWindowZOrder counts from the bottom; walking front-to-back
@@ -45,13 +50,9 @@ internal sealed class WindowsWindowOrderService : IWindowOrderService
                 aboveOwner = false;
             }
 
-            foreach ((Window Window, nint Handle) candidate in candidates)
+            if (candidates.TryGetValue(currentHandle, out Window? candidate))
             {
-                if (candidate.Handle == currentHandle)
-                {
-                    result.Add(new WindowOrderEntry(candidate.Window, aboveOwner));
-                    break;
-                }
+                result.Add(new WindowOrderEntry(candidate, aboveOwner));
             }
         }
         return result;

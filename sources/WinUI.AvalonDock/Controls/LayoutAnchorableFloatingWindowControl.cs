@@ -193,47 +193,15 @@ public partial class LayoutAnchorableFloatingWindowControl : LayoutFloatingWindo
 
         args.Cancel = Model.Descendents().OfType<LayoutContent>().Any();
     }
-    private bool CanExecuteHideWindowCommand(object parameter)
-    {
-        DockingManager? manager = Model?.Root?.Manager;
-        if (manager == null)
-        {
-            return false;
-        }
-
-        bool canExecute = false;
-        foreach (LayoutAnchorable? anchorable in Model.Descendents().OfType<LayoutAnchorable>().ToArray())
-        {
-            if (!anchorable.CanHide)
-            {
-                canExecute = false;
-                break;
-            }
-
-            LayoutAnchorableItem? anchorableLayoutItem = manager.GetLayoutItemFromModel(anchorable) as LayoutAnchorableItem;
-            if (anchorableLayoutItem?.HideCommand == null || !anchorableLayoutItem.HideCommand.CanExecute(parameter))
-            {
-                canExecute = false;
-                break;
-            }
-
-            canExecute = true;
-        }
-
-        return canExecute;
-    }
+    private bool CanExecuteHideWindowCommand(object parameter) =>
+        CanExecuteContentCommand<LayoutAnchorable, LayoutAnchorableItem>(parameter,
+            static content => content.CanHide, static item => item.HideCommand);
 
     private void OnExecuteHideWindowCommand(object parameter)
     {
-        DockingManager? manager = Model.Root?.Manager;
-        if (manager == null)
+        if (!ExecuteContentCommand<LayoutAnchorable, LayoutAnchorableItem>(parameter, static item => item.HideCommand))
         {
             return;
-        }
-        foreach (LayoutAnchorable? anchorable in Model.Descendents().OfType<LayoutAnchorable>().ToArray())
-        {
-            LayoutAnchorableItem? anchorableLayoutItem = manager.GetLayoutItemFromModel(anchorable) as LayoutAnchorableItem;
-            anchorableLayoutItem?.HideCommand?.Execute(parameter);
         }
 
         // 隐藏被取消时内容仍在浮动模型中，保留可见宿主供用户继续使用。
@@ -243,47 +211,10 @@ public partial class LayoutAnchorableFloatingWindowControl : LayoutFloatingWindo
         }
     }
 
-    private bool CanExecuteCloseWindowCommand(object parameter)
-    {
-        DockingManager? manager = Model?.Root?.Manager;
-        if (manager == null)
-        {
-            return false;
-        }
+    private bool CanExecuteCloseWindowCommand(object parameter) =>
+        CanExecuteContentCommand<LayoutAnchorable, LayoutAnchorableItem>(parameter,
+            static content => content.CanClose, static item => item.CloseCommand);
 
-        bool canExecute = false;
-        foreach (LayoutAnchorable? anchorable in Model.Descendents().OfType<LayoutAnchorable>().ToArray())
-        {
-            if (!anchorable.CanClose)
-            {
-                canExecute = false;
-                break;
-            }
-
-            LayoutAnchorableItem? anchorableLayoutItem = manager.GetLayoutItemFromModel(anchorable) as LayoutAnchorableItem;
-            if (anchorableLayoutItem?.CloseCommand == null || !anchorableLayoutItem.CloseCommand.CanExecute(parameter))
-            {
-                canExecute = false;
-                break;
-            }
-
-            canExecute = true;
-        }
-
-        return canExecute;
-    }
-
-    private void OnExecuteCloseWindowCommand(object parameter)
-    {
-        DockingManager? manager = Model.Root?.Manager;
-        if (manager == null)
-        {
-            return;
-        }
-        foreach (LayoutAnchorable? anchorable in Model.Descendents().OfType<LayoutAnchorable>().ToArray())
-        {
-            LayoutAnchorableItem? anchorableLayoutItem = manager.GetLayoutItemFromModel(anchorable) as LayoutAnchorableItem;
-            anchorableLayoutItem?.CloseCommand?.Execute(parameter);
-        }
-    }
+    private void OnExecuteCloseWindowCommand(object parameter) =>
+        ExecuteContentCommand<LayoutAnchorable, LayoutAnchorableItem>(parameter, static item => item.CloseCommand);
 }

@@ -30,82 +30,44 @@ public class DefaultLayoutEngine : ILayoutEngine
             throw new ArgumentNullException(nameof(pane));
         }
 
-        LayoutPanel rootPanel = root.RootPanel;
-
         switch (side)
         {
             case AnchorSide.Left:
-                if (rootPanel.Orientation == Orientation.Horizontal)
-                {
-                    rootPanel.Children.Insert(0, pane);
-                }
-                else
-                {
-                    LayoutPanel panel = new()
-                    {
-                        Orientation = Orientation.Horizontal
-                    };
-                    root.RootPanel = panel;
-                    panel.Children.Add(pane);
-                    panel.Children.Add(rootPanel);
-                }
-
+                InsertPaneAtRoot(root, pane, Orientation.Horizontal, insertAtStart: true);
                 break;
-
             case AnchorSide.Right:
-                if (rootPanel.Orientation == Orientation.Horizontal)
-                {
-                    rootPanel.Children.Add(pane);
-                }
-                else
-                {
-                    LayoutPanel panel = new()
-                    {
-                        Orientation = Orientation.Horizontal
-                    };
-                    root.RootPanel = panel;
-                    panel.Children.Add(rootPanel);
-                    panel.Children.Add(pane);
-                }
-
+                InsertPaneAtRoot(root, pane, Orientation.Horizontal, insertAtStart: false);
                 break;
-
             case AnchorSide.Top:
-                if (rootPanel.Orientation == Orientation.Vertical)
-                {
-                    rootPanel.Children.Insert(0, pane);
-                }
-                else
-                {
-                    LayoutPanel panel = new()
-                    {
-                        Orientation = Orientation.Vertical
-                    };
-                    root.RootPanel = panel;
-                    panel.Children.Add(pane);
-                    panel.Children.Add(rootPanel);
-                }
-
+                InsertPaneAtRoot(root, pane, Orientation.Vertical, insertAtStart: true);
                 break;
-
             case AnchorSide.Bottom:
-                if (rootPanel.Orientation == Orientation.Vertical)
-                {
-                    rootPanel.Children.Add(pane);
-                }
-                else
-                {
-                    LayoutPanel panel = new()
-                    {
-                        Orientation = Orientation.Vertical
-                    };
-                    root.RootPanel = panel;
-                    panel.Children.Add(rootPanel);
-                    panel.Children.Add(pane);
-                }
-
+                InsertPaneAtRoot(root, pane, Orientation.Vertical, insertAtStart: false);
                 break;
         }
+    }
+
+    private static void InsertPaneAtRoot(LayoutRoot root, LayoutAnchorablePane pane, Orientation orientation, bool insertAtStart)
+    {
+        LayoutPanel rootPanel = root.RootPanel;
+        if (rootPanel.Orientation == orientation)
+        {
+            if (insertAtStart)
+            {
+                rootPanel.Children.Insert(0, pane);
+            }
+            else
+            {
+                rootPanel.Children.Add(pane);
+            }
+            return;
+        }
+
+        LayoutPanel panel = new() { Orientation = orientation };
+        // Publish the wrapper before moving children, retaining the layout notification order.
+        root.RootPanel = panel;
+        panel.Children.Add(insertAtStart ? pane : rootPanel);
+        panel.Children.Add(insertAtStart ? rootPanel : pane);
     }
 
     /// <inheritdoc/>

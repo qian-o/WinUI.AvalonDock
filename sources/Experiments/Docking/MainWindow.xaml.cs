@@ -313,6 +313,7 @@ public sealed partial class MainWindow : Window
 
     public async Task RunScenarioChecksAsync(SampleChecks checks)
     {
+        DockingStructureChecks.Run(checks);
         await SampleChecks.SettleAsync();
         SampleChecks.Require(documents.Count == 2, "Classic initial document source was created.");
         SampleChecks.Require(tools.Count == 2, "Classic initial tool source was created.");

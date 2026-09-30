@@ -126,46 +126,9 @@ public class ToggleLayoutEngine : ILayoutEngine
                 }
 
             case AnchorSide.Bottom:
-                {
-                    LayoutPanel rootPanel = root.RootPanel;
-                    if (rootPanel.Orientation == Orientation.Vertical)
-                    {
-                        rootPanel.Children.Add(pane);
-                    }
-                    else
-                    {
-                        LayoutPanel vPanel = new()
-                        {
-                            Orientation = Orientation.Vertical
-                        };
-                        root.RootPanel = vPanel;
-                        vPanel.Children.Add(rootPanel);
-                        vPanel.Children.Add(pane);
-                    }
-
-                    break;
-                }
-
             case AnchorSide.Top:
-                {
-                    LayoutPanel rootPanel = root.RootPanel;
-                    if (rootPanel.Orientation == Orientation.Vertical)
-                    {
-                        rootPanel.Children.Insert(0, pane);
-                    }
-                    else
-                    {
-                        LayoutPanel vPanel = new()
-                        {
-                            Orientation = Orientation.Vertical
-                        };
-                        root.RootPanel = vPanel;
-                        vPanel.Children.Add(pane);
-                        vPanel.Children.Add(rootPanel);
-                    }
-
-                    break;
-                }
+                SharedLayout.InsertPane(root, pane, side);
+                break;
         }
     }
 
@@ -200,15 +163,7 @@ public class ToggleLayoutEngine : ILayoutEngine
                     if (zone == DockZone.RightTop)
                     {
                         // Insert before existing right-side panes/groups
-                        int insertIdx = hPanel.Children.Count;
-                        while (insertIdx > 0 &&
-                               (hPanel.Children[insertIdx - 1] is LayoutAnchorablePane ||
-                                hPanel.Children[insertIdx - 1] is LayoutAnchorablePaneGroup))
-                        {
-                            insertIdx--;
-                        }
-
-                        hPanel.Children.Insert(insertIdx, pane);
+                        hPanel.Children.Insert(GetInnerEdgeIndex(hPanel, fromStart: false), pane);
                     }
                     else
                     {
@@ -224,15 +179,7 @@ public class ToggleLayoutEngine : ILayoutEngine
                     if (zone == DockZone.LeftBottom)
                     {
                         // Insert after existing left-side panes/groups
-                        int insertIdx = 0;
-                        while (insertIdx < hPanel.Children.Count &&
-                               (hPanel.Children[insertIdx] is LayoutAnchorablePane ||
-                                hPanel.Children[insertIdx] is LayoutAnchorablePaneGroup))
-                        {
-                            insertIdx++;
-                        }
-
-                        hPanel.Children.Insert(insertIdx, pane);
+                        hPanel.Children.Insert(GetInnerEdgeIndex(hPanel, fromStart: true), pane);
                     }
                     else
                     {
@@ -250,15 +197,7 @@ public class ToggleLayoutEngine : ILayoutEngine
                         if (zone == DockZone.BottomLeft)
                         {
                             // BottomLeft inserts before existing bottom panes/groups
-                            int insertIdx = rootPanel.Children.Count;
-                            while (insertIdx > 0 &&
-                                   (rootPanel.Children[insertIdx - 1] is LayoutAnchorablePane ||
-                                    rootPanel.Children[insertIdx - 1] is LayoutAnchorablePaneGroup))
-                            {
-                                insertIdx--;
-                            }
-
-                            rootPanel.Children.Insert(insertIdx, pane);
+                            rootPanel.Children.Insert(GetInnerEdgeIndex(rootPanel, fromStart: false), pane);
                         }
                         else
                         {
@@ -268,18 +207,27 @@ public class ToggleLayoutEngine : ILayoutEngine
                     }
                     else
                     {
-                        LayoutPanel vPanel = new()
-                        {
-                            Orientation = Orientation.Vertical
-                        };
-                        root.RootPanel = vPanel;
-                        vPanel.Children.Add(rootPanel);
-                        vPanel.Children.Add(pane);
+                        SharedLayout.InsertPane(root, pane, AnchorSide.Bottom);
                     }
 
                     break;
                 }
         }
+    }
+
+    private static int GetInnerEdgeIndex(LayoutPanel panel, bool fromStart)
+    {
+        int index = fromStart ? 0 : panel.Children.Count;
+        while (fromStart ? index < panel.Children.Count : index > 0)
+        {
+            ILayoutPanelElement child = panel.Children[fromStart ? index : index - 1];
+            if (child is not (LayoutAnchorablePane or LayoutAnchorablePaneGroup))
+            {
+                break;
+            }
+            index += fromStart ? 1 : -1;
+        }
+        return index;
     }
 
     /// <inheritdoc/>

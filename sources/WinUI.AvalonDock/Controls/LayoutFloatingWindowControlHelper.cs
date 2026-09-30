@@ -102,28 +102,22 @@ internal static class LayoutFloatingWindowControlHelper
         }
     }
 
-    public static void ActiveTheLastActivedContentOfPane(LayoutAnchorablePane anchorablePane)
-    {
-        int index = IndexOfLastActivedContent(anchorablePane.Children);
-        if (index != -1)
-        {
-            anchorablePane.SelectedContentIndex = index;
-            if (anchorablePane.SelectedContent != null && !anchorablePane.SelectedContent.IsActive)
-            {
-                anchorablePane.SelectedContent.IsActive = true;
-            }
-        }
-    }
+    public static void ActiveTheLastActivedContentOfPane(LayoutAnchorablePane anchorablePane) =>
+        ActivateLastContentOfPane(anchorablePane, anchorablePane.Children);
 
-    public static void ActiveTheLastActivedContentOfPane(LayoutDocumentPane documentPane)
+    public static void ActiveTheLastActivedContentOfPane(LayoutDocumentPane documentPane) =>
+        ActivateLastContentOfPane(documentPane, documentPane.Children);
+
+    private static void ActivateLastContentOfPane<T>(ILayoutContentSelector selector, IList<T> children)
+        where T : LayoutContent
     {
-        int index = IndexOfLastActivedContent(documentPane.Children);
+        int index = IndexOfLastActivedContent(children);
         if (index != -1)
         {
-            documentPane.SelectedContentIndex = index;
-            if (documentPane.SelectedContent != null && !documentPane.SelectedContent.IsActive)
+            selector.SelectedContentIndex = index;
+            if (selector.SelectedContent is { IsActive: false } content)
             {
-                documentPane.SelectedContent.IsActive = true;
+                content.IsActive = true;
             }
         }
     }

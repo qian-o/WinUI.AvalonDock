@@ -126,102 +126,25 @@ internal class DocumentPaneDropTarget : DropTarget<LayoutDocumentPaneControl>
             paneGroup = newGroup;
         }
 
-        switch (Type)
+        if (Type is DropTargetType.DocumentPaneDockBottom or DropTargetType.DocumentPaneDockTop
+            or DropTargetType.DocumentPaneDockLeft or DropTargetType.DocumentPaneDockRight)
         {
-            case DropTargetType.DocumentPaneDockBottom:
-                {
-                    if (!allowMixedOrientation && paneGroup.Orientation != Microsoft.UI.Xaml.Controls.Orientation.Vertical)
-                    {
-                        paneGroup.Orientation = Microsoft.UI.Xaml.Controls.Orientation.Vertical;
-                    }
+            if (!allowMixedOrientation && paneGroup.Orientation != requiredOrientation)
+            {
+                paneGroup.Orientation = requiredOrientation;
+            }
 
-                    int targetIndex = paneGroup.IndexOfChild(targetModel);
-                    int insertToIndex = targetIndex < 0 ? paneGroup.Children.Count : targetIndex + 1;
-                    if (insertToIndex > paneGroup.Children.Count)
-                    {
-                        insertToIndex = paneGroup.Children.Count;
-                    }
+            bool insertAfter = Type is DropTargetType.DocumentPaneDockBottom or DropTargetType.DocumentPaneDockRight;
+            int targetIndex = paneGroup.IndexOfChild(targetModel);
+            int insertToIndex = insertAfter
+                ? targetIndex < 0 ? paneGroup.Children.Count : Math.Min(targetIndex + 1, paneGroup.Children.Count)
+                : targetIndex < 0 ? 0 : targetIndex;
 
-                    ILayoutElement[] documentsToMove = floatingWindow.Children.ToArray();
-                    for (int i = 0; i < documentsToMove.Length; i++)
-                    {
-                        ILayoutElement floatingChild = documentsToMove[i];
-                        paneGroup.InsertChildAt(insertToIndex + i, floatingChild);
-                    }
-                }
-
-                break;
-
-            case DropTargetType.DocumentPaneDockTop:
-                {
-                    if (!allowMixedOrientation && paneGroup.Orientation != Microsoft.UI.Xaml.Controls.Orientation.Vertical)
-                    {
-                        paneGroup.Orientation = Microsoft.UI.Xaml.Controls.Orientation.Vertical;
-                    }
-
-                    int insertToIndex = paneGroup.IndexOfChild(targetModel);
-                    if (insertToIndex < 0)
-                    {
-                        insertToIndex = 0;
-                    }
-
-                    ILayoutElement[] documentsToMove = floatingWindow.Children.ToArray();
-                    for (int i = 0; i < documentsToMove.Length; i++)
-                    {
-                        ILayoutElement floatingChild = documentsToMove[i];
-                        paneGroup.InsertChildAt(insertToIndex + i, floatingChild);
-                    }
-                }
-
-                break;
-
-            case DropTargetType.DocumentPaneDockLeft:
-                {
-                    if (!allowMixedOrientation && paneGroup.Orientation != Microsoft.UI.Xaml.Controls.Orientation.Horizontal)
-                    {
-                        paneGroup.Orientation = Microsoft.UI.Xaml.Controls.Orientation.Horizontal;
-                    }
-
-                    int insertToIndex = paneGroup.IndexOfChild(targetModel);
-                    if (insertToIndex < 0)
-                    {
-                        insertToIndex = 0;
-                    }
-
-                    ILayoutElement[] documentsToMove = floatingWindow.Children.ToArray();
-                    for (int i = 0; i < documentsToMove.Length; i++)
-                    {
-                        ILayoutElement floatingChild = documentsToMove[i];
-                        paneGroup.InsertChildAt(insertToIndex + i, floatingChild);
-                    }
-                }
-
-                break;
-
-            case DropTargetType.DocumentPaneDockRight:
-                {
-                    if (!allowMixedOrientation && paneGroup.Orientation != Microsoft.UI.Xaml.Controls.Orientation.Horizontal)
-                    {
-                        paneGroup.Orientation = Microsoft.UI.Xaml.Controls.Orientation.Horizontal;
-                    }
-
-                    int targetIndex = paneGroup.IndexOfChild(targetModel);
-                    int insertToIndex = targetIndex < 0 ? paneGroup.Children.Count : targetIndex + 1;
-                    if (insertToIndex > paneGroup.Children.Count)
-                    {
-                        insertToIndex = paneGroup.Children.Count;
-                    }
-
-                    ILayoutElement[] documentsToMove = floatingWindow.Children.ToArray();
-                    for (int i = 0; i < documentsToMove.Length; i++)
-                    {
-                        ILayoutElement floatingChild = documentsToMove[i];
-                        paneGroup.InsertChildAt(insertToIndex + i, floatingChild);
-                    }
-                }
-
-                break;
-
+            ILayoutElement[] documentsToMove = floatingWindow.Children.ToArray();
+            for (int i = 0; i < documentsToMove.Length; i++)
+            {
+                paneGroup.InsertChildAt(insertToIndex + i, documentsToMove[i]);
+            }
         }
 
         if (documentActive != null)
@@ -241,217 +164,90 @@ internal class DocumentPaneDropTarget : DropTarget<LayoutDocumentPaneControl>
             return;
         }
 
-        switch (Type)
+        if (Type is DropTargetType.DocumentPaneDockBottom or DropTargetType.DocumentPaneDockTop
+            or DropTargetType.DocumentPaneDockLeft or DropTargetType.DocumentPaneDockRight)
         {
-            case DropTargetType.DocumentPaneDockBottom:
+            Orientation orientation = Type is DropTargetType.DocumentPaneDockBottom or DropTargetType.DocumentPaneDockTop
+                ? Orientation.Vertical : Orientation.Horizontal;
+            bool insertAfter = Type is DropTargetType.DocumentPaneDockBottom or DropTargetType.DocumentPaneDockRight;
+            LayoutDocumentPane newLayoutDocumentPane = AddAdjacentDocumentPane(targetModel, parentContainer, manager,
+                orientation, insertAfter);
+            foreach (LayoutAnchorable content in floatingPanel.Descendents().OfType<LayoutAnchorable>().ToArray())
+            {
+                newLayoutDocumentPane.Children.Add(content);
+            }
+        }
+        else if (Type == DropTargetType.DocumentPaneDockInside)
+        {
+            LayoutDocumentPane paneModel = targetModel;
+            LayoutAnchorablePaneGroup layoutAnchorablePaneGroup = floatingPanel;
+
+            bool checkPreviousContainer = true;
+            int i = 0;
+            if (tabIndex != -1)
+            {
+                i = tabIndex;
+                checkPreviousContainer = false;
+            }
+
+            LayoutAnchorable? anchorableToActivate = null;
+
+            foreach (LayoutAnchorable? anchorableToImport in layoutAnchorablePaneGroup.Descendents().OfType<LayoutAnchorable>().ToArray())
+            {
+                if (checkPreviousContainer)
                 {
-                    LayoutDocumentPaneGroup? parentModel = targetModel.Parent as LayoutDocumentPaneGroup;
-                    LayoutDocumentPane newLayoutDocumentPane = new();
-
-                    if (parentModel == null)
+                    ILayoutContainer? previousContainer = ((ILayoutPreviousContainer)anchorableToImport).PreviousContainer;
+                    if (object.ReferenceEquals(previousContainer, targetModel) && (anchorableToImport.PreviousContainerIndex != -1))
                     {
-                        LayoutDocumentPaneGroup newParentModel = new()
-                        {
-                            Orientation = Microsoft.UI.Xaml.Controls.Orientation.Vertical
-                        };
-                        parentContainer.ReplaceChild(targetModel, newParentModel);
-                        newParentModel.Children.Add(targetModel);
-                        newParentModel.Children.Add(newLayoutDocumentPane);
-                    }
-                    else
-                    {
-                        if (!manager.AllowMixedOrientation || parentModel.Orientation == Microsoft.UI.Xaml.Controls.Orientation.Vertical)
-                        {
-                            parentModel.Orientation = Microsoft.UI.Xaml.Controls.Orientation.Vertical;
-                            int targetPaneIndex = parentModel.IndexOfChild(targetModel);
-                            parentModel.Children.Insert(targetPaneIndex + 1, newLayoutDocumentPane);
-                        }
-                        else
-                        {
-                            LayoutDocumentPaneGroup newChildGroup = new();
-                            newChildGroup.Orientation = Microsoft.UI.Xaml.Controls.Orientation.Vertical;
-                            parentModel.ReplaceChild(targetModel, newChildGroup);
-                            newChildGroup.Children.Add(targetModel);
-                            newChildGroup.Children.Add(newLayoutDocumentPane);
-                        }
+                        i = anchorableToImport.PreviousContainerIndex;
                     }
 
-                    foreach (LayoutAnchorable? cntToTransfer in floatingPanel.Descendents().OfType<LayoutAnchorable>().ToArray())
-                    {
-                        newLayoutDocumentPane.Children.Add(cntToTransfer);
-                    }
+                    checkPreviousContainer = false;
                 }
 
-                break;
+                // BD: 17.08.2020 Remove that bodge and handle CanClose=false && CanHide=true in XAML
+                // anchorableToImport.SetCanCloseInternal(true);
+                paneModel.Children.Insert(i, anchorableToImport);
+                i++;
+                anchorableToActivate = anchorableToImport;
+            }
 
-            case DropTargetType.DocumentPaneDockTop:
-                {
-                    LayoutDocumentPaneGroup? parentModel = targetModel.Parent as LayoutDocumentPaneGroup;
-                    LayoutDocumentPane newLayoutDocumentPane = new();
-
-                    if (parentModel == null)
-                    {
-                        LayoutDocumentPaneGroup newParentModel = new()
-                        {
-                            Orientation = Microsoft.UI.Xaml.Controls.Orientation.Vertical
-                        };
-                        parentContainer.ReplaceChild(targetModel, newParentModel);
-                        newParentModel.Children.Add(newLayoutDocumentPane);
-                        newParentModel.Children.Add(targetModel);
-                    }
-                    else
-                    {
-                        if (!manager.AllowMixedOrientation || parentModel.Orientation == Microsoft.UI.Xaml.Controls.Orientation.Vertical)
-                        {
-                            parentModel.Orientation = Microsoft.UI.Xaml.Controls.Orientation.Vertical;
-                            int targetPaneIndex = parentModel.IndexOfChild(targetModel);
-                            parentModel.Children.Insert(targetPaneIndex, newLayoutDocumentPane);
-                        }
-                        else
-                        {
-                            LayoutDocumentPaneGroup newChildGroup = new();
-                            newChildGroup.Orientation = Microsoft.UI.Xaml.Controls.Orientation.Vertical;
-                            parentModel.ReplaceChild(targetModel, newChildGroup);
-                            newChildGroup.Children.Add(newLayoutDocumentPane);
-                            newChildGroup.Children.Add(targetModel);
-                        }
-                    }
-
-                    foreach (LayoutAnchorable? cntToTransfer in floatingPanel.Descendents().OfType<LayoutAnchorable>().ToArray())
-                    {
-                        newLayoutDocumentPane.Children.Add(cntToTransfer);
-                    }
-                }
-
-                break;
-
-            case DropTargetType.DocumentPaneDockLeft:
-                {
-                    LayoutDocumentPaneGroup? parentModel = targetModel.Parent as LayoutDocumentPaneGroup;
-                    LayoutDocumentPane newLayoutDocumentPane = new();
-
-                    if (parentModel == null)
-                    {
-                        LayoutDocumentPaneGroup newParentModel = new()
-                        {
-                            Orientation = Microsoft.UI.Xaml.Controls.Orientation.Horizontal
-                        };
-                        parentContainer.ReplaceChild(targetModel, newParentModel);
-                        newParentModel.Children.Add(newLayoutDocumentPane);
-                        newParentModel.Children.Add(targetModel);
-                    }
-                    else
-                    {
-                        if (!manager.AllowMixedOrientation || parentModel.Orientation == Microsoft.UI.Xaml.Controls.Orientation.Horizontal)
-                        {
-                            parentModel.Orientation = Microsoft.UI.Xaml.Controls.Orientation.Horizontal;
-                            int targetPaneIndex = parentModel.IndexOfChild(targetModel);
-                            parentModel.Children.Insert(targetPaneIndex, newLayoutDocumentPane);
-                        }
-                        else
-                        {
-                            LayoutDocumentPaneGroup newChildGroup = new();
-                            newChildGroup.Orientation = Microsoft.UI.Xaml.Controls.Orientation.Horizontal;
-                            parentModel.ReplaceChild(targetModel, newChildGroup);
-                            newChildGroup.Children.Add(newLayoutDocumentPane);
-                            newChildGroup.Children.Add(targetModel);
-                        }
-                    }
-
-                    foreach (LayoutAnchorable? cntToTransfer in floatingPanel.Descendents().OfType<LayoutAnchorable>().ToArray())
-                    {
-                        newLayoutDocumentPane.Children.Add(cntToTransfer);
-                    }
-                }
-
-                break;
-
-            case DropTargetType.DocumentPaneDockRight:
-                {
-                    LayoutDocumentPaneGroup? parentModel = targetModel.Parent as LayoutDocumentPaneGroup;
-                    LayoutDocumentPane newLayoutDocumentPane = new();
-
-                    if (parentModel == null)
-                    {
-                        LayoutDocumentPaneGroup newParentModel = new()
-                        {
-                            Orientation = Microsoft.UI.Xaml.Controls.Orientation.Horizontal
-                        };
-                        parentContainer.ReplaceChild(targetModel, newParentModel);
-                        newParentModel.Children.Add(targetModel);
-                        newParentModel.Children.Add(newLayoutDocumentPane);
-                    }
-                    else
-                    {
-                        if (!manager.AllowMixedOrientation || parentModel.Orientation == Microsoft.UI.Xaml.Controls.Orientation.Horizontal)
-                        {
-                            parentModel.Orientation = Microsoft.UI.Xaml.Controls.Orientation.Horizontal;
-                            int targetPaneIndex = parentModel.IndexOfChild(targetModel);
-                            parentModel.Children.Insert(targetPaneIndex + 1, newLayoutDocumentPane);
-                        }
-                        else
-                        {
-                            LayoutDocumentPaneGroup newChildGroup = new();
-                            newChildGroup.Orientation = Microsoft.UI.Xaml.Controls.Orientation.Horizontal;
-                            parentModel.ReplaceChild(targetModel, newChildGroup);
-                            newChildGroup.Children.Add(targetModel);
-                            newChildGroup.Children.Add(newLayoutDocumentPane);
-                        }
-                    }
-
-                    foreach (LayoutAnchorable? cntToTransfer in floatingPanel.Descendents().OfType<LayoutAnchorable>().ToArray())
-                    {
-                        newLayoutDocumentPane.Children.Add(cntToTransfer);
-                    }
-                }
-
-                break;
-
-            case DropTargetType.DocumentPaneDockInside:
-                {
-                    LayoutDocumentPane paneModel = targetModel;
-                    LayoutAnchorablePaneGroup layoutAnchorablePaneGroup = floatingPanel;
-
-                    bool checkPreviousContainer = true;
-                    int i = 0;
-                    if (tabIndex != -1)
-                    {
-                        i = tabIndex;
-                        checkPreviousContainer = false;
-                    }
-
-                    LayoutAnchorable? anchorableToActivate = null;
-
-                    foreach (LayoutAnchorable? anchorableToImport in layoutAnchorablePaneGroup.Descendents().OfType<LayoutAnchorable>().ToArray())
-                    {
-                        if (checkPreviousContainer)
-                        {
-                            ILayoutContainer? previousContainer = ((ILayoutPreviousContainer)anchorableToImport).PreviousContainer;
-                            if (object.ReferenceEquals(previousContainer, targetModel) && (anchorableToImport.PreviousContainerIndex != -1))
-                            {
-                                i = anchorableToImport.PreviousContainerIndex;
-                            }
-
-                            checkPreviousContainer = false;
-                        }
-
-                        // BD: 17.08.2020 Remove that bodge and handle CanClose=false && CanHide=true in XAML
-                        // anchorableToImport.SetCanCloseInternal(true);
-                        paneModel.Children.Insert(i, anchorableToImport);
-                        i++;
-                        anchorableToActivate = anchorableToImport;
-                    }
-
-                    if (anchorableToActivate is not null)
-                    {
-                        anchorableToActivate.IsActive = true;
-                    }
-                }
-
-                break;
+            if (anchorableToActivate is not null)
+            {
+                anchorableToActivate.IsActive = true;
+            }
         }
 
         base.Drop(floatingWindow);
+    }
+
+    private static LayoutDocumentPane AddAdjacentDocumentPane(LayoutDocumentPane targetModel,
+        ILayoutContainer parentContainer, DockingManager manager, Orientation orientation, bool insertAfter)
+    {
+        LayoutDocumentPaneGroup? parentModel = targetModel.Parent as LayoutDocumentPaneGroup;
+        LayoutDocumentPane newPane = new();
+        if (parentModel == null)
+        {
+            LayoutDocumentPaneGroup newParentModel = new() { Orientation = orientation };
+            parentContainer.ReplaceChild(targetModel, newParentModel);
+            newParentModel.Children.Add(insertAfter ? targetModel : newPane);
+            newParentModel.Children.Add(insertAfter ? newPane : targetModel);
+        }
+        else if (!manager.AllowMixedOrientation || parentModel.Orientation == orientation)
+        {
+            parentModel.Orientation = orientation;
+            int targetPaneIndex = parentModel.IndexOfChild(targetModel);
+            parentModel.Children.Insert(targetPaneIndex + (insertAfter ? 1 : 0), newPane);
+        }
+        else
+        {
+            LayoutDocumentPaneGroup newChildGroup = new() { Orientation = orientation };
+            parentModel.ReplaceChild(targetModel, newChildGroup);
+            newChildGroup.Children.Add(insertAfter ? targetModel : newPane);
+            newChildGroup.Children.Add(insertAfter ? newPane : targetModel);
+        }
+
+        return newPane;
     }
 
     /// <inheritdoc/>

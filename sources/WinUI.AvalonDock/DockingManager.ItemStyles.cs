@@ -99,7 +99,13 @@ public partial class DockingManager
         layoutItem.SetDefaultBindingsForManager();
     }
 
-    private void CreateAnchorableLayoutItem(LayoutAnchorable contentToAttach)
+    private void CreateAnchorableLayoutItem(LayoutAnchorable contentToAttach) =>
+        CreateLayoutItem(contentToAttach, static () => new LayoutAnchorableItem());
+
+    private void CreateDocumentLayoutItem(LayoutDocument contentToAttach) =>
+        CreateLayoutItem(contentToAttach, static () => new LayoutDocumentItem());
+
+    private void CreateLayoutItem(LayoutContent contentToAttach, Func<LayoutItem> createItem)
     {
         LayoutItem? existing = layoutItems.FirstOrDefault(item => item.LayoutElement == contentToAttach);
         if (existing != null)
@@ -109,29 +115,7 @@ public partial class DockingManager
         }
 
         ClaimLayoutItemOwnership(contentToAttach);
-        LayoutAnchorableItem layoutItem = new();
-        layoutItem.Attach(contentToAttach);
-        layoutItems.Add(layoutItem);
-        ApplyStyleToLayoutItem(layoutItem);
-        if (contentToAttach.Content is UIElement)
-        {
-            InternalAddLogicalChild(contentToAttach.Content);
-        }
-
-        LayoutItemCreated?.Invoke(contentToAttach);
-    }
-
-    private void CreateDocumentLayoutItem(LayoutDocument contentToAttach)
-    {
-        LayoutItem? existing = layoutItems.FirstOrDefault(item => item.LayoutElement == contentToAttach);
-        if (existing != null)
-        {
-            ApplyStyleToLayoutItem(existing);
-            return;
-        }
-
-        ClaimLayoutItemOwnership(contentToAttach);
-        LayoutDocumentItem layoutItem = new();
+        LayoutItem layoutItem = createItem();
         layoutItem.Attach(contentToAttach);
         layoutItems.Add(layoutItem);
         ApplyStyleToLayoutItem(layoutItem);
