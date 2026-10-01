@@ -35,8 +35,8 @@ Add a `DockingManager` to your WinUI window or page. The `AvalonDock` namespace 
 
 ```xml
 <dock:DockingManager x:Name="Manager"
-    xmlns:dock="using:AvalonDock"
-    xmlns:layout="using:AvalonDock.Layout">
+                     xmlns:dock="using:AvalonDock"
+                     xmlns:layout="using:AvalonDock.Layout">
     <layout:LayoutRoot>
         <layout:LayoutPanel Orientation="Horizontal">
             <layout:LayoutAnchorablePane DockWidth="240">

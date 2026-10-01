@@ -121,11 +121,11 @@
                         </Grid.ColumnDefinitions>
                         <FontIcon x:Name="CheckGlyph" HorizontalAlignment="Left" FontFamily="{ThemeResource SymbolThemeFontFamily}" Glyph="&#xE73E;" FontSize="12" Foreground="{TemplateBinding Foreground}" Visibility="Collapsed" AutomationProperties.AccessibilityView="Raw" />
                         <Viewbox x:Name="IconRoot"
-                            HorizontalAlignment="Left"
-                            VerticalAlignment="Center"
-                            Width="16"
-                            Height="16"
-                            Visibility="Collapsed">
+                                 HorizontalAlignment="Left"
+                                 VerticalAlignment="Center"
+                                 Width="16"
+                                 Height="16"
+                                 Visibility="Collapsed">
                             <ContentPresenter x:Name="IconContent" Content="{Binding Icon, RelativeSource={RelativeSource TemplatedParent}}" Foreground="{TemplateBinding Foreground}" />
 
                         </Viewbox>

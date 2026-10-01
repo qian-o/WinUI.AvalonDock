@@ -16,13 +16,12 @@
      DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
      OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
      Native headers and resources are retained; PART_ItemsHolder gives AvalonDock control of content lifetime. -->
-<ResourceDictionary
-    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:controls="using:AvalonDock.Controls"
-    xmlns:properties="using:AvalonDock.Properties"
-    xmlns:converters="using:AvalonDock.Converters"
-    xmlns:primitives="using:Microsoft.UI.Xaml.Controls.Primitives">
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:controls="using:AvalonDock.Controls"
+                    xmlns:properties="using:AvalonDock.Properties"
+                    xmlns:converters="using:AvalonDock.Converters"
+                    xmlns:primitives="using:Microsoft.UI.Xaml.Controls.Primitives">
     <ResourceDictionary.MergedDictionaries>
         <ResourceDictionary Source="ms-appx:///WinUI.AvalonDock/Themes/Chrome.xaml" />
     </ResourceDictionary.MergedDictionaries>
@@ -157,12 +156,12 @@
                             <Border x:Name="RightBottomBorderLine" Background="Transparent" Height="1" Grid.Column="2" Grid.ColumnSpan="2" VerticalAlignment="Bottom" />
                             <ContentPresenter Grid.Column="0" x:Name="LeftContentPresenter" Content="{TemplateBinding TabStripHeader}" ContentTemplate="{TemplateBinding TabStripHeaderTemplate}" />
                             <primitives:TabViewListView Grid.Column="1" HorizontalAlignment="Stretch" x:Name="TabListView" Padding="{TemplateBinding Padding}"
-                                CanReorderItems="{TemplateBinding CanReorderTabs}" CanDragItems="{TemplateBinding CanDragTabs}" AllowDrop="{TemplateBinding AllowDropTabs}"
-                                ItemsSource="{TemplateBinding TabItemsSource}" ItemTemplate="{TemplateBinding TabItemTemplate}" ItemTemplateSelector="{TemplateBinding TabItemTemplateSelector}" />
+                                                        CanReorderItems="{TemplateBinding CanReorderTabs}" CanDragItems="{TemplateBinding CanDragTabs}" AllowDrop="{TemplateBinding AllowDropTabs}"
+                                                        ItemsSource="{TemplateBinding TabItemsSource}" ItemTemplate="{TemplateBinding TabItemTemplate}" ItemTemplateSelector="{TemplateBinding TabItemTemplateSelector}" />
                             <Border Visibility="{Binding IsAddTabButtonVisible, RelativeSource={RelativeSource TemplatedParent}}" Grid.Column="2" Padding="{ThemeResource TabViewItemAddButtonContainerPadding}" VerticalAlignment="Bottom">
                                 <Button x:Name="AddButton" HorizontalAlignment="Center" VerticalAlignment="Center" Content="&#xE710;" IsTextScaleFactorEnabled="False"
-                                    Command="{TemplateBinding AddTabButtonCommand}" CommandParameter="{TemplateBinding AddTabButtonCommandParameter}"
-                                    Style="{StaticResource AvalonDockNativeTabViewButtonStyle}" HighContrastAdjustment="None" />
+                                        Command="{TemplateBinding AddTabButtonCommand}" CommandParameter="{TemplateBinding AddTabButtonCommandParameter}"
+                                        Style="{StaticResource AvalonDockNativeTabViewButtonStyle}" HighContrastAdjustment="None" />
                             </Border>
                             <ContentPresenter Grid.Column="3" x:Name="RightContentPresenter" HorizontalAlignment="Stretch" Content="{TemplateBinding TabStripFooter}" ContentTemplate="{TemplateBinding TabStripFooterTemplate}" />
                             <controls:DropDownButton x:Name="MenuDropDownButton" Style="{StaticResource AvalonDockChromeToggleButtonStyle}" Grid.Column="4" Margin="4,6,4,0" VerticalAlignment="Center" IsTabStop="True" Visibility="Collapsed" ToolTipService.ToolTip="{properties:LocalizedString Key=Active_Files}"><Viewbox Width="14" Height="14"><PathIcon Width="16" Height="16" Data="M3.14645 5.64645C3.34171 5.45118 3.65829 5.45118 3.85355 5.64645L8 9.79289L12.1464 5.64645C12.3417 5.45118 12.6583 5.45118 12.8536 5.64645C13.0488 5.84171 13.0488 6.15829 12.8536 6.35355L8.35355 10.8536C8.15829 11.0488 7.84171 11.0488 7.64645 10.8536L3.14645 6.35355C2.95118 6.15829 2.95118 5.84171 3.14645 5.64645Z" /></Viewbox></controls:DropDownButton>
@@ -235,12 +234,12 @@
                             <Border x:Name="RightBottomBorderLine" Background="Transparent" Height="1" Grid.Column="2" Grid.ColumnSpan="2" VerticalAlignment="Bottom" />
                             <ContentPresenter Grid.Column="0" x:Name="LeftContentPresenter" Content="{TemplateBinding TabStripHeader}" ContentTemplate="{TemplateBinding TabStripHeaderTemplate}" />
                             <primitives:TabViewListView Grid.Column="1" HorizontalAlignment="Stretch" x:Name="TabListView" Padding="{TemplateBinding Padding}"
-                                CanReorderItems="{TemplateBinding CanReorderTabs}" CanDragItems="{TemplateBinding CanDragTabs}" AllowDrop="{TemplateBinding AllowDropTabs}"
-                                ItemsSource="{TemplateBinding TabItemsSource}" ItemTemplate="{TemplateBinding TabItemTemplate}" ItemTemplateSelector="{TemplateBinding TabItemTemplateSelector}" />
+                                                        CanReorderItems="{TemplateBinding CanReorderTabs}" CanDragItems="{TemplateBinding CanDragTabs}" AllowDrop="{TemplateBinding AllowDropTabs}"
+                                                        ItemsSource="{TemplateBinding TabItemsSource}" ItemTemplate="{TemplateBinding TabItemTemplate}" ItemTemplateSelector="{TemplateBinding TabItemTemplateSelector}" />
                             <Border Visibility="{Binding IsAddTabButtonVisible, RelativeSource={RelativeSource TemplatedParent}}" Grid.Column="2" Padding="{ThemeResource TabViewItemAddButtonContainerPadding}" VerticalAlignment="Bottom">
                                 <Button x:Name="AddButton" HorizontalAlignment="Center" VerticalAlignment="Center" Content="&#xE710;" IsTextScaleFactorEnabled="False"
-                                    Command="{TemplateBinding AddTabButtonCommand}" CommandParameter="{TemplateBinding AddTabButtonCommandParameter}"
-                                    Style="{StaticResource AvalonDockNativeTabViewButtonStyle}" HighContrastAdjustment="None" />
+                                        Command="{TemplateBinding AddTabButtonCommand}" CommandParameter="{TemplateBinding AddTabButtonCommandParameter}"
+                                        Style="{StaticResource AvalonDockNativeTabViewButtonStyle}" HighContrastAdjustment="None" />
                             </Border>
                             <ContentPresenter Grid.Column="3" x:Name="RightContentPresenter" HorizontalAlignment="Stretch" Content="{TemplateBinding TabStripFooter}" ContentTemplate="{TemplateBinding TabStripFooterTemplate}" />
                         </Grid>

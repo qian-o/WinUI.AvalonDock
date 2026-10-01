@@ -1,10 +1,9 @@
-<Window
-    x:Class="WinUI.AvalonDock.Experiments.Docking.MainWindow"
-    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:controls="using:Microsoft.UI.Xaml.Controls"
-    xmlns:dock="using:AvalonDock"
-    xmlns:layout="using:AvalonDock.Layout">
+<Window x:Class="WinUI.AvalonDock.Experiments.Docking.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:controls="using:Microsoft.UI.Xaml.Controls"
+        xmlns:dock="using:AvalonDock"
+        xmlns:layout="using:AvalonDock.Layout">
     <Grid x:Name="PageRoot" Padding="8" RowSpacing="8" Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
@@ -22,9 +21,9 @@
                 <controls:MenuFlyoutItem Text="Mark Active Document as Modified" Click="MarkActiveDocumentModified_Click" />
                 <controls:MenuFlyoutItem Text="Close Active Item" Click="CloseActive_Click" />
                 <controls:ToggleMenuFlyoutItem x:Name="AllowCloseModifiedMenuItem"
-                                                Text="Allow Closing Modified Items"
-                                                IsChecked="False"
-                                                Click="AllowCloseModified_Click" />
+                                               Text="Allow Closing Modified Items"
+                                               IsChecked="False"
+                                               Click="AllowCloseModified_Click" />
             </controls:MenuBarItem>
             <controls:MenuBarItem Title="Layout">
                 <controls:MenuFlyoutItem Text="Save Layout" Click="SaveLayout_Click" />

@@ -174,9 +174,9 @@
                     <Border x:Name="TabStrip" Grid.Row="1" Padding="4,0" Background="{ThemeResource DockChromeBrush}"
                             BorderBrush="{ThemeResource DockBorderBrush}" BorderThickness="0,1,0,0" CornerRadius="0,0,5,5">
                         <primitives:TabViewListView x:Name="TabListView" HorizontalAlignment="Stretch"
-                            CanReorderItems="{TemplateBinding CanReorderTabs}" CanDragItems="{TemplateBinding CanDragTabs}"
-                            AllowDrop="{TemplateBinding AllowDropTabs}" ItemsSource="{TemplateBinding TabItemsSource}"
-                            ItemTemplate="{TemplateBinding TabItemTemplate}" ItemTemplateSelector="{TemplateBinding TabItemTemplateSelector}" />
+                                                    CanReorderItems="{TemplateBinding CanReorderTabs}" CanDragItems="{TemplateBinding CanDragTabs}"
+                                                    AllowDrop="{TemplateBinding AllowDropTabs}" ItemsSource="{TemplateBinding TabItemsSource}"
+                                                    ItemTemplate="{TemplateBinding TabItemTemplate}" ItemTemplateSelector="{TemplateBinding TabItemTemplateSelector}" />
                     </Border>
                 </Grid>
             </ControlTemplate>
