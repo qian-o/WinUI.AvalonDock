@@ -3,7 +3,10 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:controls="using:Microsoft.UI.Xaml.Controls"
         xmlns:dock="using:AvalonDock">
-    <Grid x:Name="PageRoot" Padding="8" RowSpacing="8" Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+    <Grid x:Name="PageRoot"
+          Padding="8"
+          Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
+          RowSpacing="8">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
@@ -12,35 +15,54 @@
         </Grid.RowDefinitions>
         <controls:MenuBar Grid.Row="0">
             <controls:MenuBarItem Title="File">
-                <controls:MenuFlyoutItem Text="New Document" Click="AddDocument_Click" />
+                <controls:MenuFlyoutItem Click="AddDocument_Click"
+                                         Text="New Document" />
             </controls:MenuBarItem>
             <controls:MenuBarItem Title="Layout">
-                <controls:MenuFlyoutItem Text="Detach or Reattach Current Tool" Click="DetachTool_Click" />
+                <controls:MenuFlyoutItem Click="DetachTool_Click"
+                                         Text="Detach or Reattach Current Tool" />
                 <controls:MenuFlyoutSeparator />
-                <controls:MenuFlyoutItem Text="Upper Left Zone" Click="MoveLeftTop_Click" />
-                <controls:MenuFlyoutItem Text="Lower Left Zone" Click="MoveLeftBottom_Click" />
-                <controls:MenuFlyoutItem Text="Upper Right Zone" Click="MoveRightTop_Click" />
-                <controls:MenuFlyoutItem Text="Lower Right Zone" Click="MoveRightBottom_Click" />
-                <controls:MenuFlyoutItem Text="Bottom Left Zone" Click="MoveBottomLeft_Click" />
-                <controls:MenuFlyoutItem Text="Bottom Right Zone" Click="MoveBottomRight_Click" />
+                <controls:MenuFlyoutItem Click="MoveLeftTop_Click"
+                                         Text="Upper Left Zone" />
+                <controls:MenuFlyoutItem Click="MoveLeftBottom_Click"
+                                         Text="Lower Left Zone" />
+                <controls:MenuFlyoutItem Click="MoveRightTop_Click"
+                                         Text="Upper Right Zone" />
+                <controls:MenuFlyoutItem Click="MoveRightBottom_Click"
+                                         Text="Lower Right Zone" />
+                <controls:MenuFlyoutItem Click="MoveBottomLeft_Click"
+                                         Text="Bottom Left Zone" />
+                <controls:MenuFlyoutItem Click="MoveBottomRight_Click"
+                                         Text="Bottom Right Zone" />
             </controls:MenuBarItem>
             <controls:MenuBarItem Title="View">
-                <controls:MenuFlyoutItem Text="Toggle Current Tool" Click="ToggleTool_Click" />
-                <controls:MenuFlyoutItem Text="Show Hidden Tool" Click="ShowHiddenTool_Click" />
+                <controls:MenuFlyoutItem Click="ToggleTool_Click"
+                                         Text="Toggle Current Tool" />
+                <controls:MenuFlyoutItem Click="ShowHiddenTool_Click"
+                                         Text="Show Hidden Tool" />
                 <controls:MenuFlyoutSeparator />
-                <controls:MenuFlyoutItem Text="Bottom Spans Full Width" Click="BottomFullWidth_Click" />
-                <controls:MenuFlyoutItem Text="Sides Span Full Height" Click="SidesFullHeight_Click" />
-                <controls:MenuFlyoutItem Text="Default Layout Priority" Click="DefaultLayoutPriority_Click" />
+                <controls:MenuFlyoutItem Click="BottomFullWidth_Click"
+                                         Text="Bottom Spans Full Width" />
+                <controls:MenuFlyoutItem Click="SidesFullHeight_Click"
+                                         Text="Sides Span Full Height" />
+                <controls:MenuFlyoutItem Click="DefaultLayoutPriority_Click"
+                                         Text="Default Layout Priority" />
             </controls:MenuBarItem>
             <controls:MenuBarItem Title="Theme">
-                <controls:MenuFlyoutItem Text="Toggle Light/Dark Theme" Click="ToggleTheme_Click" />
+                <controls:MenuFlyoutItem Click="ToggleTheme_Click"
+                                         Text="Toggle Light/Dark Theme" />
             </controls:MenuBarItem>
         </controls:MenuBar>
-        <TextBlock x:Name="StatusText" Grid.Row="1" Text="ToggleDocking: six tool zones with sidebar buttons." />
-        <dock:ToggleDockingManager x:Name="Manager" Grid.Row="2"
+        <TextBlock x:Name="StatusText"
+                   Grid.Row="1"
+                   Text="ToggleDocking: six tool zones with sidebar buttons." />
+        <dock:ToggleDockingManager x:Name="Manager"
+                                   Grid.Row="2"
                                    ButtonSize="40"
-                                   LayoutPriority="BottomFullWidth"
-                                   LayoutItemTemplate="{StaticResource WorkspaceContentTemplate}" />
-        <TextBlock Grid.Row="3" Text="Each tool's Zone selects a sidebar position. Drag a tool to explore the zone guides." Opacity="0.75" />
+                                   LayoutItemTemplate="{StaticResource WorkspaceContentTemplate}"
+                                   LayoutPriority="BottomFullWidth" />
+        <TextBlock Grid.Row="3"
+                   Opacity="0.75"
+                   Text="Each tool's Zone selects a sidebar position. Drag a tool to explore the zone guides." />
     </Grid>
 </Window>

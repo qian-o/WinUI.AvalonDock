@@ -7,21 +7,27 @@
         <ResourceDictionary Source="ms-appx:///WinUI.AvalonDock/Themes/AnchorableContent.xaml" />
     </ResourceDictionary.MergedDictionaries>
     <converters:AnchorSideToOrientationConverter x:Key="AnchorOrientation" />
-    <ControlTemplate x:Key="AnchorSideTemplate" TargetType="controls:LayoutAnchorSideControl">
+    <ControlTemplate x:Key="AnchorSideTemplate"
+                     TargetType="controls:LayoutAnchorSideControl">
         <ItemsControl Background="{TemplateBinding Background}"
-                      ItemsSource="{Binding Children, RelativeSource={RelativeSource TemplatedParent}}"
-                      DataContext="{Binding RelativeSource={RelativeSource TemplatedParent}}">
-            <ItemsControl.ItemsPanel><ItemsPanelTemplate>
-                <StackPanel Orientation="{Binding Model.Side, Converter={StaticResource AnchorOrientation}}" />
-                        </ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                      DataContext="{Binding RelativeSource={RelativeSource TemplatedParent}}"
+                      ItemsSource="{Binding Children, RelativeSource={RelativeSource TemplatedParent}}">
+            <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <StackPanel Orientation="{Binding Model.Side, Converter={StaticResource AnchorOrientation}}" />
+                </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
         </ItemsControl>
     </ControlTemplate>
-    <ControlTemplate x:Key="AnchorGroupTemplate" TargetType="controls:LayoutAnchorGroupControl">
-        <ItemsControl ItemsSource="{Binding Children, RelativeSource={RelativeSource TemplatedParent}}"
-                      DataContext="{Binding RelativeSource={RelativeSource TemplatedParent}}">
-            <ItemsControl.ItemsPanel><ItemsPanelTemplate>
-                <StackPanel Orientation="{Binding Model.Parent.Side, Converter={StaticResource AnchorOrientation}}" />
-                        </ItemsPanelTemplate></ItemsControl.ItemsPanel>
+    <ControlTemplate x:Key="AnchorGroupTemplate"
+                     TargetType="controls:LayoutAnchorGroupControl">
+        <ItemsControl DataContext="{Binding RelativeSource={RelativeSource TemplatedParent}}"
+                      ItemsSource="{Binding Children, RelativeSource={RelativeSource TemplatedParent}}">
+            <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <StackPanel Orientation="{Binding Model.Parent.Side, Converter={StaticResource AnchorOrientation}}" />
+                </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
         </ItemsControl>
     </ControlTemplate>
     <Style TargetType="controls:LayoutAnchorSideControl">
@@ -30,65 +36,104 @@
     <Style TargetType="controls:LayoutAnchorGroupControl">
         <Setter Property="Template" Value="{StaticResource AnchorGroupTemplate}" />
     </Style>
-    <ControlTemplate x:Key="AnchorTemplate" TargetType="controls:LayoutAnchorControl">
-                    <Grid x:Name="Main" Margin="0,0,12,0" Background="{TemplateBinding Background}">
-                        <VisualStateManager.VisualStateGroups>
-                            <VisualStateGroup x:Name="SideStates">
-                                <VisualState x:Name="SideTop">
-                                    <VisualState.Setters>
-                                        <Setter Target="Top.Visibility" Value="Visible" />
-                                    </VisualState.Setters>
-                                </VisualState>
-                                <VisualState x:Name="SideBottom">
-                                    <VisualState.Setters>
-                                        <Setter Target="Bottom.Visibility" Value="Visible" />
-                                    </VisualState.Setters>
-                                </VisualState>
-                                <VisualState x:Name="SideLeft">
-                                    <VisualState.Setters>
-                                        <Setter Target="Main.Margin" Value="0,0,0,12" />
-                                        <Setter Target="PART_LabelHost.Margin" Value="6,0,6,0" />
-                                        <Setter Target="Left.Visibility" Value="Visible" />
-                                    </VisualState.Setters>
-                                </VisualState>
-                                <VisualState x:Name="SideRight">
-                                    <VisualState.Setters>
-                                        <Setter Target="Main.Margin" Value="0,0,0,12" />
-                                        <Setter Target="PART_LabelHost.Margin" Value="6,0,6,0" />
-                                        <Setter Target="Right.Visibility" Value="Visible" />
-                                    </VisualState.Setters>
-                                </VisualState>
-                            </VisualStateGroup>
-                            <VisualStateGroup x:Name="CommonStates">
-                                <VisualState x:Name="Normal" />
-                                <VisualState x:Name="PointerOver">
-                                    <VisualState.Setters>
-                                        <Setter Target="Top.Background" Value="{ThemeResource AccentFillColorDefaultBrush}" />
-                                        <Setter Target="Bottom.Background" Value="{ThemeResource AccentFillColorDefaultBrush}" />
-                                        <Setter Target="Left.Background" Value="{ThemeResource AccentFillColorDefaultBrush}" />
-                                        <Setter Target="Right.Background" Value="{ThemeResource AccentFillColorDefaultBrush}" />
-                                        <Setter Target="PART_LabelHost.Foreground" Value="{ThemeResource TextFillColorPrimaryBrush}" />
-                                    </VisualState.Setters>
-                                </VisualState>
-                            </VisualStateGroup>
-                        </VisualStateManager.VisualStateGroups>
-                        <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="*" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
-                        <Grid.ColumnDefinitions><ColumnDefinition Width="Auto" /><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
-                        <Border x:Name="Top" Grid.Column="1" Height="3" Background="{ThemeResource CardStrokeColorDefaultBrush}" CornerRadius="1.5" Visibility="Collapsed" />
-                        <Border x:Name="Bottom" Grid.Row="2" Grid.Column="1" Height="3" Background="{ThemeResource CardStrokeColorDefaultBrush}" CornerRadius="1.5" Visibility="Collapsed" />
-                        <Border x:Name="Left" Grid.Row="1" Width="3" Background="{ThemeResource CardStrokeColorDefaultBrush}" CornerRadius="1.5" Visibility="Collapsed" />
-                        <Border x:Name="Right" Grid.Row="1" Grid.Column="2" Width="3" Background="{ThemeResource CardStrokeColorDefaultBrush}" CornerRadius="1.5" Visibility="Collapsed" />
-                        <ContentPresenter x:Name="PART_LabelHost" Grid.Row="1" Grid.Column="1" Margin="0,6,0,6" Foreground="{TemplateBinding Foreground}" />
-                    </Grid>
-                </ControlTemplate>
-    <!-- Ported from WPFUI e8a3da4, Styles/LayoutAnchorControl.xaml.
-         MIT, Copyright (c) 2024 qian-o.
-         License: https://github.com/qian-o/AvalonDock.Themes.WPFUI/blob/e8a3da4e9761ff549e5a2afca2bdf891a681baf2/LICENSE
-         Side states preserve the rotated WPF layout without WinUI LayoutTransform. -->
+    <ControlTemplate x:Key="AnchorTemplate"
+                     TargetType="controls:LayoutAnchorControl">
+        <Grid x:Name="Main"
+              Margin="0,0,12,0"
+              Background="{TemplateBinding Background}">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <VisualStateManager.VisualStateGroups>
+                <VisualStateGroup x:Name="SideStates">
+                    <VisualState x:Name="SideTop">
+                        <VisualState.Setters>
+                            <Setter Target="Top.Visibility" Value="Visible" />
+                        </VisualState.Setters>
+                    </VisualState>
+                    <VisualState x:Name="SideBottom">
+                        <VisualState.Setters>
+                            <Setter Target="Bottom.Visibility" Value="Visible" />
+                        </VisualState.Setters>
+                    </VisualState>
+                    <VisualState x:Name="SideLeft">
+                        <VisualState.Setters>
+                            <Setter Target="Main.Margin" Value="0,0,0,12" />
+                            <Setter Target="PART_LabelHost.Margin" Value="6,0,6,0" />
+                            <Setter Target="Left.Visibility" Value="Visible" />
+                        </VisualState.Setters>
+                    </VisualState>
+                    <VisualState x:Name="SideRight">
+                        <VisualState.Setters>
+                            <Setter Target="Main.Margin" Value="0,0,0,12" />
+                            <Setter Target="PART_LabelHost.Margin" Value="6,0,6,0" />
+                            <Setter Target="Right.Visibility" Value="Visible" />
+                        </VisualState.Setters>
+                    </VisualState>
+                </VisualStateGroup>
+                <VisualStateGroup x:Name="CommonStates">
+                    <VisualState x:Name="Normal" />
+                    <VisualState x:Name="PointerOver">
+                        <VisualState.Setters>
+                            <Setter Target="Top.Background" Value="{ThemeResource AccentFillColorDefaultBrush}" />
+                            <Setter Target="Bottom.Background" Value="{ThemeResource AccentFillColorDefaultBrush}" />
+                            <Setter Target="Left.Background" Value="{ThemeResource AccentFillColorDefaultBrush}" />
+                            <Setter Target="Right.Background" Value="{ThemeResource AccentFillColorDefaultBrush}" />
+                            <Setter Target="PART_LabelHost.Foreground" Value="{ThemeResource TextFillColorPrimaryBrush}" />
+                        </VisualState.Setters>
+                    </VisualState>
+                </VisualStateGroup>
+            </VisualStateManager.VisualStateGroups>
+            <Border x:Name="Top"
+                    Grid.Column="1"
+                    Height="3"
+                    Background="{ThemeResource CardStrokeColorDefaultBrush}"
+                    CornerRadius="1.5"
+                    Visibility="Collapsed" />
+            <Border x:Name="Bottom"
+                    Grid.Row="2"
+                    Grid.Column="1"
+                    Height="3"
+                    Background="{ThemeResource CardStrokeColorDefaultBrush}"
+                    CornerRadius="1.5"
+                    Visibility="Collapsed" />
+            <Border x:Name="Left"
+                    Grid.Row="1"
+                    Width="3"
+                    Background="{ThemeResource CardStrokeColorDefaultBrush}"
+                    CornerRadius="1.5"
+                    Visibility="Collapsed" />
+            <Border x:Name="Right"
+                    Grid.Row="1"
+                    Grid.Column="2"
+                    Width="3"
+                    Background="{ThemeResource CardStrokeColorDefaultBrush}"
+                    CornerRadius="1.5"
+                    Visibility="Collapsed" />
+            <ContentPresenter x:Name="PART_LabelHost"
+                              Grid.Row="1"
+                              Grid.Column="1"
+                              Margin="0,6,0,6"
+                              Foreground="{TemplateBinding Foreground}" />
+        </Grid>
+    </ControlTemplate>
+    <!--
+        Ported from WPFUI e8a3da4, Styles/LayoutAnchorControl.xaml.
+        MIT, Copyright (c) 2024 qian-o.
+        License: https://github.com/qian-o/AvalonDock.Themes.WPFUI/blob/e8a3da4e9761ff549e5a2afca2bdf891a681baf2/LICENSE
+        Side states preserve the rotated WPF layout without WinUI LayoutTransform.
+    -->
     <Style TargetType="controls:LayoutAnchorControl">
         <Setter Property="Background" Value="Transparent" />
-        <Setter Property="Foreground" Value="{ThemeResource TextFillColorPrimaryBrush}" />
         <Setter Property="FontSize" Value="12" />
+        <Setter Property="Foreground" Value="{ThemeResource TextFillColorPrimaryBrush}" />
         <Setter Property="Template">
             <Setter.Value>
                 <StaticResource ResourceKey="AnchorTemplate" />

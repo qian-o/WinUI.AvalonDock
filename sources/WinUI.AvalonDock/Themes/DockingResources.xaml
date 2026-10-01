@@ -1,7 +1,9 @@
-<!-- Metrics adapted from AvalonDock.Themes.WPFUI/Styles/FluentResources.xaml at ffff79a.
-     MIT, Copyright (c) 2024 qian-o.
-     License: https://github.com/qian-o/AvalonDock.Themes.WPFUI/blob/ffff79aefd2139c34a3a87a0f1059bb036f1a0dc/LICENSE
-     Native TabView states, accessibility and theme palettes remain supplied by WinUI. -->
+<!--
+    Metrics adapted from AvalonDock.Themes.WPFUI/Styles/FluentResources.xaml at ffff79a.
+    MIT, Copyright (c) 2024 qian-o.
+    License: https://github.com/qian-o/AvalonDock.Themes.WPFUI/blob/ffff79aefd2139c34a3a87a0f1059bb036f1a0dc/LICENSE
+    Native TabView states, accessibility and theme palettes remain supplied by WinUI.
+-->
 <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <x:Double x:Key="TabViewItemMinHeight">28</x:Double>
@@ -13,6 +15,8 @@
     <Thickness x:Key="TabViewItemHeaderPaddingWithCloseButton">14,0,4,0</Thickness>
     <Thickness x:Key="TabViewItemHeaderPaddingWithoutCloseButton">14,0,4,0</Thickness>
     <Thickness x:Key="TabViewItemSeparatorMargin">0,8,0,8</Thickness>
-    <SolidColorBrush x:Key="TabViewBorderBrush" Color="Transparent" />
-    <SolidColorBrush x:Key="TabViewItemHeaderBackgroundSelected" Color="Transparent" />
+    <SolidColorBrush x:Key="TabViewBorderBrush"
+                     Color="Transparent" />
+    <SolidColorBrush x:Key="TabViewItemHeaderBackgroundSelected"
+                     Color="Transparent" />
 </ResourceDictionary>

@@ -1,32 +1,54 @@
-<!-- Ported from qian-o/AvalonDock.Themes.WPFUI e8a3da4, Styles/Common.xaml.
-     MIT, Copyright (c) 2024 qian-o.
-     License: https://github.com/qian-o/AvalonDock.Themes.WPFUI/blob/e8a3da4e9761ff549e5a2afca2bdf891a681baf2/LICENSE -->
+<!--
+    Ported from qian-o/AvalonDock.Themes.WPFUI e8a3da4, Styles/Common.xaml.
+    MIT, Copyright (c) 2024 qian-o.
+    License: https://github.com/qian-o/AvalonDock.Themes.WPFUI/blob/e8a3da4e9761ff549e5a2afca2bdf891a681baf2/LICENSE
+-->
 <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:themes="using:AvalonDock.Themes">
     <themes:HeaderIconMarginConverter x:Key="HeaderIconMargin" />
     <DataTemplate x:Key="DocumentHeaderTemplate">
-        <TextBlock HorizontalAlignment="Left" VerticalAlignment="Center" Text="{Binding Title}"
-                   TextAlignment="Left" TextTrimming="CharacterEllipsis" />
+        <TextBlock HorizontalAlignment="Left"
+                   VerticalAlignment="Center"
+                   Text="{Binding Title}"
+                   TextAlignment="Left"
+                   TextTrimming="CharacterEllipsis" />
     </DataTemplate>
     <DataTemplate x:Key="AnchorableHeaderTemplate">
-        <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
-            <Grid.ColumnDefinitions><ColumnDefinition Width="Auto" /><ColumnDefinition /></Grid.ColumnDefinitions>
-            <Image themes:RetainedIconSource.Source="{Binding IconSource}" Stretch="Uniform" VerticalAlignment="Center" />
-            <TextBlock Grid.Column="1" Margin="{Binding IconSource, Converter={StaticResource HeaderIconMargin}}"
-                       HorizontalAlignment="Stretch" VerticalAlignment="Center" Text="{Binding Title}"
-                       TextAlignment="Center" TextTrimming="CharacterEllipsis" />
+        <Grid HorizontalAlignment="Stretch"
+              VerticalAlignment="Stretch">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition />
+            </Grid.ColumnDefinitions>
+            <Image VerticalAlignment="Center"
+                   themes:RetainedIconSource.Source="{Binding IconSource}"
+                   Stretch="Uniform" />
+            <TextBlock Grid.Column="1"
+                       Margin="{Binding IconSource, Converter={StaticResource HeaderIconMargin}}"
+                       HorizontalAlignment="Stretch"
+                       VerticalAlignment="Center"
+                       Text="{Binding Title}"
+                       TextAlignment="Center"
+                       TextTrimming="CharacterEllipsis" />
         </Grid>
     </DataTemplate>
     <DataTemplate x:Key="DocumentTitleTemplate">
-        <TextBlock HorizontalAlignment="Stretch" VerticalAlignment="Center" Text="{Binding Title}"
-                   TextAlignment="Center" TextTrimming="CharacterEllipsis" />
+        <TextBlock HorizontalAlignment="Stretch"
+                   VerticalAlignment="Center"
+                   Text="{Binding Title}"
+                   TextAlignment="Center"
+                   TextTrimming="CharacterEllipsis" />
     </DataTemplate>
     <DataTemplate x:Key="AnchorableTitleTemplate">
-        <TextBlock HorizontalAlignment="Stretch" VerticalAlignment="Center" Text="{Binding Title}"
-                   TextAlignment="Left" TextTrimming="CharacterEllipsis" />
+        <TextBlock HorizontalAlignment="Stretch"
+                   VerticalAlignment="Center"
+                   Text="{Binding Title}"
+                   TextAlignment="Left"
+                   TextTrimming="CharacterEllipsis" />
     </DataTemplate>
     <DataTemplate x:Key="IconContentTemplate">
-        <Image themes:RetainedIconSource.Source="{Binding IconSource}" Stretch="Uniform" />
+        <Image themes:RetainedIconSource.Source="{Binding IconSource}"
+               Stretch="Uniform" />
     </DataTemplate>
 </ResourceDictionary>

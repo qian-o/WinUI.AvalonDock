@@ -2,8 +2,8 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:avalonDock="using:AvalonDock"
                     xmlns:controls="using:AvalonDock.Controls"
-                    xmlns:properties="using:AvalonDock.Properties"
-                    xmlns:converters="using:AvalonDock.Converters">
+                    xmlns:converters="using:AvalonDock.Converters"
+                    xmlns:properties="using:AvalonDock.Properties">
 
     <ResourceDictionary.MergedDictionaries>
         <ResourceDictionary Source="ms-appx:///WinUI.AvalonDock/Themes/Chrome.xaml" />
@@ -16,55 +16,85 @@
     </ResourceDictionary.MergedDictionaries>
     <converters:BoolToVisibilityConverter x:Key="ChromeButtonVisibility" />
     <converters:NullToDoNothingConverter x:Key="NullToDoNothingConverter" />
-    <Style TargetType="controls:TabControlEx" BasedOn="{StaticResource AvalonDockTabControlExStyle}" />
+    <Style BasedOn="{StaticResource AvalonDockTabControlExStyle}"
+           TargetType="controls:TabControlEx" />
     <Style TargetType="controls:LayoutDocumentPaneControl" />
-    <Style TargetType="controls:LayoutAnchorablePaneControl" BasedOn="{StaticResource AvalonDockToggleTabControlExStyle}" />
-    <Style x:Key="DockDocumentPaneControlStyle" TargetType="controls:LayoutDocumentPaneControl" BasedOn="{StaticResource AvalonDockTabControlExStyle}" />
-    <Style x:Key="DockAnchorablePaneControlStyle" TargetType="controls:LayoutAnchorablePaneControl" BasedOn="{StaticResource AvalonDockToggleTabControlExStyle}" />
-    <Style x:Key="ToggleAnchorablePaneControlStyle" TargetType="controls:LayoutAnchorablePaneControl" BasedOn="{StaticResource AvalonDockTogglePaneControlStyle}" />
+    <Style BasedOn="{StaticResource AvalonDockToggleTabControlExStyle}"
+           TargetType="controls:LayoutAnchorablePaneControl" />
+    <Style x:Key="DockDocumentPaneControlStyle"
+           BasedOn="{StaticResource AvalonDockTabControlExStyle}"
+           TargetType="controls:LayoutDocumentPaneControl" />
+    <Style x:Key="DockAnchorablePaneControlStyle"
+           BasedOn="{StaticResource AvalonDockToggleTabControlExStyle}"
+           TargetType="controls:LayoutAnchorablePaneControl" />
+    <Style x:Key="ToggleAnchorablePaneControlStyle"
+           BasedOn="{StaticResource AvalonDockTogglePaneControlStyle}"
+           TargetType="controls:LayoutAnchorablePaneControl" />
 
     <MenuFlyout x:Key="AnchorableContextMenu">
-        <MenuFlyoutItem Text="{properties:LocalizedString Key=Document_Float}" Command="{Binding FloatCommand}" />
-        <MenuFlyoutItem Text="{properties:LocalizedString Key=Anchorable_DetachToWindow}" Command="{Binding DetachToWindowCommand}" />
-        <MenuFlyoutItem Text="{properties:LocalizedString Key=Anchorable_Dock}" Command="{Binding DockCommand}" />
-        <MenuFlyoutItem Text="{properties:LocalizedString Key=Document_DockAsDocument}" Command="{Binding DockAsDocumentCommand}" />
-        <MenuFlyoutItem Text="{properties:LocalizedString Key=Anchorable_AutoHide}" Command="{Binding AutoHideCommand}" />
-        <MenuFlyoutItem Text="{properties:LocalizedString Key=Document_Close}" Command="{Binding CloseCommand}" Tag="AvalonDock.Menu.Enabled" />
-        <MenuFlyoutItem Text="{properties:LocalizedString Key=Anchorable_Hide}" Command="{Binding HideCommand}" Tag="AvalonDock.Menu.Hide" />
+        <MenuFlyoutItem Command="{Binding FloatCommand}"
+                        Text="{properties:LocalizedString Key=Document_Float}" />
+        <MenuFlyoutItem Command="{Binding DetachToWindowCommand}"
+                        Text="{properties:LocalizedString Key=Anchorable_DetachToWindow}" />
+        <MenuFlyoutItem Command="{Binding DockCommand}"
+                        Text="{properties:LocalizedString Key=Anchorable_Dock}" />
+        <MenuFlyoutItem Command="{Binding DockAsDocumentCommand}"
+                        Text="{properties:LocalizedString Key=Document_DockAsDocument}" />
+        <MenuFlyoutItem Command="{Binding AutoHideCommand}"
+                        Text="{properties:LocalizedString Key=Anchorable_AutoHide}" />
+        <MenuFlyoutItem Command="{Binding CloseCommand}"
+                        Tag="AvalonDock.Menu.Enabled"
+                        Text="{properties:LocalizedString Key=Document_Close}" />
+        <MenuFlyoutItem Command="{Binding HideCommand}"
+                        Tag="AvalonDock.Menu.Hide"
+                        Text="{properties:LocalizedString Key=Anchorable_Hide}" />
     </MenuFlyout>
     <MenuFlyout x:Key="DocumentContextMenu">
-        <MenuFlyoutItem Text="{properties:LocalizedString Key=Document_Close}" Command="{Binding CloseCommand}" Tag="AvalonDock.Menu.Enabled" />
-        <MenuFlyoutItem Text="{properties:LocalizedString Key=Document_CloseAllButThis}" Command="{Binding CloseAllButThisCommand}" />
-        <MenuFlyoutItem Text="{properties:LocalizedString Key=Document_CloseAll}" Command="{Binding CloseAllCommand}" />
-        <MenuFlyoutItem Text="{properties:LocalizedString Key=Document_Float}" Command="{Binding FloatCommand}" />
-        <MenuFlyoutItem Text="{properties:LocalizedString Key=Document_DockAsDocument}" Command="{Binding DockAsDocumentCommand}" />
-        <MenuFlyoutItem Text="{properties:LocalizedString Key=Document_NewHorizontalTabGroup}" Command="{Binding NewHorizontalTabGroupCommand}" Tag="AvalonDock.Menu.Enabled" />
-        <MenuFlyoutItem Text="{properties:LocalizedString Key=Document_NewVerticalTabGroup}" Command="{Binding NewVerticalTabGroupCommand}" Tag="AvalonDock.Menu.Enabled" />
-        <MenuFlyoutItem Text="{properties:LocalizedString Key=Document_MoveToNextTabGroup}" Command="{Binding MoveToNextTabGroupCommand}" Tag="AvalonDock.Menu.Enabled" />
-        <MenuFlyoutItem Text="{properties:LocalizedString Key=Document_MoveToPreviousTabGroup}" Command="{Binding MoveToPreviousTabGroupCommand}" Tag="AvalonDock.Menu.Enabled" />
+        <MenuFlyoutItem Command="{Binding CloseCommand}"
+                        Tag="AvalonDock.Menu.Enabled"
+                        Text="{properties:LocalizedString Key=Document_Close}" />
+        <MenuFlyoutItem Command="{Binding CloseAllButThisCommand}"
+                        Text="{properties:LocalizedString Key=Document_CloseAllButThis}" />
+        <MenuFlyoutItem Command="{Binding CloseAllCommand}"
+                        Text="{properties:LocalizedString Key=Document_CloseAll}" />
+        <MenuFlyoutItem Command="{Binding FloatCommand}"
+                        Text="{properties:LocalizedString Key=Document_Float}" />
+        <MenuFlyoutItem Command="{Binding DockAsDocumentCommand}"
+                        Text="{properties:LocalizedString Key=Document_DockAsDocument}" />
+        <MenuFlyoutItem Command="{Binding NewHorizontalTabGroupCommand}"
+                        Tag="AvalonDock.Menu.Enabled"
+                        Text="{properties:LocalizedString Key=Document_NewHorizontalTabGroup}" />
+        <MenuFlyoutItem Command="{Binding NewVerticalTabGroupCommand}"
+                        Tag="AvalonDock.Menu.Enabled"
+                        Text="{properties:LocalizedString Key=Document_NewVerticalTabGroup}" />
+        <MenuFlyoutItem Command="{Binding MoveToNextTabGroupCommand}"
+                        Tag="AvalonDock.Menu.Enabled"
+                        Text="{properties:LocalizedString Key=Document_MoveToNextTabGroup}" />
+        <MenuFlyoutItem Command="{Binding MoveToPreviousTabGroupCommand}"
+                        Tag="AvalonDock.Menu.Enabled"
+                        Text="{properties:LocalizedString Key=Document_MoveToPreviousTabGroup}" />
     </MenuFlyout>
 
-    <Style x:Key="AvalonDockManagerStyle" TargetType="avalonDock:DockingManager">
-        <Setter Property="AnchorSideTemplate" Value="{StaticResource AnchorSideTemplate}" />
+    <Style x:Key="AvalonDockManagerStyle"
+           TargetType="avalonDock:DockingManager">
         <Setter Property="AnchorGroupTemplate" Value="{StaticResource AnchorGroupTemplate}" />
+        <Setter Property="AnchorSideTemplate" Value="{StaticResource AnchorSideTemplate}" />
         <Setter Property="AnchorTemplate" Value="{StaticResource AnchorTemplate}" />
-        <Setter Property="AnchorableHeaderTemplate" Value="{StaticResource AnchorableHeaderTemplate}" />
-        <Setter Property="AnchorableTitleTemplate" Value="{StaticResource AnchorableTitleTemplate}" />
-        <Setter Property="DocumentContextMenu" Value="{StaticResource DocumentContextMenu}" />
         <Setter Property="AnchorableContextMenu" Value="{StaticResource AnchorableContextMenu}" />
+        <Setter Property="AnchorableHeaderTemplate" Value="{StaticResource AnchorableHeaderTemplate}" />
+        <Setter Property="AnchorablePaneControlStyle" Value="{StaticResource DockAnchorablePaneControlStyle}" />
+        <Setter Property="AnchorableTitleTemplate" Value="{StaticResource AnchorableTitleTemplate}" />
+        <Setter Property="Background" Value="{ThemeResource ApplicationPageBackgroundThemeBrush}" />
+        <Setter Property="DocumentContextMenu" Value="{StaticResource DocumentContextMenu}" />
         <Setter Property="DocumentHeaderTemplate" Value="{StaticResource DocumentHeaderTemplate}" />
         <Setter Property="DocumentPaneControlStyle" Value="{StaticResource DockDocumentPaneControlStyle}" />
-        <Setter Property="DocumentTitleTemplate" Value="{StaticResource DocumentTitleTemplate}" />
         <Setter Property="DocumentPaneMenuItemHeaderTemplate" Value="{StaticResource DocumentHeaderTemplate}" />
-        <Setter Property="IconContentTemplate" Value="{StaticResource IconContentTemplate}" />
-        <Setter Property="AnchorablePaneControlStyle" Value="{StaticResource DockAnchorablePaneControlStyle}" />
-        <Setter Property="HorizontalContentAlignment" Value="Stretch" />
-        <Setter Property="VerticalContentAlignment" Value="Stretch" />
+        <Setter Property="DocumentTitleTemplate" Value="{StaticResource DocumentTitleTemplate}" />
         <Setter Property="FontFamily" Value="{ThemeResource DockFontFamily}" />
         <Setter Property="FontSize" Value="12" />
         <Setter Property="Foreground" Value="{ThemeResource TextFillColorPrimaryBrush}" />
-        <Setter Property="UseLayoutRounding" Value="True" />
-        <Setter Property="Background" Value="{ThemeResource ApplicationPageBackgroundThemeBrush}" />
+        <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+        <Setter Property="IconContentTemplate" Value="{StaticResource IconContentTemplate}" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="avalonDock:DockingManager">
@@ -73,26 +103,59 @@
                             BorderBrush="{TemplateBinding BorderBrush}"
                             BorderThickness="{TemplateBinding BorderThickness}">
                         <Grid FlowDirection="LeftToRight">
-                            <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="*" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
-                            <Grid.ColumnDefinitions><ColumnDefinition Width="Auto" /><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
-                            <!-- AvalonDock.Themes.WPFUI/Styles/DockingManager.xaml, e8a3da4 (MIT). -->
-                            <ContentPresenter x:Name="PART_LayoutHost" Grid.Row="1" Grid.Column="1" Margin="4" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch" />
-                            <ContentPresenter Grid.Row="0" Grid.Column="1" Margin="4,4,4,0" Content="{TemplateBinding TopSidePanel}" />
-                            <ContentPresenter Grid.Row="2" Grid.Column="1" Margin="4,0,4,4" Content="{TemplateBinding BottomSidePanel}" />
-                            <ContentPresenter Grid.Row="1" Grid.Column="0" Margin="4,4,0,4" Content="{TemplateBinding LeftSidePanel}" />
-                            <ContentPresenter Grid.Row="1" Grid.Column="2" Margin="0,4,4,4" Content="{TemplateBinding RightSidePanel}" />
-                            <ContentPresenter x:Name="PART_AutoHideArea" Grid.Row="1" Grid.Column="1" Content="{TemplateBinding AutoHideWindow}"
-                                              HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch" />
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="*" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <!--  AvalonDock.Themes.WPFUI/Styles/DockingManager.xaml, e8a3da4 (MIT).  -->
+                            <ContentPresenter x:Name="PART_LayoutHost"
+                                              Grid.Row="1"
+                                              Grid.Column="1"
+                                              Margin="4"
+                                              HorizontalContentAlignment="Stretch"
+                                              VerticalContentAlignment="Stretch" />
+                            <ContentPresenter Grid.Row="0"
+                                              Grid.Column="1"
+                                              Margin="4,4,4,0"
+                                              Content="{TemplateBinding TopSidePanel}" />
+                            <ContentPresenter Grid.Row="2"
+                                              Grid.Column="1"
+                                              Margin="4,0,4,4"
+                                              Content="{TemplateBinding BottomSidePanel}" />
+                            <ContentPresenter Grid.Row="1"
+                                              Grid.Column="0"
+                                              Margin="4,4,0,4"
+                                              Content="{TemplateBinding LeftSidePanel}" />
+                            <ContentPresenter Grid.Row="1"
+                                              Grid.Column="2"
+                                              Margin="0,4,4,4"
+                                              Content="{TemplateBinding RightSidePanel}" />
+                            <ContentPresenter x:Name="PART_AutoHideArea"
+                                              Grid.Row="1"
+                                              Grid.Column="1"
+                                              HorizontalContentAlignment="Stretch"
+                                              VerticalContentAlignment="Stretch"
+                                              Content="{TemplateBinding AutoHideWindow}" />
                         </Grid>
                     </Border>
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
+        <Setter Property="UseLayoutRounding" Value="True" />
+        <Setter Property="VerticalContentAlignment" Value="Stretch" />
     </Style>
 
-    <Style TargetType="avalonDock:DockingManager" BasedOn="{StaticResource AvalonDockManagerStyle}" />
-    <!-- Toggle-specific structure ported from WPFUI ffff79a Styles/ToggleDockingManager.xaml (MIT). -->
-    <Style TargetType="avalonDock:ToggleDockingManager" BasedOn="{StaticResource AvalonDockManagerStyle}">
+    <Style BasedOn="{StaticResource AvalonDockManagerStyle}"
+           TargetType="avalonDock:DockingManager" />
+    <!--  Toggle-specific structure ported from WPFUI ffff79a Styles/ToggleDockingManager.xaml (MIT).  -->
+    <Style BasedOn="{StaticResource AvalonDockManagerStyle}"
+           TargetType="avalonDock:ToggleDockingManager">
         <Setter Property="AnchorablePaneControlStyle" Value="{StaticResource ToggleAnchorablePaneControlStyle}" />
         <Setter Property="GridSplitterHeight" Value="8" />
         <Setter Property="GridSplitterWidth" Value="8" />
@@ -100,21 +163,54 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="avalonDock:ToggleDockingManager">
-                    <Border Padding="{TemplateBinding Padding}" Background="{TemplateBinding Background}"
-                            BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}">
-                        <Grid x:Name="PART_ToggleNavigationGrid" FlowDirection="LeftToRight">
-                            <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="*" /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
-                            <Grid.ColumnDefinitions><ColumnDefinition Width="Auto" /><ColumnDefinition Width="*" /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
-                            <Border x:Name="PART_LeftNavigationFrame" Grid.RowSpan="3" Style="{StaticResource TogglePaneFrameStyle}" IsHitTestVisible="False" />
-                            <Border x:Name="PART_RightNavigationFrame" Grid.RowSpan="3" Grid.Column="2" Style="{StaticResource TogglePaneFrameStyle}" IsHitTestVisible="False" />
-                            <ContentPresenter x:Name="PART_LayoutHost" Grid.Row="1" Grid.Column="1" Margin="4,0"
-                                              HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch" />
-                            <ContentPresenter Grid.Row="0" Grid.Column="1" Content="{TemplateBinding TopSidePanel}" />
-                            <ContentPresenter Grid.Row="2" Grid.Column="1" Content="{TemplateBinding BottomSidePanel}" />
-                            <ContentPresenter Grid.Row="1" Grid.Column="0" Content="{TemplateBinding LeftSidePanel}" />
-                            <ContentPresenter Grid.Row="1" Grid.Column="2" Content="{TemplateBinding RightSidePanel}" />
-                            <ContentPresenter x:Name="PART_AutoHideArea" Grid.Row="1" Grid.Column="1"
-                                              HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch"
+                    <Border Padding="{TemplateBinding Padding}"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}">
+                        <Grid x:Name="PART_ToggleNavigationGrid"
+                              FlowDirection="LeftToRight">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="*" />
+                                <RowDefinition Height="Auto" />
+                            </Grid.RowDefinitions>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <Border x:Name="PART_LeftNavigationFrame"
+                                    Grid.RowSpan="3"
+                                    IsHitTestVisible="False"
+                                    Style="{StaticResource TogglePaneFrameStyle}" />
+                            <Border x:Name="PART_RightNavigationFrame"
+                                    Grid.RowSpan="3"
+                                    Grid.Column="2"
+                                    IsHitTestVisible="False"
+                                    Style="{StaticResource TogglePaneFrameStyle}" />
+                            <ContentPresenter x:Name="PART_LayoutHost"
+                                              Grid.Row="1"
+                                              Grid.Column="1"
+                                              Margin="4,0"
+                                              HorizontalContentAlignment="Stretch"
+                                              VerticalContentAlignment="Stretch" />
+                            <ContentPresenter Grid.Row="0"
+                                              Grid.Column="1"
+                                              Content="{TemplateBinding TopSidePanel}" />
+                            <ContentPresenter Grid.Row="2"
+                                              Grid.Column="1"
+                                              Content="{TemplateBinding BottomSidePanel}" />
+                            <ContentPresenter Grid.Row="1"
+                                              Grid.Column="0"
+                                              Content="{TemplateBinding LeftSidePanel}" />
+                            <ContentPresenter Grid.Row="1"
+                                              Grid.Column="2"
+                                              Content="{TemplateBinding RightSidePanel}" />
+                            <ContentPresenter x:Name="PART_AutoHideArea"
+                                              Grid.Row="1"
+                                              Grid.Column="1"
+                                              HorizontalContentAlignment="Stretch"
+                                              VerticalContentAlignment="Stretch"
                                               Content="{TemplateBinding AutoHideWindow}" />
                         </Grid>
                     </Border>
@@ -124,7 +220,6 @@
     </Style>
     <Style TargetType="controls:LayoutDocumentControl">
         <Setter Property="HorizontalContentAlignment" Value="Stretch" />
-        <Setter Property="VerticalContentAlignment" Value="Stretch" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="controls:LayoutDocumentControl">
@@ -134,16 +229,18 @@
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
+        <Setter Property="VerticalContentAlignment" Value="Stretch" />
     </Style>
 
-    <Style TargetType="controls:LayoutAnchorableControl" BasedOn="{StaticResource DockAnchorableContentStyle}" />
+    <Style BasedOn="{StaticResource DockAnchorableContentStyle}"
+           TargetType="controls:LayoutAnchorableControl" />
 
     <Style TargetType="controls:LayoutGridResizerControl">
         <Setter Property="Background" Value="Transparent" />
         <Setter Property="BorderBrush" Value="Transparent" />
         <Setter Property="BorderThickness" Value="0" />
-        <Setter Property="Opacity" Value="0" />
         <Setter Property="Canvas.ZIndex" Value="1" />
+        <Setter Property="Opacity" Value="0" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="controls:LayoutGridResizerControl">
@@ -154,120 +251,180 @@
     </Style>
 
     <Style TargetType="controls:AnchorablePaneTitle">
-        <Setter Property="IsTabStop" Value="False" />
-        <Setter Property="FontSize" Value="12" />
         <Setter Property="Background" Value="{ThemeResource SolidBackgroundFillColorTertiaryBrush}" />
+        <Setter Property="FontSize" Value="12" />
         <Setter Property="HorizontalContentAlignment" Value="Stretch" />
-        <Setter Property="VerticalContentAlignment" Value="Center" />
+        <Setter Property="IsTabStop" Value="False" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="controls:AnchorablePaneTitle">
-                    <Grid Background="{TemplateBinding Background}" MinHeight="36" Padding="8,4,4,4">
+                    <Grid MinHeight="36"
+                          Padding="8,4,4,4"
+                          Background="{TemplateBinding Background}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="28" />
+                            <ColumnDefinition Width="28" />
+                            <ColumnDefinition Width="28" />
+                        </Grid.ColumnDefinitions>
                         <VisualStateManager.VisualStateGroups>
-                            <VisualStateGroup x:Name="AutoHideStates"><VisualState x:Name="Pinned" /><VisualState x:Name="AutoHidden"><VisualState.Setters><Setter Target="AutoHideGlyphRotation.Angle" Value="45" /></VisualState.Setters></VisualState></VisualStateGroup>
+                            <VisualStateGroup x:Name="AutoHideStates">
+                                <VisualState x:Name="Pinned" />
+                                <VisualState x:Name="AutoHidden">
+                                    <VisualState.Setters>
+                                        <Setter Target="AutoHideGlyphRotation.Angle" Value="45" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                            </VisualStateGroup>
                             <VisualStateGroup x:Name="ClosePolicy">
                                 <VisualState x:Name="HideTool" />
-                                <VisualState x:Name="CloseTool"><VisualState.Setters>
-                                    <Setter Target="PART_HideButton.Command" Value="{Binding LayoutItem.CloseCommand, RelativeSource={RelativeSource TemplatedParent}}" />
-                                    <Setter Target="PART_HideButton.(ToolTipService.ToolTip)" Value="{properties:LocalizedString Key=Document_Close}" />
-                                    <Setter Target="PART_HideButton.(AutomationProperties.Name)" Value="{properties:LocalizedString Key=Document_Close}" />
-                                </VisualState.Setters></VisualState>
+                                <VisualState x:Name="CloseTool">
+                                    <VisualState.Setters>
+                                        <Setter Target="PART_HideButton.Command" Value="{Binding LayoutItem.CloseCommand, RelativeSource={RelativeSource TemplatedParent}}" />
+                                        <Setter Target="PART_HideButton.(ToolTipService.ToolTip)" Value="{properties:LocalizedString Key=Document_Close}" />
+                                        <Setter Target="PART_HideButton.(AutomationProperties.Name)" Value="{properties:LocalizedString Key=Document_Close}" />
+                                    </VisualState.Setters>
+                                </VisualState>
                             </VisualStateGroup>
                         </VisualStateManager.VisualStateGroups>
-                        <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="28"/><ColumnDefinition Width="28"/><ColumnDefinition Width="28"/></Grid.ColumnDefinitions>
-                        <controls:DropDownControlArea Tag="AvalonDock.DefaultContextMenu"
-                                                      Background="Transparent"
-                                                      HorizontalContentAlignment="Stretch"
+                        <controls:DropDownControlArea HorizontalContentAlignment="Stretch"
                                                       VerticalContentAlignment="Stretch"
-                                                      DropDownContextMenuDataContext="{Binding LayoutItem, RelativeSource={RelativeSource TemplatedParent}}">
+                                                      Background="Transparent"
+                                                      DropDownContextMenuDataContext="{Binding LayoutItem, RelativeSource={RelativeSource TemplatedParent}}"
+                                                      Tag="AvalonDock.DefaultContextMenu">
                             <ContentPresenter x:Name="PART_Title"
                                               HorizontalAlignment="Stretch"
                                               VerticalAlignment="Stretch"
                                               HorizontalContentAlignment="Stretch"
                                               VerticalContentAlignment="Center" />
                         </controls:DropDownControlArea>
-                        <controls:ChromeButton Grid.Column="2" x:Name="PART_AutoHideButton" Style="{StaticResource AvalonDockChromeButtonStyle}" ToolTipService.ToolTip="{properties:LocalizedString Key=Anchorable_BtnAutoHide_Hint}" AutomationProperties.Name="{properties:LocalizedString Key=A11y_AutoHideTool}"
-                                               Command="{Binding LayoutItem.AutoHideCommand, RelativeSource={RelativeSource TemplatedParent}}" Visibility="{Binding IsEnabled, RelativeSource={RelativeSource Self}, Converter={StaticResource ChromeButtonVisibility}}" ><PathIcon Width="12" Height="12" Data="M8.05224 1.43562C7.3425 0.725881 6.14947 0.899942 5.67209 1.78288L4.14488 4.60757L1.81492 5.53601C1.65868 5.59827 1.54421 5.73491 1.51029 5.89964C1.47636 6.06437 1.52753 6.23512 1.64645 6.35405L3.29296 8.00056L1.14655 10.147L1 11.0005L1.85366 10.8541L4.00007 8.70766L5.64645 10.354C5.7653 10.4729 5.9359 10.5241 6.10054 10.4903C6.26518 10.4565 6.40183 10.3422 6.46425 10.1862L7.39704 7.8542L10.218 6.32845C11.1008 5.85099 11.2747 4.65808 10.565 3.94841L8.05224 1.43562ZM6.55175 2.25848C6.71088 1.96417 7.10856 1.90615 7.34514 2.14273L9.85793 4.65552C10.0945 4.89208 10.0365 5.28971 9.74224 5.44886L6.76214 7.0607C6.65929 7.11633 6.5792 7.20624 6.53577 7.3148L5.81738 9.11076L2.89051 6.18388L4.68354 5.4694C4.79239 5.42602 4.88256 5.34579 4.93829 5.24272L6.55175 2.25848Z"><PathIcon.RenderTransform><RotateTransform x:Name="AutoHideGlyphRotation" Angle="-45" CenterX="6" CenterY="6" /></PathIcon.RenderTransform></PathIcon></controls:ChromeButton>
-                        <controls:ChromeButton Grid.Column="3" x:Name="PART_HideButton" Style="{StaticResource AvalonDockChromeButtonStyle}" ToolTipService.ToolTip="{properties:LocalizedString Key=Anchorable_BtnClose_Hint}" AutomationProperties.Name="{properties:LocalizedString Key=A11y_HideTool}"
-                                               Command="{Binding LayoutItem.HideCommand, RelativeSource={RelativeSource TemplatedParent}}" Visibility="{Binding IsEnabled, RelativeSource={RelativeSource Self}, Converter={StaticResource ChromeButtonVisibility}}" ><PathIcon Width="12" Height="12" Data="M2.08859 2.21569L2.14645 2.14645C2.32001 1.97288 2.58944 1.9536 2.78431 2.08859L2.85355 2.14645L6 5.293L9.14645 2.14645C9.34171 1.95118 9.65829 1.95118 9.85355 2.14645C10.0488 2.34171 10.0488 2.65829 9.85355 2.85355L6.707 6L9.85355 9.14645C10.0271 9.32001 10.0464 9.58944 9.91141 9.78431L9.85355 9.85355C9.67999 10.0271 9.41056 10.0464 9.21569 9.91141L9.14645 9.85355L6 6.707L2.85355 9.85355C2.65829 10.0488 2.34171 10.0488 2.14645 9.85355C1.95118 9.65829 1.95118 9.34171 2.14645 9.14645L5.293 6L2.14645 2.85355C1.97288 2.67999 1.9536 2.41056 2.08859 2.21569L2.14645 2.14645L2.08859 2.21569Z" /></controls:ChromeButton>
-                        <controls:DropDownButton Style="{StaticResource AvalonDockChromeToggleButtonStyle}" Tag="AvalonDock.DefaultContextMenu" Grid.Column="1" x:Name="PART_MenuButton" FontFamily="{ThemeResource SymbolThemeFontFamily}" FontSize="10" Width="28" Height="28" MinWidth="0" MinHeight="0" Padding="0" Background="Transparent" BorderBrush="Transparent" Foreground="{ThemeResource TextFillColorSecondaryBrush}" IsTabStop="False" ToolTipService.ToolTip="{properties:LocalizedString Key=Anchorable_CxMenu_Hint}"
-                                                 DropDownContextMenuDataContext="{Binding LayoutItem, RelativeSource={RelativeSource TemplatedParent}}"><PathIcon Width="12" Height="12" Data="M3.07615 4.61732C3.23093 4.24364 3.59557 4 4.00003 4H8.00003C8.40449 4 8.76913 4.24364 8.92391 4.61732C9.07869 4.99099 8.99313 5.42111 8.70714 5.70711L6.70714 7.70711C6.31661 8.09763 5.68345 8.09763 5.29292 7.70711L3.29292 5.70711C3.00692 5.42111 2.92137 4.99099 3.07615 4.61732Z" /></controls:DropDownButton>
+                        <controls:ChromeButton x:Name="PART_AutoHideButton"
+                                               Grid.Column="2"
+                                               AutomationProperties.Name="{properties:LocalizedString Key=A11y_AutoHideTool}"
+                                               Command="{Binding LayoutItem.AutoHideCommand, RelativeSource={RelativeSource TemplatedParent}}"
+                                               Style="{StaticResource AvalonDockChromeButtonStyle}"
+                                               ToolTipService.ToolTip="{properties:LocalizedString Key=Anchorable_BtnAutoHide_Hint}"
+                                               Visibility="{Binding IsEnabled, RelativeSource={RelativeSource Self}, Converter={StaticResource ChromeButtonVisibility}}">
+                            <PathIcon Width="12"
+                                      Height="12"
+                                      Data="M8.05224 1.43562C7.3425 0.725881 6.14947 0.899942 5.67209 1.78288L4.14488 4.60757L1.81492 5.53601C1.65868 5.59827 1.54421 5.73491 1.51029 5.89964C1.47636 6.06437 1.52753 6.23512 1.64645 6.35405L3.29296 8.00056L1.14655 10.147L1 11.0005L1.85366 10.8541L4.00007 8.70766L5.64645 10.354C5.7653 10.4729 5.9359 10.5241 6.10054 10.4903C6.26518 10.4565 6.40183 10.3422 6.46425 10.1862L7.39704 7.8542L10.218 6.32845C11.1008 5.85099 11.2747 4.65808 10.565 3.94841L8.05224 1.43562ZM6.55175 2.25848C6.71088 1.96417 7.10856 1.90615 7.34514 2.14273L9.85793 4.65552C10.0945 4.89208 10.0365 5.28971 9.74224 5.44886L6.76214 7.0607C6.65929 7.11633 6.5792 7.20624 6.53577 7.3148L5.81738 9.11076L2.89051 6.18388L4.68354 5.4694C4.79239 5.42602 4.88256 5.34579 4.93829 5.24272L6.55175 2.25848Z">
+                                <PathIcon.RenderTransform>
+                                    <RotateTransform x:Name="AutoHideGlyphRotation" Angle="-45" CenterX="6" CenterY="6" />
+                                </PathIcon.RenderTransform>
+                            </PathIcon>
+                        </controls:ChromeButton>
+                        <controls:ChromeButton x:Name="PART_HideButton"
+                                               Grid.Column="3"
+                                               AutomationProperties.Name="{properties:LocalizedString Key=A11y_HideTool}"
+                                               Command="{Binding LayoutItem.HideCommand, RelativeSource={RelativeSource TemplatedParent}}"
+                                               Style="{StaticResource AvalonDockChromeButtonStyle}"
+                                               ToolTipService.ToolTip="{properties:LocalizedString Key=Anchorable_BtnClose_Hint}"
+                                               Visibility="{Binding IsEnabled, RelativeSource={RelativeSource Self}, Converter={StaticResource ChromeButtonVisibility}}">
+                            <PathIcon Width="12"
+                                      Height="12"
+                                      Data="M2.08859 2.21569L2.14645 2.14645C2.32001 1.97288 2.58944 1.9536 2.78431 2.08859L2.85355 2.14645L6 5.293L9.14645 2.14645C9.34171 1.95118 9.65829 1.95118 9.85355 2.14645C10.0488 2.34171 10.0488 2.65829 9.85355 2.85355L6.707 6L9.85355 9.14645C10.0271 9.32001 10.0464 9.58944 9.91141 9.78431L9.85355 9.85355C9.67999 10.0271 9.41056 10.0464 9.21569 9.91141L9.14645 9.85355L6 6.707L2.85355 9.85355C2.65829 10.0488 2.34171 10.0488 2.14645 9.85355C1.95118 9.65829 1.95118 9.34171 2.14645 9.14645L5.293 6L2.14645 2.85355C1.97288 2.67999 1.9536 2.41056 2.08859 2.21569L2.14645 2.14645L2.08859 2.21569Z" />
+                        </controls:ChromeButton>
+                        <controls:DropDownButton x:Name="PART_MenuButton"
+                                                 Grid.Column="1"
+                                                 Width="28"
+                                                 Height="28"
+                                                 MinWidth="0"
+                                                 MinHeight="0"
+                                                 Padding="0"
+                                                 Background="Transparent"
+                                                 BorderBrush="Transparent"
+                                                 DropDownContextMenuDataContext="{Binding LayoutItem, RelativeSource={RelativeSource TemplatedParent}}"
+                                                 FontFamily="{ThemeResource SymbolThemeFontFamily}"
+                                                 FontSize="10"
+                                                 Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                                 IsTabStop="False"
+                                                 Style="{StaticResource AvalonDockChromeToggleButtonStyle}"
+                                                 Tag="AvalonDock.DefaultContextMenu"
+                                                 ToolTipService.ToolTip="{properties:LocalizedString Key=Anchorable_CxMenu_Hint}">
+                            <PathIcon Width="12"
+                                      Height="12"
+                                      Data="M3.07615 4.61732C3.23093 4.24364 3.59557 4 4.00003 4H8.00003C8.40449 4 8.76913 4.24364 8.92391 4.61732C9.07869 4.99099 8.99313 5.42111 8.70714 5.70711L6.70714 7.70711C6.31661 8.09763 5.68345 8.09763 5.29292 7.70711L3.29292 5.70711C3.00692 5.42111 2.92137 4.99099 3.07615 4.61732Z" />
+                        </controls:DropDownButton>
                     </Grid>
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
+        <Setter Property="VerticalContentAlignment" Value="Center" />
     </Style>
 
     <Style TargetType="controls:LayoutAnchorableTabItem">
-        <Setter Property="IsTabStop" Value="False" />
         <Setter Property="HorizontalContentAlignment" Value="Stretch" />
-        <Setter Property="VerticalContentAlignment" Value="Center" />
+        <Setter Property="IsTabStop" Value="False" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="controls:LayoutAnchorableTabItem">
-                    <controls:DropDownControlArea Tag="AvalonDock.DefaultContextMenu"
-                                                  Background="Transparent"
-                                                  HorizontalContentAlignment="Stretch"
+                    <controls:DropDownControlArea HorizontalContentAlignment="Stretch"
                                                   VerticalContentAlignment="Stretch"
-                                                  DropDownContextMenuDataContext="{Binding LayoutItem, RelativeSource={RelativeSource TemplatedParent}}">
-                      <VisualStateManager.VisualStateGroups>
-                          <VisualStateGroup x:Name="CommonStates">
-                              <VisualState x:Name="Normal"/>
-                              <VisualState x:Name="Disabled">
-                                  <VisualState.Setters>
-                                      <Setter Target="PART_Header.Foreground" Value="{ThemeResource TextFillColorDisabledBrush}"/>
-                                  </VisualState.Setters>
-                              </VisualState>
-                          </VisualStateGroup>
-                      </VisualStateManager.VisualStateGroups>
-                      <Grid HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
-                        <ContentPresenter x:Name="PART_Header"
-                                          HorizontalAlignment="Stretch"
-                                          VerticalAlignment="Stretch"
-                                          HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
-                                          VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}" />
-                      </Grid>
+                                                  Background="Transparent"
+                                                  DropDownContextMenuDataContext="{Binding LayoutItem, RelativeSource={RelativeSource TemplatedParent}}"
+                                                  Tag="AvalonDock.DefaultContextMenu">
+                        <VisualStateManager.VisualStateGroups>
+                            <VisualStateGroup x:Name="CommonStates">
+                                <VisualState x:Name="Normal" />
+                                <VisualState x:Name="Disabled">
+                                    <VisualState.Setters>
+                                        <Setter Target="PART_Header.Foreground" Value="{ThemeResource TextFillColorDisabledBrush}" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                            </VisualStateGroup>
+                        </VisualStateManager.VisualStateGroups>
+                        <Grid HorizontalAlignment="Stretch"
+                              VerticalAlignment="Stretch">
+                            <ContentPresenter x:Name="PART_Header"
+                                              HorizontalAlignment="Stretch"
+                                              VerticalAlignment="Stretch"
+                                              HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                              VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}" />
+                        </Grid>
                     </controls:DropDownControlArea>
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
+        <Setter Property="VerticalContentAlignment" Value="Center" />
     </Style>
 
     <Style TargetType="controls:LayoutDocumentTabItem">
-        <Setter Property="IsTabStop" Value="False" />
         <Setter Property="HorizontalContentAlignment" Value="Stretch" />
-        <Setter Property="VerticalContentAlignment" Value="Center" />
+        <Setter Property="IsTabStop" Value="False" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="controls:LayoutDocumentTabItem">
-                    <controls:DropDownControlArea Tag="AvalonDock.DefaultContextMenu"
-                                                  Background="Transparent"
-                                                  HorizontalContentAlignment="Stretch"
+                    <controls:DropDownControlArea HorizontalContentAlignment="Stretch"
                                                   VerticalContentAlignment="Stretch"
-                                                  DropDownContextMenuDataContext="{Binding LayoutItem, RelativeSource={RelativeSource TemplatedParent}}">
-                      <VisualStateManager.VisualStateGroups>
-                          <VisualStateGroup x:Name="CommonStates">
-                              <VisualState x:Name="Normal"/>
-                              <VisualState x:Name="Disabled">
-                                  <VisualState.Setters>
-                                      <Setter Target="HeaderContent.Foreground" Value="{ThemeResource TextFillColorDisabledBrush}"/>
-                                  </VisualState.Setters>
-                              </VisualState>
-                          </VisualStateGroup>
-                      </VisualStateManager.VisualStateGroups>
-                      <Grid Background="Transparent" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
-                          <ContentPresenter x:Name="HeaderContent"
-                                            Content="{TemplateBinding Content}"
-                                            ContentTemplate="{TemplateBinding ContentTemplate}"
-                                            ContentTemplateSelector="{TemplateBinding ContentTemplateSelector}"
-                                            HorizontalAlignment="Stretch"
-                                            VerticalAlignment="Stretch"
-                                            HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
-                                            VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}" />
-                      </Grid>
+                                                  Background="Transparent"
+                                                  DropDownContextMenuDataContext="{Binding LayoutItem, RelativeSource={RelativeSource TemplatedParent}}"
+                                                  Tag="AvalonDock.DefaultContextMenu">
+                        <VisualStateManager.VisualStateGroups>
+                            <VisualStateGroup x:Name="CommonStates">
+                                <VisualState x:Name="Normal" />
+                                <VisualState x:Name="Disabled">
+                                    <VisualState.Setters>
+                                        <Setter Target="HeaderContent.Foreground" Value="{ThemeResource TextFillColorDisabledBrush}" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                            </VisualStateGroup>
+                        </VisualStateManager.VisualStateGroups>
+                        <Grid HorizontalAlignment="Stretch"
+                              VerticalAlignment="Stretch"
+                              Background="Transparent">
+                            <ContentPresenter x:Name="HeaderContent"
+                                              HorizontalAlignment="Stretch"
+                                              VerticalAlignment="Stretch"
+                                              HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                              VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                                              Content="{TemplateBinding Content}"
+                                              ContentTemplate="{TemplateBinding ContentTemplate}"
+                                              ContentTemplateSelector="{TemplateBinding ContentTemplateSelector}" />
+                        </Grid>
                     </controls:DropDownControlArea>
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
+        <Setter Property="VerticalContentAlignment" Value="Center" />
     </Style>
 </ResourceDictionary>

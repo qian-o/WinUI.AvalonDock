@@ -3,7 +3,10 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:controls="using:Microsoft.UI.Xaml.Controls"
         xmlns:dock="using:AvalonDock">
-    <Grid x:Name="PageRoot" Padding="8" RowSpacing="8" Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+    <Grid x:Name="PageRoot"
+          Padding="8"
+          Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
+          RowSpacing="8">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
@@ -12,35 +15,53 @@
         </Grid.RowDefinitions>
         <controls:MenuBar Grid.Row="0">
             <controls:MenuBarItem Title="File">
-                <controls:MenuFlyoutItem Text="New Document" Command="{x:Bind ViewModel.OpenCommand}" />
-                <controls:MenuFlyoutItem Text="Save Active Document" Command="{x:Bind ViewModel.SaveCommand}" />
-                <controls:MenuFlyoutItem Text="Close Active Document" Command="{x:Bind ViewModel.CloseActiveCommand}" />
+                <controls:MenuFlyoutItem Command="{x:Bind ViewModel.OpenCommand}"
+                                         Text="New Document" />
+                <controls:MenuFlyoutItem Command="{x:Bind ViewModel.SaveCommand}"
+                                         Text="Save Active Document" />
+                <controls:MenuFlyoutItem Command="{x:Bind ViewModel.CloseActiveCommand}"
+                                         Text="Close Active Document" />
             </controls:MenuBarItem>
             <controls:MenuBarItem Title="Edit">
-                <controls:MenuFlyoutItem Text="Mark Active Document as Modified" Command="{x:Bind ViewModel.MarkModifiedCommand}" />
-                <controls:MenuFlyoutItem Text="Next Document" Command="{x:Bind ViewModel.NextCommand}" />
-                <controls:MenuFlyoutItem Text="Replace Active Document" Command="{x:Bind ViewModel.ReplaceCommand}" />
-                <controls:MenuFlyoutItem Text="Reset Documents" Command="{x:Bind ViewModel.ResetCommand}" />
+                <controls:MenuFlyoutItem Command="{x:Bind ViewModel.MarkModifiedCommand}"
+                                         Text="Mark Active Document as Modified" />
+                <controls:MenuFlyoutItem Command="{x:Bind ViewModel.NextCommand}"
+                                         Text="Next Document" />
+                <controls:MenuFlyoutItem Command="{x:Bind ViewModel.ReplaceCommand}"
+                                         Text="Replace Active Document" />
+                <controls:MenuFlyoutItem Command="{x:Bind ViewModel.ResetCommand}"
+                                         Text="Reset Documents" />
             </controls:MenuBarItem>
             <controls:MenuBarItem Title="Tools">
-                <controls:MenuFlyoutItem Text="Add Tool" Command="{x:Bind ViewModel.AddToolCommand}" />
-                <controls:MenuFlyoutItem Text="Replace Tool" Command="{x:Bind ViewModel.ReplaceToolCommand}" />
-                <controls:MenuFlyoutItem Text="Reset Tools" Command="{x:Bind ViewModel.ResetToolsCommand}" />
+                <controls:MenuFlyoutItem Command="{x:Bind ViewModel.AddToolCommand}"
+                                         Text="Add Tool" />
+                <controls:MenuFlyoutItem Command="{x:Bind ViewModel.ReplaceToolCommand}"
+                                         Text="Replace Tool" />
+                <controls:MenuFlyoutItem Command="{x:Bind ViewModel.ResetToolsCommand}"
+                                         Text="Reset Tools" />
             </controls:MenuBarItem>
             <controls:MenuBarItem Title="Layout">
-                <controls:MenuFlyoutItem Text="Save Layout" Click="SaveLayout_Click" />
-                <controls:MenuFlyoutItem Text="Restore Layout" Click="RestoreLayout_Click" />
+                <controls:MenuFlyoutItem Click="SaveLayout_Click"
+                                         Text="Save Layout" />
+                <controls:MenuFlyoutItem Click="RestoreLayout_Click"
+                                         Text="Restore Layout" />
                 <controls:MenuFlyoutSeparator />
-                <controls:MenuFlyoutItem Text="Toggle Floating Window Policy" Command="{x:Bind ViewModel.ToggleFloatingCommand}" />
+                <controls:MenuFlyoutItem Command="{x:Bind ViewModel.ToggleFloatingCommand}"
+                                         Text="Toggle Floating Window Policy" />
             </controls:MenuBarItem>
             <controls:MenuBarItem Title="Theme">
-                <controls:MenuFlyoutItem Text="Toggle Light/Dark Theme" Click="ToggleTheme_Click" />
+                <controls:MenuFlyoutItem Click="ToggleTheme_Click"
+                                         Text="Toggle Light/Dark Theme" />
             </controls:MenuBarItem>
         </controls:MenuBar>
-        <TextBlock Grid.Row="1" Text="{x:Bind ViewModel.StatusText, Mode=OneWay}" />
-        <dock:DockingManager x:Name="Manager" Grid.Row="2"
+        <TextBlock Grid.Row="1"
+                   Text="{x:Bind ViewModel.StatusText, Mode=OneWay}" />
+        <dock:DockingManager x:Name="Manager"
+                             Grid.Row="2"
                              DockLayout="{x:Bind ViewModel.Layout, Mode=OneWay}"
                              LayoutItemTemplate="{StaticResource WorkspaceContentTemplate}" />
-        <TextBlock Grid.Row="3" Text="The ViewModel manages documents and tools. Use Edit to mark a document as modified, then try saving, closing, replacing, resetting, and restoring the layout." Opacity="0.75" />
+        <TextBlock Grid.Row="3"
+                   Opacity="0.75"
+                   Text="The ViewModel manages documents and tools. Use Edit to mark a document as modified, then try saving, closing, replacing, resetting, and restoring the layout." />
     </Grid>
 </Window>

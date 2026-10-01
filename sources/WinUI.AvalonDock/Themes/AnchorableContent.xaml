@@ -6,49 +6,77 @@
         <ResourceDictionary Source="ms-appx:///WinUI.AvalonDock/Themes/Chrome.xaml" />
     </ResourceDictionary.MergedDictionaries>
     <themes:ModelToMarginConverter x:Key="AutoHideModelMargin" />
-    <!-- Ported from WPFUI e8a3da4 Styles/LayoutAnchorableControl.xaml and
-         LayoutAutoHideWindowControl.xaml (MIT, qian-o). Native PART_ContentHost
-         retains the original editor across XamlRoot changes. -->
-    <Style x:Key="DockAnchorableContentBaseStyle" TargetType="controls:LayoutAnchorableControl">
+    <!--
+        Ported from WPFUI e8a3da4 Styles/LayoutAnchorableControl.xaml and
+        LayoutAutoHideWindowControl.xaml (MIT, qian-o). Native PART_ContentHost
+        retains the original editor across XamlRoot changes.
+    -->
+    <Style x:Key="DockAnchorableContentBaseStyle"
+           TargetType="controls:LayoutAnchorableControl">
         <Setter Property="BorderThickness" Value="0" />
         <Setter Property="FontFamily" Value="{ThemeResource DockFontFamily}" />
         <Setter Property="FontSize" Value="12" />
         <Setter Property="Foreground" Value="{ThemeResource TextFillColorPrimaryBrush}" />
         <Setter Property="UseLayoutRounding" Value="True" />
     </Style>
-    <Style x:Key="DockAnchorableContentStyle" TargetType="controls:LayoutAnchorableControl" BasedOn="{StaticResource DockAnchorableContentBaseStyle}">
+    <Style x:Key="DockAnchorableContentStyle"
+           BasedOn="{StaticResource DockAnchorableContentBaseStyle}"
+           TargetType="controls:LayoutAnchorableControl">
         <Setter Property="Background" Value="{ThemeResource SolidBackgroundFillColorTertiaryBrush}" />
         <Setter Property="BorderBrush" Value="{ThemeResource CardStrokeColorDefaultBrush}" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="controls:LayoutAnchorableControl">
-                    <Border x:Name="ContentBorder" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                    <Border x:Name="ContentBorder"
                             Margin="{Binding Model, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource AutoHideModelMargin}}"
-                            Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
-                            BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="4" TabFocusNavigation="Cycle">
-                            <VisualStateManager.VisualStateGroups>
-                                <VisualStateGroup x:Name="ContentHostStates">
-                                    <VisualState x:Name="ContentDocked" />
-                                    <VisualState x:Name="ContentFloating"><VisualState.Setters>
+                            HorizontalAlignment="Stretch"
+                            VerticalAlignment="Stretch"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="4"
+                            TabFocusNavigation="Cycle">
+                        <VisualStateManager.VisualStateGroups>
+                            <VisualStateGroup x:Name="ContentHostStates">
+                                <VisualState x:Name="ContentDocked" />
+                                <VisualState x:Name="ContentFloating">
+                                    <VisualState.Setters>
                                         <Setter Target="ContentBorder.CornerRadius" Value="0" />
                                         <Setter Target="Header.Visibility" Value="Collapsed" />
-                                    </VisualState.Setters></VisualState>
-                                    <VisualState x:Name="ContentEmpty"><VisualState.Setters>
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState x:Name="ContentEmpty">
+                                    <VisualState.Setters>
                                         <Setter Target="Header.Visibility" Value="Collapsed" />
-                                    </VisualState.Setters></VisualState>
-                                </VisualStateGroup>
-                            </VisualStateManager.VisualStateGroups>
+                                    </VisualState.Setters>
+                                </VisualState>
+                            </VisualStateGroup>
+                        </VisualStateManager.VisualStateGroups>
                         <Grid>
 
-                            <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="*" /></Grid.RowDefinitions>
-                            <Border x:Name="Header" MinHeight="36" HorizontalAlignment="Stretch" VerticalAlignment="Top"
-                                    Background="Transparent" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                                    BorderThickness="0,0,0,1" CornerRadius="4,4,0,0">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="*" />
+                            </Grid.RowDefinitions>
+                            <Border x:Name="Header"
+                                    MinHeight="36"
+                                    HorizontalAlignment="Stretch"
+                                    VerticalAlignment="Top"
+                                    Background="Transparent"
+                                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                                    BorderThickness="0,0,0,1"
+                                    CornerRadius="4,4,0,0">
                                 <controls:AnchorablePaneTitle Model="{Binding Model, RelativeSource={RelativeSource TemplatedParent}}" />
                             </Border>
-                            <Border x:Name="Content" Grid.Row="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Background="Transparent">
-                                <ContentPresenter x:Name="PART_ContentHost" HorizontalContentAlignment="Stretch"
-                                                  VerticalContentAlignment="Stretch" FlowDirection="{TemplateBinding FlowDirection}" />
+                            <Border x:Name="Content"
+                                    Grid.Row="1"
+                                    HorizontalAlignment="Stretch"
+                                    VerticalAlignment="Stretch"
+                                    Background="Transparent">
+                                <ContentPresenter x:Name="PART_ContentHost"
+                                                  HorizontalContentAlignment="Stretch"
+                                                  VerticalContentAlignment="Stretch"
+                                                  FlowDirection="{TemplateBinding FlowDirection}" />
                             </Border>
                         </Grid>
                     </Border>
@@ -56,40 +84,65 @@
             </Setter.Value>
         </Setter>
     </Style>
-    <!-- Toggle-specific content frame follows WPFUI ffff79a ToggleDockingManager.xaml. -->
-    <Style x:Key="DockToggleAnchorableContentStyle" TargetType="controls:LayoutAnchorableControl" BasedOn="{StaticResource DockAnchorableContentBaseStyle}">
+    <!--  Toggle-specific content frame follows WPFUI ffff79a ToggleDockingManager.xaml.  -->
+    <Style x:Key="DockToggleAnchorableContentStyle"
+           BasedOn="{StaticResource DockAnchorableContentBaseStyle}"
+           TargetType="controls:LayoutAnchorableControl">
         <Setter Property="Background" Value="Transparent" />
         <Setter Property="BorderBrush" Value="Transparent" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="controls:LayoutAnchorableControl">
-                    <Border x:Name="ContentBorder" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                    <Border x:Name="ContentBorder"
                             Margin="{Binding Model, RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource AutoHideModelMargin}}"
-                            Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
-                            BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="5" TabFocusNavigation="Cycle">
-                            <VisualStateManager.VisualStateGroups>
-                                <VisualStateGroup x:Name="ContentHostStates">
-                                    <VisualState x:Name="ContentDocked" />
-                                    <VisualState x:Name="ContentFloating"><VisualState.Setters>
+                            HorizontalAlignment="Stretch"
+                            VerticalAlignment="Stretch"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="5"
+                            TabFocusNavigation="Cycle">
+                        <VisualStateManager.VisualStateGroups>
+                            <VisualStateGroup x:Name="ContentHostStates">
+                                <VisualState x:Name="ContentDocked" />
+                                <VisualState x:Name="ContentFloating">
+                                    <VisualState.Setters>
                                         <Setter Target="ContentBorder.CornerRadius" Value="0" />
                                         <Setter Target="Header.Visibility" Value="Collapsed" />
-                                    </VisualState.Setters></VisualState>
-                                    <VisualState x:Name="ContentEmpty"><VisualState.Setters>
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState x:Name="ContentEmpty">
+                                    <VisualState.Setters>
                                         <Setter Target="Header.Visibility" Value="Collapsed" />
-                                    </VisualState.Setters></VisualState>
-                                </VisualStateGroup>
-                            </VisualStateManager.VisualStateGroups>
+                                    </VisualState.Setters>
+                                </VisualState>
+                            </VisualStateGroup>
+                        </VisualStateManager.VisualStateGroups>
                         <Grid>
 
-                            <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition Height="*" /></Grid.RowDefinitions>
-                            <Border x:Name="Header" Height="32" HorizontalAlignment="Stretch" VerticalAlignment="Top"
-                                    Background="Transparent" BorderBrush="{ThemeResource DockBorderBrush}"
-                                    BorderThickness="0,0,0,1" CornerRadius="5,5,0,0">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto" />
+                                <RowDefinition Height="*" />
+                            </Grid.RowDefinitions>
+                            <Border x:Name="Header"
+                                    Height="32"
+                                    HorizontalAlignment="Stretch"
+                                    VerticalAlignment="Top"
+                                    Background="Transparent"
+                                    BorderBrush="{ThemeResource DockBorderBrush}"
+                                    BorderThickness="0,0,0,1"
+                                    CornerRadius="5,5,0,0">
                                 <controls:ToggleAnchorablePaneTitle Model="{Binding Model, RelativeSource={RelativeSource TemplatedParent}}" />
                             </Border>
-                            <Border x:Name="Content" Grid.Row="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Background="Transparent">
-                                <ContentPresenter x:Name="PART_ContentHost" HorizontalContentAlignment="Stretch"
-                                                  VerticalContentAlignment="Stretch" FlowDirection="{TemplateBinding FlowDirection}" />
+                            <Border x:Name="Content"
+                                    Grid.Row="1"
+                                    HorizontalAlignment="Stretch"
+                                    VerticalAlignment="Stretch"
+                                    Background="Transparent">
+                                <ContentPresenter x:Name="PART_ContentHost"
+                                                  HorizontalContentAlignment="Stretch"
+                                                  VerticalContentAlignment="Stretch"
+                                                  FlowDirection="{TemplateBinding FlowDirection}" />
                             </Border>
                         </Grid>
                     </Border>
@@ -98,7 +151,9 @@
         </Setter>
     </Style>
 
-    <Style x:Key="DockAutoHideAnchorableContentStyle" TargetType="controls:LayoutAnchorableControl" BasedOn="{StaticResource DockAnchorableContentStyle}">
+    <Style x:Key="DockAutoHideAnchorableContentStyle"
+           BasedOn="{StaticResource DockAnchorableContentStyle}"
+           TargetType="controls:LayoutAnchorableControl">
         <Setter Property="BorderThickness" Value="1" />
     </Style>
 </ResourceDictionary>

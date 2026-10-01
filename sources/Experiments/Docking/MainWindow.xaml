@@ -4,7 +4,10 @@
         xmlns:controls="using:Microsoft.UI.Xaml.Controls"
         xmlns:dock="using:AvalonDock"
         xmlns:layout="using:AvalonDock.Layout">
-    <Grid x:Name="PageRoot" Padding="8" RowSpacing="8" Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+    <Grid x:Name="PageRoot"
+          Padding="8"
+          Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
+          RowSpacing="8">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
@@ -13,39 +16,56 @@
         </Grid.RowDefinitions>
         <controls:MenuBar Grid.Row="0">
             <controls:MenuBarItem Title="File">
-                <controls:MenuFlyoutItem Text="New Document" Click="AddDocument_Click" />
-                <controls:MenuFlyoutItem Text="Replace Document Source" Click="ReplaceDocument_Click" />
-                <controls:MenuFlyoutItem Text="Reset Document Source" Click="ResetDocuments_Click" />
+                <controls:MenuFlyoutItem Click="AddDocument_Click"
+                                         Text="New Document" />
+                <controls:MenuFlyoutItem Click="ReplaceDocument_Click"
+                                         Text="Replace Document Source" />
+                <controls:MenuFlyoutItem Click="ResetDocuments_Click"
+                                         Text="Reset Document Source" />
             </controls:MenuBarItem>
             <controls:MenuBarItem Title="Edit">
-                <controls:MenuFlyoutItem Text="Mark Active Document as Modified" Click="MarkActiveDocumentModified_Click" />
-                <controls:MenuFlyoutItem Text="Close Active Item" Click="CloseActive_Click" />
+                <controls:MenuFlyoutItem Click="MarkActiveDocumentModified_Click"
+                                         Text="Mark Active Document as Modified" />
+                <controls:MenuFlyoutItem Click="CloseActive_Click"
+                                         Text="Close Active Item" />
                 <controls:ToggleMenuFlyoutItem x:Name="AllowCloseModifiedMenuItem"
-                                               Text="Allow Closing Modified Items"
+                                               Click="AllowCloseModified_Click"
                                                IsChecked="False"
-                                               Click="AllowCloseModified_Click" />
+                                               Text="Allow Closing Modified Items" />
             </controls:MenuBarItem>
             <controls:MenuBarItem Title="Layout">
-                <controls:MenuFlyoutItem Text="Save Layout" Click="SaveLayout_Click" />
-                <controls:MenuFlyoutItem Text="Restore Layout" Click="RestoreLayout_Click" />
+                <controls:MenuFlyoutItem Click="SaveLayout_Click"
+                                         Text="Save Layout" />
+                <controls:MenuFlyoutItem Click="RestoreLayout_Click"
+                                         Text="Restore Layout" />
                 <controls:MenuFlyoutSeparator />
-                <controls:MenuFlyoutItem Text="Float Active Item" Click="FloatActive_Click" />
-                <controls:MenuFlyoutItem Text="Dock Active Item" Click="DockActive_Click" />
-                <controls:MenuFlyoutItem Text="Toggle Floating Window Policy" Click="ToggleWindowPolicy_Click" />
+                <controls:MenuFlyoutItem Click="FloatActive_Click"
+                                         Text="Float Active Item" />
+                <controls:MenuFlyoutItem Click="DockActive_Click"
+                                         Text="Dock Active Item" />
+                <controls:MenuFlyoutItem Click="ToggleWindowPolicy_Click"
+                                         Text="Toggle Floating Window Policy" />
             </controls:MenuBarItem>
             <controls:MenuBarItem Title="Tools">
-                <controls:MenuFlyoutItem Text="Auto Hide Tool" Click="AutoHideTool_Click" />
-                <controls:MenuFlyoutItem Text="Show Hidden Tool" Click="ShowHiddenTool_Click" />
-                <controls:MenuFlyoutItem Text="Float or Dock Tool" Click="ToggleToolFloating_Click" />
+                <controls:MenuFlyoutItem Click="AutoHideTool_Click"
+                                         Text="Auto Hide Tool" />
+                <controls:MenuFlyoutItem Click="ShowHiddenTool_Click"
+                                         Text="Show Hidden Tool" />
+                <controls:MenuFlyoutItem Click="ToggleToolFloating_Click"
+                                         Text="Float or Dock Tool" />
             </controls:MenuBarItem>
             <controls:MenuBarItem Title="Theme">
-                <controls:MenuFlyoutItem Text="Toggle Light/Dark Theme" Click="ToggleTheme_Click" />
+                <controls:MenuFlyoutItem Click="ToggleTheme_Click"
+                                         Text="Toggle Light/Dark Theme" />
             </controls:MenuBarItem>
         </controls:MenuBar>
-        <TextBlock x:Name="StatusText" Grid.Row="1" Text="Classic workspace using XAML LayoutRoot and data sources." />
-        <dock:DockingManager x:Name="Manager" Grid.Row="2"
-                             AllowFloatingWindows="True"
+        <TextBlock x:Name="StatusText"
+                   Grid.Row="1"
+                   Text="Classic workspace using XAML LayoutRoot and data sources." />
+        <dock:DockingManager x:Name="Manager"
+                             Grid.Row="2"
                              AllowDetachedWindows="True"
+                             AllowFloatingWindows="True"
                              LayoutItemTemplate="{StaticResource WorkspaceContentTemplate}">
             <layout:LayoutRoot>
                 <layout:LayoutPanel Orientation="Horizontal">
@@ -58,6 +78,8 @@
                 </layout:LayoutPanel>
             </layout:LayoutRoot>
         </dock:DockingManager>
-        <TextBlock Grid.Row="3" Text="Drag document tabs or tool headers to rearrange the workspace with docking guides. Right-click a tab for more commands." Opacity="0.75" />
+        <TextBlock Grid.Row="3"
+                   Opacity="0.75"
+                   Text="Drag document tabs or tool headers to rearrange the workspace with docking guides. Right-click a tab for more commands." />
     </Grid>
 </Window>

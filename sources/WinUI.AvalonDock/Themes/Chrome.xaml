@@ -1,144 +1,211 @@
 <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:primitives="using:Microsoft.UI.Xaml.Controls.Primitives">
-    <!-- Compact chrome adapted from qian-o/AvalonDock.Themes.WPFUI at ffff79a.
-         MIT, Copyright (c) 2024 qian-o.
-         License: https://github.com/qian-o/AvalonDock.Themes.WPFUI/blob/ffff79aefd2139c34a3a87a0f1059bb036f1a0dc/LICENSE -->
-    <SolidColorBrush x:Key="DockDocumentSurfaceBrush" Color="{ThemeResource SolidBackgroundFillColorTertiary}" />
+    <!--
+        Compact chrome adapted from qian-o/AvalonDock.Themes.WPFUI at ffff79a.
+        MIT, Copyright (c) 2024 qian-o.
+        License: https://github.com/qian-o/AvalonDock.Themes.WPFUI/blob/ffff79aefd2139c34a3a87a0f1059bb036f1a0dc/LICENSE
+    -->
+    <SolidColorBrush x:Key="DockDocumentSurfaceBrush"
+                     Color="{ThemeResource SolidBackgroundFillColorTertiary}" />
     <FontFamily x:Key="DockFontFamily">Segoe UI Variable Text, Segoe UI</FontFamily>
     <x:Double x:Key="DockFontSize">12</x:Double>
     <CornerRadius x:Key="DockPaneCornerRadius">4</CornerRadius>
     <CornerRadius x:Key="DockControlCornerRadius">4</CornerRadius>
-    <SolidColorBrush x:Key="DockSurfaceBrush" Color="{ThemeResource SolidBackgroundFillColorTertiary}" />
-    <SolidColorBrush x:Key="DockChromeBrush" Color="{ThemeResource SolidBackgroundFillColorSecondary}" />
-    <SolidColorBrush x:Key="DockBorderBrush" Color="{ThemeResource CardStrokeColorDefault}" />
-    <SolidColorBrush x:Key="DockHoverBrush" Color="{ThemeResource SubtleFillColorSecondary}" />
-    <SolidColorBrush x:Key="DockPressedBrush" Color="{ThemeResource SubtleFillColorTertiary}" />
-    <SolidColorBrush x:Key="DockTextBrush" Color="{ThemeResource TextFillColorPrimary}" />
-    <SolidColorBrush x:Key="DockSecondaryTextBrush" Color="{ThemeResource TextFillColorSecondary}" />
-    <SolidColorBrush x:Key="DockDisabledTextBrush" Color="{ThemeResource TextFillColorDisabled}" />
-    <SolidColorBrush x:Key="DockPreviewBrush" Opacity="0.08" Color="{ThemeResource SystemAccentColorSecondary}" />
-    <SolidColorBrush x:Key="DockPreviewBorderBrush" Opacity="0.55" Color="{ThemeResource AccentFillColorDefault}" />
-    <Style x:Key="AvalonDockChromeButtonStyle" TargetType="Button">
+    <SolidColorBrush x:Key="DockSurfaceBrush"
+                     Color="{ThemeResource SolidBackgroundFillColorTertiary}" />
+    <SolidColorBrush x:Key="DockChromeBrush"
+                     Color="{ThemeResource SolidBackgroundFillColorSecondary}" />
+    <SolidColorBrush x:Key="DockBorderBrush"
+                     Color="{ThemeResource CardStrokeColorDefault}" />
+    <SolidColorBrush x:Key="DockHoverBrush"
+                     Color="{ThemeResource SubtleFillColorSecondary}" />
+    <SolidColorBrush x:Key="DockPressedBrush"
+                     Color="{ThemeResource SubtleFillColorTertiary}" />
+    <SolidColorBrush x:Key="DockTextBrush"
+                     Color="{ThemeResource TextFillColorPrimary}" />
+    <SolidColorBrush x:Key="DockSecondaryTextBrush"
+                     Color="{ThemeResource TextFillColorSecondary}" />
+    <SolidColorBrush x:Key="DockDisabledTextBrush"
+                     Color="{ThemeResource TextFillColorDisabled}" />
+    <SolidColorBrush x:Key="DockPreviewBrush"
+                     Opacity="0.08"
+                     Color="{ThemeResource SystemAccentColorSecondary}" />
+    <SolidColorBrush x:Key="DockPreviewBorderBrush"
+                     Opacity="0.55"
+                     Color="{ThemeResource AccentFillColorDefault}" />
+    <Style x:Key="AvalonDockChromeButtonStyle"
+           TargetType="Button">
         <Setter Property="Background" Value="Transparent" />
         <Setter Property="BorderBrush" Value="Transparent" />
         <Setter Property="BorderThickness" Value="0" />
         <Setter Property="CornerRadius" Value="4" />
-        <Setter Property="Width" Value="28" />
-        <Setter Property="Height" Value="28" />
-        <Setter Property="MinWidth" Value="0" />
-        <Setter Property="MinHeight" Value="0" />
-        <Setter Property="Padding" Value="0" />
-        <Setter Property="FontSize" Value="12" />
-        <Setter Property="FontFamily" Value="{ThemeResource SymbolThemeFontFamily}" />
-        <Setter Property="Foreground" Value="{ThemeResource TextFillColorSecondaryBrush}" />
-        <Setter Property="IsTabStop" Value="False" />
-        <Setter Property="UseSystemFocusVisuals" Value="{StaticResource UseSystemFocusVisuals}" />
         <Setter Property="FocusVisualMargin" Value="-3" />
+        <Setter Property="FontFamily" Value="{ThemeResource SymbolThemeFontFamily}" />
+        <Setter Property="FontSize" Value="12" />
+        <Setter Property="Foreground" Value="{ThemeResource TextFillColorSecondaryBrush}" />
+        <Setter Property="Height" Value="28" />
         <Setter Property="HorizontalContentAlignment" Value="Center" />
-        <Setter Property="VerticalContentAlignment" Value="Center" />
+        <Setter Property="IsTabStop" Value="False" />
+        <Setter Property="MinHeight" Value="0" />
+        <Setter Property="MinWidth" Value="0" />
+        <Setter Property="Padding" Value="0" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="Button">
-                    <Border x:Name="Surface" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="{TemplateBinding CornerRadius}">
+                    <Border x:Name="Surface"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="{TemplateBinding CornerRadius}">
                         <VisualStateManager.VisualStateGroups>
                             <VisualStateGroup x:Name="CommonStates">
                                 <VisualState x:Name="Normal" />
-                                <VisualState x:Name="PointerOver"><VisualState.Setters>
-                                    <Setter Target="Surface.Background" Value="{ThemeResource SubtleFillColorSecondaryBrush}" />
-                                    <Setter Target="ChromeContent.Foreground" Value="{ThemeResource TextFillColorPrimaryBrush}" />
-                                </VisualState.Setters></VisualState>
-                                <VisualState x:Name="Pressed"><VisualState.Setters>
-                                    <Setter Target="Surface.Background" Value="{ThemeResource SubtleFillColorTertiaryBrush}" />
-                                </VisualState.Setters></VisualState>
-                                <VisualState x:Name="Disabled"><VisualState.Setters>
-                                    <Setter Target="ChromeContent.Foreground" Value="{ThemeResource TextFillColorDisabledBrush}" />
-                                </VisualState.Setters></VisualState>
+                                <VisualState x:Name="PointerOver">
+                                    <VisualState.Setters>
+                                        <Setter Target="Surface.Background" Value="{ThemeResource SubtleFillColorSecondaryBrush}" />
+                                        <Setter Target="ChromeContent.Foreground" Value="{ThemeResource TextFillColorPrimaryBrush}" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState x:Name="Pressed">
+                                    <VisualState.Setters>
+                                        <Setter Target="Surface.Background" Value="{ThemeResource SubtleFillColorTertiaryBrush}" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState x:Name="Disabled">
+                                    <VisualState.Setters>
+                                        <Setter Target="ChromeContent.Foreground" Value="{ThemeResource TextFillColorDisabledBrush}" />
+                                    </VisualState.Setters>
+                                </VisualState>
                             </VisualStateGroup>
                             <VisualStateGroup x:Name="HoverForegroundStates">
                                 <VisualState x:Name="NotHovered" />
-                                <VisualState x:Name="HoverForeground"><VisualState.Setters>
-                                    <Setter Target="ChromeContent.Foreground" Value="{ThemeResource TextFillColorPrimaryBrush}" />
-                                </VisualState.Setters></VisualState>
+                                <VisualState x:Name="HoverForeground">
+                                    <VisualState.Setters>
+                                        <Setter Target="ChromeContent.Foreground" Value="{ThemeResource TextFillColorPrimaryBrush}" />
+                                    </VisualState.Setters>
+                                </VisualState>
                             </VisualStateGroup>
                         </VisualStateManager.VisualStateGroups>
-                        <ContentPresenter x:Name="ChromeContent" Margin="{TemplateBinding Padding}" Content="{TemplateBinding Content}" ContentTemplate="{TemplateBinding ContentTemplate}" ContentTransitions="{TemplateBinding ContentTransitions}" Foreground="{TemplateBinding Foreground}" FontFamily="{TemplateBinding FontFamily}" FontSize="{TemplateBinding FontSize}" HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
+                        <ContentPresenter x:Name="ChromeContent"
+                                          Margin="{TemplateBinding Padding}"
+                                          HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                          VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                          Content="{TemplateBinding Content}"
+                                          ContentTemplate="{TemplateBinding ContentTemplate}"
+                                          ContentTransitions="{TemplateBinding ContentTransitions}"
+                                          FontFamily="{TemplateBinding FontFamily}"
+                                          FontSize="{TemplateBinding FontSize}"
+                                          Foreground="{TemplateBinding Foreground}" />
                     </Border>
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
+        <Setter Property="UseSystemFocusVisuals" Value="{StaticResource UseSystemFocusVisuals}" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+        <Setter Property="Width" Value="28" />
     </Style>
 
-    <Style x:Key="AvalonDockChromeToggleButtonStyle" TargetType="primitives:ToggleButton">
+    <Style x:Key="AvalonDockChromeToggleButtonStyle"
+           TargetType="primitives:ToggleButton">
         <Setter Property="Background" Value="Transparent" />
         <Setter Property="BorderThickness" Value="0" />
-        <Setter Property="Foreground" Value="{ThemeResource TextFillColorSecondaryBrush}" />
-        <Setter Property="Width" Value="28" />
-        <Setter Property="Height" Value="28" />
-        <Setter Property="MinWidth" Value="0" />
-        <Setter Property="MinHeight" Value="0" />
-        <Setter Property="Padding" Value="0" />
         <Setter Property="CornerRadius" Value="4" />
+        <Setter Property="Foreground" Value="{ThemeResource TextFillColorSecondaryBrush}" />
+        <Setter Property="Height" Value="28" />
         <Setter Property="HorizontalContentAlignment" Value="Center" />
-        <Setter Property="VerticalContentAlignment" Value="Center" />
         <Setter Property="IsTabStop" Value="False" />
+        <Setter Property="MinHeight" Value="0" />
+        <Setter Property="MinWidth" Value="0" />
+        <Setter Property="Padding" Value="0" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="primitives:ToggleButton">
-                    <Border x:Name="Surface" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
-                            BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="{TemplateBinding CornerRadius}">
+                    <Border x:Name="Surface"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="{TemplateBinding CornerRadius}">
                         <VisualStateManager.VisualStateGroups>
                             <VisualStateGroup x:Name="CommonStates">
                                 <VisualState x:Name="Normal" />
-                                <VisualState x:Name="PointerOver"><VisualState.Setters>
-                                    <Setter Target="Surface.Background" Value="{ThemeResource SubtleFillColorSecondaryBrush}" />
-                                    <Setter Target="ContentPresenter.Foreground" Value="{ThemeResource TextFillColorPrimaryBrush}" />
-                                </VisualState.Setters></VisualState>
-                                <VisualState x:Name="Pressed"><VisualState.Setters>
-                                    <Setter Target="Surface.Background" Value="{ThemeResource SubtleFillColorTertiaryBrush}" />
-                                    <Setter Target="ContentPresenter.Foreground" Value="{ThemeResource TextFillColorPrimaryBrush}" />
-                                </VisualState.Setters></VisualState>
-                                <VisualState x:Name="Disabled"><VisualState.Setters>
-                                    <Setter Target="ContentPresenter.Foreground" Value="{ThemeResource TextFillColorDisabledBrush}" />
-                                </VisualState.Setters></VisualState>
-                                <VisualState x:Name="Checked"><VisualState.Setters>
-                                    <Setter Target="Surface.Background" Value="{ThemeResource SubtleFillColorTertiaryBrush}" />
-                                    <Setter Target="ContentPresenter.Foreground" Value="{ThemeResource TextFillColorPrimaryBrush}" />
-                                </VisualState.Setters></VisualState>
-                                <VisualState x:Name="CheckedPointerOver"><VisualState.Setters>
-                                    <Setter Target="Surface.Background" Value="{ThemeResource SubtleFillColorSecondaryBrush}" />
-                                    <Setter Target="ContentPresenter.Foreground" Value="{ThemeResource TextFillColorPrimaryBrush}" />
-                                </VisualState.Setters></VisualState>
-                                <VisualState x:Name="CheckedPressed"><VisualState.Setters>
-                                    <Setter Target="Surface.Background" Value="{ThemeResource SubtleFillColorTertiaryBrush}" />
-                                    <Setter Target="ContentPresenter.Foreground" Value="{ThemeResource TextFillColorPrimaryBrush}" />
-                                </VisualState.Setters></VisualState>
-                                <VisualState x:Name="CheckedDisabled"><VisualState.Setters>
-                                    <Setter Target="Surface.Background" Value="{ThemeResource SubtleFillColorTertiaryBrush}" />
-                                    <Setter Target="ContentPresenter.Foreground" Value="{ThemeResource TextFillColorDisabledBrush}" />
-                                </VisualState.Setters></VisualState>
+                                <VisualState x:Name="PointerOver">
+                                    <VisualState.Setters>
+                                        <Setter Target="Surface.Background" Value="{ThemeResource SubtleFillColorSecondaryBrush}" />
+                                        <Setter Target="ContentPresenter.Foreground" Value="{ThemeResource TextFillColorPrimaryBrush}" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState x:Name="Pressed">
+                                    <VisualState.Setters>
+                                        <Setter Target="Surface.Background" Value="{ThemeResource SubtleFillColorTertiaryBrush}" />
+                                        <Setter Target="ContentPresenter.Foreground" Value="{ThemeResource TextFillColorPrimaryBrush}" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState x:Name="Disabled">
+                                    <VisualState.Setters>
+                                        <Setter Target="ContentPresenter.Foreground" Value="{ThemeResource TextFillColorDisabledBrush}" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState x:Name="Checked">
+                                    <VisualState.Setters>
+                                        <Setter Target="Surface.Background" Value="{ThemeResource SubtleFillColorTertiaryBrush}" />
+                                        <Setter Target="ContentPresenter.Foreground" Value="{ThemeResource TextFillColorPrimaryBrush}" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState x:Name="CheckedPointerOver">
+                                    <VisualState.Setters>
+                                        <Setter Target="Surface.Background" Value="{ThemeResource SubtleFillColorSecondaryBrush}" />
+                                        <Setter Target="ContentPresenter.Foreground" Value="{ThemeResource TextFillColorPrimaryBrush}" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState x:Name="CheckedPressed">
+                                    <VisualState.Setters>
+                                        <Setter Target="Surface.Background" Value="{ThemeResource SubtleFillColorTertiaryBrush}" />
+                                        <Setter Target="ContentPresenter.Foreground" Value="{ThemeResource TextFillColorPrimaryBrush}" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState x:Name="CheckedDisabled">
+                                    <VisualState.Setters>
+                                        <Setter Target="Surface.Background" Value="{ThemeResource SubtleFillColorTertiaryBrush}" />
+                                        <Setter Target="ContentPresenter.Foreground" Value="{ThemeResource TextFillColorDisabledBrush}" />
+                                    </VisualState.Setters>
+                                </VisualState>
                                 <VisualState x:Name="Indeterminate" />
-                                <VisualState x:Name="IndeterminatePointerOver"><VisualState.Setters>
-                                    <Setter Target="Surface.Background" Value="{ThemeResource SubtleFillColorSecondaryBrush}" />
-                                    <Setter Target="ContentPresenter.Foreground" Value="{ThemeResource TextFillColorPrimaryBrush}" />
-                                </VisualState.Setters></VisualState>
-                                <VisualState x:Name="IndeterminatePressed"><VisualState.Setters>
-                                    <Setter Target="Surface.Background" Value="{ThemeResource SubtleFillColorTertiaryBrush}" />
-                                    <Setter Target="ContentPresenter.Foreground" Value="{ThemeResource TextFillColorPrimaryBrush}" />
-                                </VisualState.Setters></VisualState>
-                                <VisualState x:Name="IndeterminateDisabled"><VisualState.Setters>
-                                    <Setter Target="ContentPresenter.Foreground" Value="{ThemeResource TextFillColorDisabledBrush}" />
-                                </VisualState.Setters></VisualState>
+                                <VisualState x:Name="IndeterminatePointerOver">
+                                    <VisualState.Setters>
+                                        <Setter Target="Surface.Background" Value="{ThemeResource SubtleFillColorSecondaryBrush}" />
+                                        <Setter Target="ContentPresenter.Foreground" Value="{ThemeResource TextFillColorPrimaryBrush}" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState x:Name="IndeterminatePressed">
+                                    <VisualState.Setters>
+                                        <Setter Target="Surface.Background" Value="{ThemeResource SubtleFillColorTertiaryBrush}" />
+                                        <Setter Target="ContentPresenter.Foreground" Value="{ThemeResource TextFillColorPrimaryBrush}" />
+                                    </VisualState.Setters>
+                                </VisualState>
+                                <VisualState x:Name="IndeterminateDisabled">
+                                    <VisualState.Setters>
+                                        <Setter Target="ContentPresenter.Foreground" Value="{ThemeResource TextFillColorDisabledBrush}" />
+                                    </VisualState.Setters>
+                                </VisualState>
                             </VisualStateGroup>
                         </VisualStateManager.VisualStateGroups>
-                        <ContentPresenter x:Name="ContentPresenter" Margin="{TemplateBinding Padding}" Content="{TemplateBinding Content}"
-                                          ContentTemplate="{TemplateBinding ContentTemplate}" ContentTransitions="{TemplateBinding ContentTransitions}"
-                                          Foreground="{TemplateBinding Foreground}" FontFamily="{TemplateBinding FontFamily}" FontSize="{TemplateBinding FontSize}"
-                                          HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}" VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
+                        <ContentPresenter x:Name="ContentPresenter"
+                                          Margin="{TemplateBinding Padding}"
+                                          HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                          VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                          Content="{TemplateBinding Content}"
+                                          ContentTemplate="{TemplateBinding ContentTemplate}"
+                                          ContentTransitions="{TemplateBinding ContentTransitions}"
+                                          FontFamily="{TemplateBinding FontFamily}"
+                                          FontSize="{TemplateBinding FontSize}"
+                                          Foreground="{TemplateBinding Foreground}" />
                     </Border>
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+        <Setter Property="Width" Value="28" />
     </Style>
 
 </ResourceDictionary>
