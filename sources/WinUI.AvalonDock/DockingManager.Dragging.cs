@@ -135,7 +135,7 @@ public partial class DockingManager
                     : new Point(30, 32);
                 double originalLeft = content.FloatingLeft;
                 double originalTop = content.FloatingTop;
-                Point floatingPosition = PlatformServices.Coordinates.ToLayoutPosition(
+                Point floatingPosition = PlatformServices.Coordinates.ToHostLogical(dragOrigin!,
                     new Point(point.X - tabDragAnchor.X * scale, point.Y - tabDragAnchor.Y * scale));
                 content.FloatingLeft = floatingPosition.X;
                 content.FloatingTop = floatingPosition.Y;
@@ -183,7 +183,7 @@ public partial class DockingManager
         }
         else if (target == null && !alreadyFloating && origin != null && content.CanFloat && AllowFloatingWindows)
         {
-            Point position = PlatformServices.Coordinates.ToLayoutPosition(point);
+            Point position = PlatformServices.Coordinates.ToHostLogical(origin, point);
             content.FloatingLeft = position.X;
             content.FloatingTop = position.Y;
             StartDraggingFloatingWindowForContent(content, false);

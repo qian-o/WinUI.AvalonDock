@@ -9,8 +9,6 @@ namespace AvalonDock;
 public partial class ToggleDockingManager
 {
     private readonly Dictionary<IToolbox, LayoutAnchorable> toolboxToAnchorable = [];
-    // Defaults apply once per tool, so a later theme change preserves the user's collapsed state.
-    private readonly HashSet<LayoutAnchorable> initializedToolboxes = [];
     private int syncDepth;
 
     private void ApplyInitialToolboxState()
@@ -23,11 +21,6 @@ public partial class ToggleDockingManager
         foreach (LayoutAnchorable? anchorable in Layout.Descendents().OfType<LayoutAnchorable>().ToList())
         {
             if (!(anchorable.Content is IToolbox toolbox))
-            {
-                continue;
-            }
-
-            if (!initializedToolboxes.Add(anchorable))
             {
                 continue;
             }
@@ -66,14 +59,6 @@ public partial class ToggleDockingManager
                 {
                     RegisterToolbox(toolbox, btn.Anchorable);
                 }
-            }
-        }
-
-        foreach (LayoutAnchorable anchorable in Layout.Hidden)
-        {
-            if (anchorable.Content is IToolbox toolbox)
-            {
-                RegisterToolbox(toolbox, anchorable);
             }
         }
     }
@@ -156,10 +141,6 @@ public partial class ToggleDockingManager
         syncDepth++;
         try
         {
-            if (!toolbox.IsOpen && IsDetached(anchorable))
-            {
-                ReattachAnchorable(anchorable);
-            }
             ToggleAnchorable(anchorable, GetAnchorableZone(anchorable));
         }
         finally

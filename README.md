@@ -35,11 +35,11 @@ Add the manager to a WinUI 3 window:
 </dock:DockingManager>
 ```
 
-Give each document and tool a stable, unique `ContentId` when saving and restoring layouts. The application reconnects content through the serializer's `LayoutSerializationCallback`; the [MVVM sample](https://github.com/qian-o/WinUI.AvalonDock/tree/master/sources/Experiments/Mvvm) demonstrates that flow.
+Give each document and tool a stable, unique `ContentId` when saving and restoring layouts. The upstream XML serializer reuses matching content from the current layout. Use `LayoutSerializationCallback` to provide content that is not already available; the [MVVM sample](https://github.com/qian-o/WinUI.AvalonDock/tree/master/sources/Experiments/Mvvm) demonstrates that flow.
 
-For `ToggleDockingManager`, persist each tool's `IToolbox.Zone` in application settings and restore it on the content model before reconnecting that model in `LayoutSerializationCallback`. The upstream XML format stores pane structure and the left/right/bottom side, but has no field for Toggle's upper/lower or bottom-left/bottom-right zone assignment. The manager preserves those assignments through moves, hide/show, and theme/template changes during its lifetime. A plain `LayoutAnchorable` without `IToolbox` uses the available side or previous-pane information to choose `LeftTop`, `RightTop`, or `BottomLeft` when a saved layout is loaded; if a hidden tool's original container is no longer available, it falls back to `LeftTop`. Its runtime zone cache is not part of the XML file.
+`ToggleDockingManager` follows the upstream placement rules. Declare a tool's initial six-zone placement through `IToolbox.Zone`. When a layout is rebuilt, its left/right/bottom side determines the stripe, and the connected tool model's `Zone` selects the matching half. A plain `LayoutAnchorable` uses that side's default half (`LeftTop`, `RightTop`, or `BottomLeft`). Moving a tool does not rewrite its `IToolbox.Zone`. Layout saving and loading use the upstream XML format and do not require a separate application settings store for zones.
 
-Dispose the manager when its owning window closes so native windows, input hooks, and model subscriptions are released:
+The WinUI manager also exposes `Dispose()` for permanently releasing native resources and model subscriptions, for example when an application discards a manager:
 
 ```csharp
 Closed += (_, _) => Manager.Dispose();

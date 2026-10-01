@@ -36,8 +36,8 @@ internal sealed partial class WindowsWindowHostService(FrameworkElement owner) :
                 SetWindowLongPtrW(handle, -8, ownerHandle);
             }
 
-            // Desktop positions use one fixed scale while dimensions use the destination HWND's
-            // DPI. The owner supplies only the provisional size before the first placement.
+            // The public layout coordinates use device-independent units, as in WPF.
+            // The owner supplies the provisional DPI before the first placement.
             double scale = GetWindowScale(ownerHandle != 0 ? ownerHandle : handle);
             PlaceWindow(window, handle, bounds, scale, placement);
             return new WindowHost(window, handle, ownerHandle);
@@ -65,12 +65,12 @@ internal sealed partial class WindowsWindowHostService(FrameworkElement owner) :
 
     private static void PlaceWindow(Window window, nint handle, Rect bounds, double initialScale, WindowPlacement placement)
     {
-        Rect physicalBounds = WindowsWindowBounds.ToPhysical(bounds, WindowsWindowGeometryService.DesktopScale, initialScale);
+        Rect physicalBounds = WindowsWindowBounds.ToPhysical(bounds, initialScale);
         Rect placed = Constrain(physicalBounds, initialScale);
         MoveAndResize(placed);
         double destinationScale = GetWindowScale(handle);
-        // Moving first lets Windows resolve the target monitor's DPI. Correct the DIP size
-        // there without rescaling the saved desktop position through the owner's DPI.
+        // Moving first lets Windows resolve the target monitor's DPI. Preserve the
+        // physical placement while correcting the device-independent size there.
         Rect corrected = new(placed.X, placed.Y, bounds.Width * destinationScale, bounds.Height * destinationScale);
         Rect finalBounds = Constrain(corrected, destinationScale);
         PointInt32 actualPosition = window.AppWindow.Position;

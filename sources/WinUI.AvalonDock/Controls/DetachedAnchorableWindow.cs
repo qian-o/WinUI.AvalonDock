@@ -46,6 +46,7 @@ public class DetachedAnchorableWindow : Window
             root.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
             if (header != null)
             {
+                Grid.SetRow(header, 0);
                 root.Children.Add(header);
             }
 
@@ -58,7 +59,6 @@ public class DetachedAnchorableWindow : Window
                     model.FloatingHeight > 0 ? model.FloatingHeight : 500), false, WindowPlacement.RestoreOrCenterScreen);
             Thickness frame = host.GetFrameThickness();
             host.SetOptions(false, true, new Size(Math.Max(0, 120 - frame.Left - frame.Right), Math.Max(0, 120 - frame.Top - frame.Bottom)), new Thickness(0));
-            host.SetMaximized(model.IsMaximized);
             host.Closing += OnNativeClosing;
             host.GeometryChanged += OnGeometryChanged;
             iconPresenter = new WindowIconPresenter(this, root) { Source = model.IconSource };
@@ -236,7 +236,6 @@ public class DetachedAnchorableWindow : Window
         Model.FloatingTop = geometry.Bounds.Y;
         Model.FloatingWidth = geometry.Bounds.Width;
         Model.FloatingHeight = geometry.Bounds.Height;
-        Model.IsMaximized = geometry.IsMaximized;
     }
     private void OnManagerThemeChanged(FrameworkElement sender, object args) => UpdatePresentation();
     private void UpdatePresentation()

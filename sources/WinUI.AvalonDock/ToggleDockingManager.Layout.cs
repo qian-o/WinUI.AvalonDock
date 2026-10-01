@@ -21,12 +21,6 @@ public partial class ToggleDockingManager
             return;
         }
 
-        if (anchorable.IsHidden)
-        {
-            RestoreHiddenAnchorable(anchorable);
-            return;
-        }
-
         if (IsDetached(anchorable))
         {
             ActivateDetachedWindow(anchorable);
@@ -58,7 +52,7 @@ public partial class ToggleDockingManager
     }
     public void MoveAnchorableToZone(LayoutAnchorable anchorable, DockZone targetZone)
     {
-        if (IsDisposed || anchorable == null || !anchorable.CanMove || !ReferenceEquals(anchorable.Root, Layout))
+        if (IsDisposed || anchorable == null || !ReferenceEquals(anchorable.Root, Layout))
         {
             return;
         }
@@ -66,9 +60,6 @@ public partial class ToggleDockingManager
         if (IsDetached(anchorable))
         {
             detachedZones[anchorable] = targetZone;
-            RememberAnchorableZone(anchorable, targetZone);
-            RemoveFromAllBars(anchorable);
-            AddButton(anchorable, targetZone);
             return;
         }
         DockZone oldZone = GetAnchorableZone(anchorable);
@@ -80,13 +71,6 @@ public partial class ToggleDockingManager
             }
             return;
         }
-        if (anchorable.IsHidden)
-        {
-            RememberAnchorableZone(anchorable, targetZone);
-            RestoreHiddenAnchorable(anchorable);
-            return;
-        }
-
         bool wasFloating = anchorable.IsFloating;
         if (wasFloating && !RaiseContentDocking(anchorable))
         {
@@ -105,7 +89,6 @@ public partial class ToggleDockingManager
         LayoutAnchorGroup group = new();
         GetLayoutSideForZone(targetZone).Children.Add(group);
         group.Children.Add(anchorable);
-        RememberAnchorableZone(anchorable, targetZone);
         RemoveFromAllBars(anchorable);
         AddButton(anchorable, targetZone);
         ToggleAnchorable(anchorable, targetZone);
@@ -113,14 +96,6 @@ public partial class ToggleDockingManager
         if (wasFloating && !anchorable.IsFloating)
         {
             RaiseContentDocked(anchorable);
-        }
-    }
-    private void RememberAnchorableZone(LayoutAnchorable anchorable, DockZone zone)
-    {
-        anchorableZones[anchorable] = zone;
-        if (anchorable.Content is IToolbox toolbox)
-        {
-            toolbox.Zone = zone;
         }
     }
     protected override object DetachFromLayout(LayoutAnchorable anchorable)
@@ -153,10 +128,6 @@ public partial class ToggleDockingManager
     {
         if (anchorable != null)
         {
-            if (IsDetached(anchorable))
-            {
-                ReattachAnchorable(anchorable);
-            }
             ToggleAnchorable(anchorable, GetAnchorableZone(anchorable));
         }
     }
@@ -462,6 +433,7 @@ public partial class ToggleDockingManager
 
             HideOrdinarySides();
             HashSet<LayoutAnchorable> currentTools = Layout.Descendents().OfType<LayoutAnchorable>().ToHashSet();
+            List<LayoutAnchorable> addedToolboxes = [];
             foreach (ToggleDockButtonBar bar in Bars)
             {
                 foreach (ToggleDockButton? button in bar.Items.OfType<ToggleDockButton>().Where(b => b.Anchorable is not { } tool || !currentTools.Contains(tool) || tool.IsHidden).ToArray())
@@ -476,12 +448,6 @@ public partial class ToggleDockingManager
                 }
             }
 
-            foreach (LayoutAnchorable removedTool in anchorableZones.Keys.Where(tool => !currentTools.Contains(tool)).ToArray())
-            {
-                anchorableZones.Remove(removedTool);
-            }
-            initializedToolboxes.RemoveWhere(tool => !currentTools.Contains(tool));
-
             foreach (IToolbox toolbox in toolboxToAnchorable.Keys.ToArray())
             {
                 if (!currentTools.Contains(toolboxToAnchorable[toolbox]))
@@ -494,10 +460,20 @@ public partial class ToggleDockingManager
             {
                 if (tool.Content is IToolbox toolbox)
                 {
+                    bool isRegistered = toolboxToAnchorable.ContainsKey(toolbox);
+                    if (!isRegistered && tool.IsHidden)
+                    {
+                        continue;
+                    }
+
                     RegisterToolbox(toolbox, tool);
-                    if (initializedToolboxes.Contains(tool))
+                    if (isRegistered)
                     {
                         SetToolboxIsOpen(tool);
+                    }
+                    else
+                    {
+                        addedToolboxes.Add(tool);
                     }
                 }
             }
@@ -517,14 +493,27 @@ public partial class ToggleDockingManager
             {
                 if (!Bars.Any(bar => bar.ContainsAnchorable(tool)))
                 {
-                    DockZone zone = tool.Content is IToolbox || anchorableZones.ContainsKey(tool)
-                        ? GetAnchorableZone(tool)
-                        : InitialZone(tool, (tool.Parent as LayoutAnchorablePane)?.GetSide() ?? AnchorSide.Left);
+                    DockZone zone = InitialZone(tool, (tool.Parent as LayoutAnchorablePane)?.GetSide() ?? AnchorSide.Left);
                     AddButton(tool, zone);
                 }
             }
 
-            ApplyInitialToolboxState();
+            // Layout updates synchronize existing tools; defaults belong to setup and newly
+            // supplied content, otherwise collapsing a default-open tool would immediately reopen it.
+            foreach (LayoutAnchorable tool in addedToolboxes)
+            {
+                if (tool.Content is IToolbox toolbox && (toolbox.IsOpen || toolbox.IsOpenByDefault))
+                {
+                    if (tool.IsAutoHidden && !IsDetached(tool))
+                    {
+                        ToggleAnchorable(tool, toolbox.Zone);
+                    }
+                    else
+                    {
+                        SetToolboxIsOpen(tool);
+                    }
+                }
+            }
 
             UpdateNavigationPanelVisibility();
             RefreshButtonStates();

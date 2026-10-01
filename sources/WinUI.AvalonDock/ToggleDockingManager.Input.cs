@@ -253,7 +253,7 @@ public partial class ToggleDockingManager
             return;
         }
 
-        DockZone zone = GetAnchorableZone(anchorable);
+        DockZone zone = anchorable.Content is IToolbox toolbox ? toolbox.Zone : DockZone.LeftTop;
         Layout.Hidden.Remove(anchorable);
         LayoutAnchorGroup group = new();
         GetLayoutSideForZone(zone).Children.Add(group);

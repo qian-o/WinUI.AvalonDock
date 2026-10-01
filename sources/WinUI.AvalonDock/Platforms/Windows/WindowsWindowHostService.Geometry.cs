@@ -136,7 +136,7 @@ internal sealed partial class WindowsWindowHostService
             SizeInt32 size = window.AppWindow.Size;
             double scale = GetWindowScale(handle);
             return WindowsWindowBounds.ToLayout(new Rect(position.X, position.Y, size.Width, size.Height),
-                WindowsWindowGeometryService.DesktopScale, scale);
+                scale);
         }
 
         private Size ReadActualLogicalSize()

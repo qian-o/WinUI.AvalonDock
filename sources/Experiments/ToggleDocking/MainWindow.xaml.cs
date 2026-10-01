@@ -149,10 +149,6 @@ public sealed partial class MainWindow : Window
         }
 
         Manager.MoveAnchorableToZone(tool, zone);
-        if (tool.Content is WorkspaceTool model)
-        {
-            model.Zone = zone;
-        }
         StatusText.Text = $"Moved {tool.Title} to {zone}.";
     }
 
