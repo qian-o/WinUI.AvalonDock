@@ -17,7 +17,8 @@ public partial class ToggleDockingManager : DockingManager
     private readonly ToggleLayoutEngine layoutEngine = new();
     public override ILayoutEngine LayoutEngine => layoutEngine;
 
-    public static readonly DependencyProperty LayoutPriorityProperty = DependencyProperty.Register(nameof(LayoutPriority), typeof(DockLayoutPriority), typeof(ToggleDockingManager), new PropertyMetadata(DockLayoutPriority.BottomFullWidth));
+    public static readonly DependencyProperty LayoutPriorityProperty = DependencyProperty.Register(nameof(LayoutPriority), typeof(DockLayoutPriority), typeof(ToggleDockingManager),
+        new PropertyMetadata(DockLayoutPriority.BottomFullWidth, (owner, _) => ((ToggleDockingManager)owner).ApplyLayoutPriority()));
     public DockLayoutPriority LayoutPriority
     {
         get => (DockLayoutPriority)GetValue(LayoutPriorityProperty); set => SetValue(LayoutPriorityProperty, value);
@@ -77,6 +78,8 @@ public partial class ToggleDockingManager : DockingManager
                 ObserveLayout(null);
                 RemoveToggleDockButtonBars();
                 detachedZones.Clear();
+                anchorableZones.Clear();
+                initializedToolboxes.Clear();
                 refreshQueued = false;
             }
         }
@@ -157,6 +160,8 @@ public partial class ToggleDockingManager : DockingManager
 
         StopZoneDrag();
         detachedZones.Clear();
+        anchorableZones.Clear();
+        initializedToolboxes.Clear();
         ObserveLayout(IsLoaded ? newLayout : null);
         if (!IsLoaded)
         {

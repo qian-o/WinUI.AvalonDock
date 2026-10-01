@@ -923,13 +923,10 @@ public class LayoutAnchorable : LayoutContent, Core.Serialization.ISerializableL
     /// </summary>
     private void UpdateParentVisibility()
     {
-        // The original model restores its remembered parent even after hidden-list removal.
-        if (PreviousContainer != null && Parent == null)
-        {
-            Parent = PreviousContainer;
-        }
-
-        if (Parent is ILayoutElementWithVisibility parentPane)
+        // PreviousContainer is a docking destination, not current ownership. Restoring
+        // Parent without inserting into Children leaves closed or removed tools in the
+        // old Root and prevents active-content and layout-item cleanup.
+        if ((Parent ?? PreviousContainer) is ILayoutElementWithVisibility parentPane)
         {
             parentPane.ComputeVisibility();
         }

@@ -27,6 +27,8 @@ public class LayoutRoot : LayoutElement, ILayoutContainer, ILayoutRoot, Core.Ser
 
     private ObservableCollection<LayoutFloatingWindow>? floatingWindows;
     private ObservableCollection<LayoutAnchorable>? hiddenAnchorables;
+    private readonly HashSet<LayoutFloatingWindow> ownedFloatingWindows = new(ReferenceEqualityComparer.Default);
+    private readonly HashSet<LayoutAnchorable> ownedHiddenAnchorables = new(ReferenceEqualityComparer.Default);
 
     [field: NonSerialized]
     private WeakReference? activeContentReference;
@@ -118,6 +120,11 @@ public class LayoutRoot : LayoutElement, ILayoutContainer, ILayoutRoot, Core.Ser
             }
 
             RaisePropertyChanging(nameof(TopSide));
+            if (topSide != null && ReferenceEquals(topSide.Parent, this))
+            {
+                topSide.Parent = null;
+            }
+
             topSide = value;
             if (topSide != null)
             {
@@ -142,6 +149,11 @@ public class LayoutRoot : LayoutElement, ILayoutContainer, ILayoutRoot, Core.Ser
             }
 
             RaisePropertyChanging(nameof(RightSide));
+            if (rightSide != null && ReferenceEquals(rightSide.Parent, this))
+            {
+                rightSide.Parent = null;
+            }
+
             rightSide = value;
             if (rightSide != null)
             {
@@ -166,6 +178,11 @@ public class LayoutRoot : LayoutElement, ILayoutContainer, ILayoutRoot, Core.Ser
             }
 
             RaisePropertyChanging(nameof(LeftSide));
+            if (leftSide != null && ReferenceEquals(leftSide.Parent, this))
+            {
+                leftSide.Parent = null;
+            }
+
             leftSide = value;
             if (leftSide != null)
             {
@@ -190,6 +207,11 @@ public class LayoutRoot : LayoutElement, ILayoutContainer, ILayoutRoot, Core.Ser
             }
 
             RaisePropertyChanging(nameof(BottomSide));
+            if (bottomSide != null && ReferenceEquals(bottomSide.Parent, this))
+            {
+                bottomSide.Parent = null;
+            }
+
             bottomSide = value;
             if (bottomSide != null)
             {
@@ -667,10 +689,26 @@ public class LayoutRoot : LayoutElement, ILayoutContainer, ILayoutRoot, Core.Ser
     private void OnFloatingWindowsCollectionChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
     {
         bool bNotifyChildren = false;
+        if (e.Action == System.Collections.Specialized.NotifyCollectionChangedAction.Reset)
+        {
+            LayoutFloatingWindow[] removedWindows = ownedFloatingWindows.ToArray();
+            ownedFloatingWindows.Clear();
+            foreach (LayoutFloatingWindow element in removedWindows)
+            {
+                if (ReferenceEquals(element.Parent, this))
+                {
+                    element.Parent = null;
+                }
+            }
+
+            bNotifyChildren = true;
+        }
+
         if (e.OldItems != null && (e.Action == System.Collections.Specialized.NotifyCollectionChangedAction.Remove || e.Action == System.Collections.Specialized.NotifyCollectionChangedAction.Replace))
         {
             foreach (LayoutFloatingWindow element in e.OldItems)
             {
+                ownedFloatingWindows.Remove(element);
                 if (!ReferenceEquals(element.Parent, this))
                 {
                     continue;
@@ -685,6 +723,7 @@ public class LayoutRoot : LayoutElement, ILayoutContainer, ILayoutRoot, Core.Ser
         {
             foreach (LayoutFloatingWindow element in e.NewItems)
             {
+                ownedFloatingWindows.Add(element);
                 element.Parent = this;
                 bNotifyChildren = true;
             }
@@ -701,6 +740,7 @@ public class LayoutRoot : LayoutElement, ILayoutContainer, ILayoutRoot, Core.Ser
         {
             case System.Collections.Specialized.NotifyCollectionChangedAction.Remove:
             case System.Collections.Specialized.NotifyCollectionChangedAction.Add:
+            case System.Collections.Specialized.NotifyCollectionChangedAction.Reset:
                 RaisePropertyChanged(nameof(Children));
                 RaisePropertyChanged(nameof(ChildrenCount));
                 break;
@@ -719,12 +759,28 @@ public class LayoutRoot : LayoutElement, ILayoutContainer, ILayoutRoot, Core.Ser
     private void OnHiddenAnchorablesCollectionChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
     {
         bool bNotifyChildren = false;
+        if (e.Action == System.Collections.Specialized.NotifyCollectionChangedAction.Reset)
+        {
+            LayoutAnchorable[] removedAnchorables = ownedHiddenAnchorables.ToArray();
+            ownedHiddenAnchorables.Clear();
+            foreach (LayoutAnchorable element in removedAnchorables)
+            {
+                if (ReferenceEquals(element.Parent, this))
+                {
+                    element.Parent = null;
+                }
+            }
+
+            bNotifyChildren = true;
+        }
+
         if (e.Action == System.Collections.Specialized.NotifyCollectionChangedAction.Remove || e.Action == System.Collections.Specialized.NotifyCollectionChangedAction.Replace)
         {
             if (e.OldItems != null)
             {
                 foreach (LayoutAnchorable element in e.OldItems)
                 {
+                    ownedHiddenAnchorables.Remove(element);
                     if (!ReferenceEquals(element.Parent, this))
                     {
                         continue;
@@ -742,6 +798,7 @@ public class LayoutRoot : LayoutElement, ILayoutContainer, ILayoutRoot, Core.Ser
             {
                 foreach (LayoutAnchorable element in e.NewItems)
                 {
+                    ownedHiddenAnchorables.Add(element);
                     if (ReferenceEquals(element.Parent, this))
                     {
                         continue;
@@ -765,6 +822,7 @@ public class LayoutRoot : LayoutElement, ILayoutContainer, ILayoutRoot, Core.Ser
         {
             case System.Collections.Specialized.NotifyCollectionChangedAction.Remove:
             case System.Collections.Specialized.NotifyCollectionChangedAction.Add:
+            case System.Collections.Specialized.NotifyCollectionChangedAction.Reset:
                 RaisePropertyChanged(nameof(Children));
                 RaisePropertyChanged(nameof(ChildrenCount));
                 break;

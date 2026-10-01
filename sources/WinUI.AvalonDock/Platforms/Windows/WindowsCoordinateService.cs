@@ -73,6 +73,8 @@ internal sealed class WindowsCoordinateService : ICoordinateService
         double scale = element.XamlRoot?.RasterizationScale ?? 1;
         return new Point(position.X / scale, position.Y / scale);
     }
+    public Point ToLayoutPosition(Point position) =>
+        WindowsWindowBounds.ToLayoutPosition(position, WindowsWindowGeometryService.DesktopScale);
     public Point ToElementLocal(FrameworkElement element, Point position)
     {
         if (element.XamlRoot == null)

@@ -36,19 +36,10 @@ internal sealed partial class WindowsWindowHostService(FrameworkElement owner) :
                 SetWindowLongPtrW(handle, -8, ownerHandle);
             }
 
-            // Platform geometry works in physical desktop pixels. The creation request uses the
-            // owner's current logical space; subsequent notifications use the new host's own DPI.
+            // Desktop positions use one fixed scale while dimensions use the destination HWND's
+            // DPI. The owner supplies only the provisional size before the first placement.
             double scale = GetWindowScale(ownerHandle != 0 ? ownerHandle : handle);
-            Rect physicalBounds = new(bounds.X * scale, bounds.Y * scale, bounds.Width * scale, bounds.Height * scale);
-            Rect visible = placement switch
-            {
-                WindowPlacement.PreserveBounds => physicalBounds,
-                WindowPlacement.RestoreOrCenterScreen => WindowsWindowGeometryService.RestoreOrCenterScreen(physicalBounds, 80 * scale),
-                _ => PlatformServices.WindowGeometry.KeepVisible(physicalBounds)
-            };
-            window.AppWindow.MoveAndResize(new global::Windows.Graphics.RectInt32(
-                (int)Math.Round(visible.X), (int)Math.Round(visible.Y),
-                Math.Max(1, (int)Math.Round(visible.Width)), Math.Max(1, (int)Math.Round(visible.Height))));
+            PlaceWindow(window, handle, bounds, scale, placement);
             return new WindowHost(window, handle, ownerHandle);
         }
         catch
@@ -70,6 +61,37 @@ internal sealed partial class WindowsWindowHostService(FrameworkElement owner) :
     {
         uint dpi = GetDpiForWindow(handle);
         return dpi == 0 ? 1 : dpi / 96d;
+    }
+
+    private static void PlaceWindow(Window window, nint handle, Rect bounds, double initialScale, WindowPlacement placement)
+    {
+        Rect physicalBounds = WindowsWindowBounds.ToPhysical(bounds, WindowsWindowGeometryService.DesktopScale, initialScale);
+        Rect placed = Constrain(physicalBounds, initialScale);
+        MoveAndResize(placed);
+        double destinationScale = GetWindowScale(handle);
+        // Moving first lets Windows resolve the target monitor's DPI. Correct the DIP size
+        // there without rescaling the saved desktop position through the owner's DPI.
+        Rect corrected = new(placed.X, placed.Y, bounds.Width * destinationScale, bounds.Height * destinationScale);
+        Rect finalBounds = Constrain(corrected, destinationScale);
+        PointInt32 actualPosition = window.AppWindow.Position;
+        SizeInt32 actualSize = window.AppWindow.Size;
+        if (actualPosition.X != (int)Math.Round(finalBounds.X) || actualPosition.Y != (int)Math.Round(finalBounds.Y)
+            || actualSize.Width != Math.Max(1, (int)Math.Round(finalBounds.Width))
+            || actualSize.Height != Math.Max(1, (int)Math.Round(finalBounds.Height)))
+        {
+            MoveAndResize(finalBounds);
+        }
+
+        Rect Constrain(Rect requested, double scale) => placement switch
+        {
+            WindowPlacement.PreserveBounds => requested,
+            WindowPlacement.RestoreOrCenterScreen => WindowsWindowGeometryService.RestoreOrCenterScreen(requested, 80 * scale),
+            _ => PlatformServices.WindowGeometry.KeepVisible(requested)
+        };
+
+        void MoveAndResize(Rect requested) => window.AppWindow.MoveAndResize(new global::Windows.Graphics.RectInt32(
+            (int)Math.Round(requested.X), (int)Math.Round(requested.Y),
+            Math.Max(1, (int)Math.Round(requested.Width)), Math.Max(1, (int)Math.Round(requested.Height))));
     }
 
     [DllImport("user32.dll", ExactSpelling = true)]

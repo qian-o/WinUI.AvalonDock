@@ -9,6 +9,8 @@ namespace AvalonDock;
 public partial class ToggleDockingManager
 {
     private readonly Dictionary<IToolbox, LayoutAnchorable> toolboxToAnchorable = [];
+    // Defaults apply once per tool, so a later theme change preserves the user's collapsed state.
+    private readonly HashSet<LayoutAnchorable> initializedToolboxes = [];
     private int syncDepth;
 
     private void ApplyInitialToolboxState()
@@ -21,6 +23,11 @@ public partial class ToggleDockingManager
         foreach (LayoutAnchorable? anchorable in Layout.Descendents().OfType<LayoutAnchorable>().ToList())
         {
             if (!(anchorable.Content is IToolbox toolbox))
+            {
+                continue;
+            }
+
+            if (!initializedToolboxes.Add(anchorable))
             {
                 continue;
             }
@@ -61,6 +68,14 @@ public partial class ToggleDockingManager
                 }
             }
         }
+
+        foreach (LayoutAnchorable anchorable in Layout.Hidden)
+        {
+            if (anchorable.Content is IToolbox toolbox)
+            {
+                RegisterToolbox(toolbox, anchorable);
+            }
+        }
     }
     internal void RegisterToolbox(IToolbox toolbox, LayoutAnchorable anchorable)
     {
@@ -97,7 +112,7 @@ public partial class ToggleDockingManager
     }
     private void OnToolboxPropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
-        if (IsDisposed || e.PropertyName != nameof(IToolbox.IsOpen) || syncDepth > 0)
+        if (IsDisposed || syncDepth > 0)
         {
             return;
         }
@@ -107,9 +122,27 @@ public partial class ToggleDockingManager
             return;
         }
 
+        if (e.PropertyName is null or "" or nameof(IToolbox.Icon) or nameof(IToolbox.ToolTipText) or nameof(IToolbox.Shortcut) or nameof(LayoutContent.Title))
+        {
+            anchorable.Title = toolbox.Title;
+            ToggleDock.SetIcon(anchorable, toolbox.Icon);
+            ToggleDock.SetToolTip(anchorable, toolbox.ToolTipText);
+            foreach (ToggleDockButton button in Bars.SelectMany(bar => bar.Items.OfType<ToggleDockButton>())
+                .Where(button => ReferenceEquals(button.Anchorable, anchorable)))
+            {
+                button.Refresh();
+            }
+            RefreshShortcuts();
+        }
+
+        if (e.PropertyName is not (null or "" or nameof(IToolbox.IsOpen)))
+        {
+            return;
+        }
+
         // A detached anchorable sits collapsed on its stripe while its content is on screen in a
         // standalone window, so IsAutoHidden on its own does not say whether the toolbox is showing.
-        bool isOpen = !anchorable.IsAutoHidden || IsDetached(anchorable);
+        bool isOpen = IsToolboxOpen(anchorable);
 
         if (toolbox.IsOpen == isOpen)
         {
@@ -123,6 +156,10 @@ public partial class ToggleDockingManager
         syncDepth++;
         try
         {
+            if (!toolbox.IsOpen && IsDetached(anchorable))
+            {
+                ReattachAnchorable(anchorable);
+            }
             ToggleAnchorable(anchorable, GetAnchorableZone(anchorable));
         }
         finally
@@ -142,11 +179,13 @@ public partial class ToggleDockingManager
         {
             // A detached anchorable is collapsed onto its stripe but its content is on screen in a
             // standalone window, so it counts as open.
-            toolbox.IsOpen = !anchorable.IsAutoHidden || IsDetached(anchorable);
+            toolbox.IsOpen = IsToolboxOpen(anchorable);
         }
         finally
         {
             syncDepth--;
         }
     }
+    private bool IsToolboxOpen(LayoutAnchorable anchorable) => ReferenceEquals(anchorable.Root, Layout)
+        && !anchorable.IsHidden && (!anchorable.IsAutoHidden || IsDetached(anchorable));
 }

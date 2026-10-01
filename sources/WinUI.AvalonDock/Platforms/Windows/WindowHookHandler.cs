@@ -1,6 +1,7 @@
 // Adapted from Dirkster.AvalonDock v5.0.0 (MS-PL), Controls/WindowHookHandler.cs.
 // Upstream: 408dc2896e2f41f3bb79a15207f160edee8a6792.
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 
 namespace AvalonDock.Platforms.Windows;
@@ -47,9 +48,15 @@ internal sealed class WindowHookHandler
     {
         if (code == 9 /* HCBT_SETFOCUS */)
         {
-            if (FocusChanged != null)
+            try
             {
-                FocusChanged(this, new FocusChangeEventArgs(wParam));
+                FocusChanged?.Invoke(this, new FocusChangeEventArgs(wParam));
+            }
+            catch (Exception exception)
+            {
+                // Application model callbacks must not escape through the native hook or
+                // prevent the remaining hooks from receiving the focus notification.
+                Trace.WriteLine($"Docking native focus synchronization failed: {exception}");
             }
         }
         return CallNextHookEx(windowHook, code, wParam, lParam);

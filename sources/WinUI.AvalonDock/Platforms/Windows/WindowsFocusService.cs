@@ -46,9 +46,11 @@ internal sealed class WindowsFocusService : IFocusService
             }
 
             PlatformServices.Coordinates.ActivateWindow(current.Owner);
-            return SetFocus(handle) != 0;
+            SetFocus(handle);
+            return GetFocus() == handle;
         }
         [DllImport("user32.dll")] private static extern nint SetFocus(nint handle);
+        [DllImport("user32.dll")] private static extern nint GetFocus();
     }
     public bool HasKeyboardFocus(UIElement element) => element.XamlRoot is { } root
         && ReferenceEquals(FocusManager.GetFocusedElement(root), element)

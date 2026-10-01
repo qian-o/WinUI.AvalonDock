@@ -8,6 +8,8 @@ internal interface ICoordinateService
     bool TryGetScreenBounds(FrameworkElement element, out Rect bounds);
     bool IsVisibleAt(FrameworkElement element, Point position, IDockingWindowHost? excludedHost = null);
     Point ToHostLogical(FrameworkElement element, Point position);
+    /// <summary>Converts physical desktop coordinates to the fixed layout desktop position scale.</summary>
+    Point ToLayoutPosition(Point position);
     /// <summary>Converts physical desktop coordinates to the supplied element's local XAML units.</summary>
     Point ToElementLocal(FrameworkElement element, Point position);
     /// <summary>Returns the current physical desktop pointer position for source-style pane geometry checks.</summary>

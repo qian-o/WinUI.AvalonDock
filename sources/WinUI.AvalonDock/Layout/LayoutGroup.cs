@@ -18,6 +18,7 @@ public abstract class LayoutGroup<T> : LayoutGroupBase, ILayoutGroup
     where T : class, ILayoutElement
 {
     private readonly ObservableCollection<T> groupChildren = new();
+    private readonly HashSet<LayoutElement> ownedChildren = new(ReferenceEqualityComparer.Default);
     private bool isVisible = true;
 
     /// <summary>
@@ -189,12 +190,28 @@ public abstract class LayoutGroup<T> : LayoutGroupBase, ILayoutGroup
     /// <param name="e">The e.</param>
     private void OnGroupChildrenCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
     {
+        if (e.Action == NotifyCollectionChangedAction.Reset)
+        {
+            // ObservableCollection.Clear does not include OldItems in its Reset event.
+            // Retain ownership separately so removed nodes cannot keep a stale Root.
+            LayoutElement[] removedChildren = ownedChildren.ToArray();
+            ownedChildren.Clear();
+            foreach (LayoutElement element in removedChildren)
+            {
+                if (ReferenceEquals(element.Parent, this))
+                {
+                    element.Parent = null;
+                }
+            }
+        }
+
         if (e.Action == NotifyCollectionChangedAction.Remove || e.Action == NotifyCollectionChangedAction.Replace)
         {
             if (e.OldItems != null)
             {
                 foreach (LayoutElement element in e.OldItems)
                 {
+                    ownedChildren.Remove(element);
                     if (ReferenceEquals(element.Parent, this) || e.Action == NotifyCollectionChangedAction.Remove)
                     {
                         element.Parent = null;
@@ -209,6 +226,7 @@ public abstract class LayoutGroup<T> : LayoutGroupBase, ILayoutGroup
             {
                 foreach (LayoutElement element in e.NewItems)
                 {
+                    ownedChildren.Add(element);
                     if (ReferenceEquals(element.Parent, this))
                     {
                         continue;

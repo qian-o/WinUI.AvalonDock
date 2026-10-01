@@ -9,12 +9,14 @@ namespace AvalonDock.Compatibility;
 public abstract class ChildWindowHost : Control, IDisposable, IChildWindowHostOwner
 {
     private readonly IChildWindowHost site;
+    private readonly long visibilityToken;
     private bool disposed;
 
     protected ChildWindowHost()
     {
         IsTabStop = false;
         site = PlatformServices.CreateChildWindowHost(this);
+        visibilityToken = RegisterPropertyChangedCallback(VisibilityProperty, OnVisibilityChanged);
         Loaded += OnLoaded;
         Unloaded += OnUnloaded;
         LayoutUpdated += OnLayoutUpdated;
@@ -67,11 +69,21 @@ public abstract class ChildWindowHost : Control, IDisposable, IChildWindowHostOw
         Loaded -= OnLoaded;
         Unloaded -= OnUnloaded;
         LayoutUpdated -= OnLayoutUpdated;
+        UnregisterPropertyChangedCallback(VisibilityProperty, visibilityToken);
         site.Dispose();
     }
 
     internal void ConnectHost() => site.Connect();
     internal void DisconnectHost() => site.Disconnect();
+
+    private void OnVisibilityChanged(DependencyObject sender, DependencyProperty property)
+    {
+        if (!disposed)
+        {
+            site.Connect();
+            site.UpdateBounds();
+        }
+    }
 
     private void OnLoaded(object sender, RoutedEventArgs args)
     {

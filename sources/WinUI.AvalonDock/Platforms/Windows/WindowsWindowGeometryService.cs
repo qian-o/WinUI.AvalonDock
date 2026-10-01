@@ -7,12 +7,18 @@ namespace AvalonDock.Platforms.Windows;
 
 internal sealed class WindowsWindowGeometryService : IWindowGeometryService
 {
-    public Rect GetVirtualScreenBounds()
+    internal static readonly double DesktopScale = ReadDesktopScale();
+
+    private static double ReadDesktopScale()
     {
         uint dpi = GetDpiForSystem();
-        double scale = dpi == 0 ? 1 : dpi / 96d;
-        return new Rect(GetSystemMetrics(76) / scale, GetSystemMetrics(77) / scale,
-            GetSystemMetrics(78) / scale, GetSystemMetrics(79) / scale);
+        return dpi == 0 ? 1 : dpi / 96d;
+    }
+
+    public Rect GetVirtualScreenBounds()
+    {
+        return new Rect(GetSystemMetrics(76) / DesktopScale, GetSystemMetrics(77) / DesktopScale,
+            GetSystemMetrics(78) / DesktopScale, GetSystemMetrics(79) / DesktopScale);
     }
     internal static Rect RestoreOrCenterScreen(Rect bounds, double minimumVisible)
     {

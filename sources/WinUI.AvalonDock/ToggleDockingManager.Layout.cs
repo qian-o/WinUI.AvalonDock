@@ -16,8 +16,14 @@ public partial class ToggleDockingManager
 
     public void ToggleAnchorable(LayoutAnchorable anchorable, DockZone zone)
     {
-        if (IsDisposed)
+        if (IsDisposed || anchorable == null || !ReferenceEquals(anchorable.Root, Layout))
         {
+            return;
+        }
+
+        if (anchorable.IsHidden)
+        {
+            RestoreHiddenAnchorable(anchorable);
             return;
         }
 
@@ -37,14 +43,7 @@ public partial class ToggleDockingManager
                 EnsureBottomZoneOrder();
             }
 
-            if (LayoutPriority == DockLayoutPriority.BottomFullWidth)
-            {
-                EnsureBottomFullWidth();
-            }
-            else if (LayoutPriority == DockLayoutPriority.SidesFullHeight)
-            {
-                EnsureSidesFullHeight();
-            }
+            ApplyLayoutPriority();
 
             ActiveContent = anchorable.Content;
         }
@@ -59,7 +58,7 @@ public partial class ToggleDockingManager
     }
     public void MoveAnchorableToZone(LayoutAnchorable anchorable, DockZone targetZone)
     {
-        if (IsDisposed || anchorable == null)
+        if (IsDisposed || anchorable == null || !anchorable.CanMove || !ReferenceEquals(anchorable.Root, Layout))
         {
             return;
         }
@@ -67,15 +66,30 @@ public partial class ToggleDockingManager
         if (IsDetached(anchorable))
         {
             detachedZones[anchorable] = targetZone;
+            RememberAnchorableZone(anchorable, targetZone);
+            RemoveFromAllBars(anchorable);
+            AddButton(anchorable, targetZone);
             return;
         }
         DockZone oldZone = GetAnchorableZone(anchorable);
-        if (oldZone == targetZone)
+        if (oldZone == targetZone && !anchorable.IsFloating)
         {
             if (anchorable.IsAutoHidden)
             {
                 ToggleAnchorable(anchorable, targetZone);
             }
+            return;
+        }
+        if (anchorable.IsHidden)
+        {
+            RememberAnchorableZone(anchorable, targetZone);
+            RestoreHiddenAnchorable(anchorable);
+            return;
+        }
+
+        bool wasFloating = anchorable.IsFloating;
+        if (wasFloating && !RaiseContentDocking(anchorable))
+        {
             return;
         }
         if (!anchorable.IsAutoHidden)
@@ -91,9 +105,23 @@ public partial class ToggleDockingManager
         LayoutAnchorGroup group = new();
         GetLayoutSideForZone(targetZone).Children.Add(group);
         group.Children.Add(anchorable);
+        RememberAnchorableZone(anchorable, targetZone);
         RemoveFromAllBars(anchorable);
         AddButton(anchorable, targetZone);
         ToggleAnchorable(anchorable, targetZone);
+        Layout.CollectGarbage();
+        if (wasFloating && !anchorable.IsFloating)
+        {
+            RaiseContentDocked(anchorable);
+        }
+    }
+    private void RememberAnchorableZone(LayoutAnchorable anchorable, DockZone zone)
+    {
+        anchorableZones[anchorable] = zone;
+        if (anchorable.Content is IToolbox toolbox)
+        {
+            toolbox.Zone = zone;
+        }
     }
     protected override object DetachFromLayout(LayoutAnchorable anchorable)
     {
@@ -125,6 +153,10 @@ public partial class ToggleDockingManager
     {
         if (anchorable != null)
         {
+            if (IsDetached(anchorable))
+            {
+                ReattachAnchorable(anchorable);
+            }
             ToggleAnchorable(anchorable, GetAnchorableZone(anchorable));
         }
     }
@@ -252,6 +284,22 @@ public partial class ToggleDockingManager
     private void EnsureSidesFullHeight()
     {
         layoutEngine.EnsureSidesFullHeight(Layout as LayoutRoot);
+    }
+    private void ApplyLayoutPriority()
+    {
+        if (IsDisposed || Layout == null)
+        {
+            return;
+        }
+
+        if (LayoutPriority == DockLayoutPriority.BottomFullWidth)
+        {
+            EnsureBottomFullWidth();
+        }
+        else if (LayoutPriority == DockLayoutPriority.SidesFullHeight)
+        {
+            EnsureSidesFullHeight();
+        }
     }
     private void DockFromAutoHide(LayoutAnchorable anchorable, DockZone zone)
     {
@@ -404,8 +452,7 @@ public partial class ToggleDockingManager
             return;
         }
 
-        refreshQueued = true;
-        DispatcherQueue.TryEnqueue(() =>
+        refreshQueued = DispatcherQueue.TryEnqueue(() =>
         {
             refreshQueued = false;
             if (IsDisposed || !IsLoaded || leftTopBar == null)
@@ -419,13 +466,39 @@ public partial class ToggleDockingManager
             {
                 foreach (ToggleDockButton? button in bar.Items.OfType<ToggleDockButton>().Where(b => b.Anchorable is not { } tool || !currentTools.Contains(tool) || tool.IsHidden).ToArray())
                 {
-                    if (button.Anchorable?.Content is IToolbox toolbox)
+                    if (button.Anchorable is { } removedTool)
                     {
-                        UnregisterToolbox(toolbox);
+                        SetToolboxIsOpen(removedTool);
                     }
 
                     button.Release();
                     bar.Items.Remove(button);
+                }
+            }
+
+            foreach (LayoutAnchorable removedTool in anchorableZones.Keys.Where(tool => !currentTools.Contains(tool)).ToArray())
+            {
+                anchorableZones.Remove(removedTool);
+            }
+            initializedToolboxes.RemoveWhere(tool => !currentTools.Contains(tool));
+
+            foreach (IToolbox toolbox in toolboxToAnchorable.Keys.ToArray())
+            {
+                if (!currentTools.Contains(toolboxToAnchorable[toolbox]))
+                {
+                    UnregisterToolbox(toolbox);
+                }
+            }
+
+            foreach (LayoutAnchorable tool in currentTools)
+            {
+                if (tool.Content is IToolbox toolbox)
+                {
+                    RegisterToolbox(toolbox, tool);
+                    if (initializedToolboxes.Contains(tool))
+                    {
+                        SetToolboxIsOpen(tool);
+                    }
                 }
             }
 
@@ -439,6 +512,19 @@ public partial class ToggleDockingManager
                     }
                 }
             }
+
+            foreach (LayoutAnchorable tool in currentTools.Where(tool => !tool.IsHidden && !tool.IsAutoHidden))
+            {
+                if (!Bars.Any(bar => bar.ContainsAnchorable(tool)))
+                {
+                    DockZone zone = tool.Content is IToolbox || anchorableZones.ContainsKey(tool)
+                        ? GetAnchorableZone(tool)
+                        : InitialZone(tool, (tool.Parent as LayoutAnchorablePane)?.GetSide() ?? AnchorSide.Left);
+                    AddButton(tool, zone);
+                }
+            }
+
+            ApplyInitialToolboxState();
 
             UpdateNavigationPanelVisibility();
             RefreshButtonStates();

@@ -439,21 +439,17 @@ public abstract partial class LayoutItem
     internal void NotifyDefaultCommands()
     {
         // 先保存快照：事件处理器可能在通知期间重新附加此项并替换默认命令。
-        var commands = (Close: defaultCloseCommand, Float: defaultFloatCommand,
-            DockAsDocument: defaultDockAsDocumentCommand, CloseOthers: defaultCloseAllButThisCommand,
-            CloseAll: defaultCloseAllCommand, Activate: defaultActivateCommand,
-            NewVertical: defaultNewVerticalTabGroupCommand, NewHorizontal: defaultNewHorizontalTabGroupCommand,
-            MoveNext: defaultMoveToNextTabGroupCommand, MovePrevious: defaultMoveToPreviousTabGroupCommand);
-        NotifyDefaultCommand(commands.Close);
-        NotifyDefaultCommand(commands.Float);
-        NotifyDefaultCommand(commands.DockAsDocument);
-        NotifyDefaultCommand(commands.CloseOthers);
-        NotifyDefaultCommand(commands.CloseAll);
-        NotifyDefaultCommand(commands.Activate);
-        NotifyDefaultCommand(commands.NewVertical);
-        NotifyDefaultCommand(commands.NewHorizontal);
-        NotifyDefaultCommand(commands.MoveNext);
-        NotifyDefaultCommand(commands.MovePrevious);
+        ICommand?[] commands =
+        [
+            defaultCloseCommand, defaultFloatCommand, defaultDockAsDocumentCommand,
+            defaultCloseAllButThisCommand, defaultCloseAllCommand, defaultActivateCommand,
+            defaultNewVerticalTabGroupCommand, defaultNewHorizontalTabGroupCommand,
+            defaultMoveToNextTabGroupCommand, defaultMoveToPreviousTabGroupCommand
+        ];
+        foreach (ICommand? command in commands)
+        {
+            NotifyDefaultCommand(command);
+        }
     }
 
     private static void NotifyDefaultCommand(ICommand? command) => (command as RelayCommand<object>)?.RaiseCanExecuteChanged();

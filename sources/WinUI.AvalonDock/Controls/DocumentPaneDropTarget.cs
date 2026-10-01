@@ -226,7 +226,10 @@ internal class DocumentPaneDropTarget : DropTarget<LayoutDocumentPaneControl>
         LayoutDocumentPane newPane = new();
         if (parentModel == null)
         {
-            LayoutDocumentPaneGroup newParentModel = new() { Orientation = orientation };
+            LayoutDocumentPaneGroup newParentModel = new()
+            {
+                Orientation = orientation
+            };
             parentContainer.ReplaceChild(targetModel, newParentModel);
             newParentModel.Children.Add(insertAfter ? targetModel : newPane);
             newParentModel.Children.Add(insertAfter ? newPane : targetModel);
@@ -239,7 +242,10 @@ internal class DocumentPaneDropTarget : DropTarget<LayoutDocumentPaneControl>
         }
         else
         {
-            LayoutDocumentPaneGroup newChildGroup = new() { Orientation = orientation };
+            LayoutDocumentPaneGroup newChildGroup = new()
+            {
+                Orientation = orientation
+            };
             parentModel.ReplaceChild(targetModel, newChildGroup);
             newChildGroup.Children.Add(insertAfter ? targetModel : newPane);
             newChildGroup.Children.Add(insertAfter ? newPane : targetModel);

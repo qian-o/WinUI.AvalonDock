@@ -18,7 +18,7 @@ namespace AvalonDock.Controls;
 
 internal sealed class LayoutPanePresenter : IDisposable
 {
-    private static readonly PointerEventHandler documentTabPointerPressed = OnDocumentTabPointerPressed;
+    private static readonly PointerEventHandler DocumentTabPointerPressed = OnDocumentTabPointerPressed;
     private static readonly ConditionalWeakTable<ILayoutRoot, ConditionalWeakTable<ILayoutElement, WeakReference<LayoutContent?>>> NativeSelections = new();
     private static readonly ConditionalWeakTable<DispatcherQueue, PaneStyles> StylesByDispatcher = new();
     private readonly TabControlEx tabs;
@@ -276,7 +276,7 @@ internal sealed class LayoutPanePresenter : IDisposable
         tab.Loaded += OnTabLoaded;
         if (pane is LayoutDocumentPane)
         {
-            tab.AddHandler(UIElement.PointerPressedEvent, documentTabPointerPressed, true);
+            tab.AddHandler(UIElement.PointerPressedEvent, DocumentTabPointerPressed, true);
         }
         model.PropertyChanged += OnContentPropertyChanged;
         return (model, tab, header, content);
@@ -566,7 +566,7 @@ internal sealed class LayoutPanePresenter : IDisposable
         entry.Tab.Loaded -= OnTabLoaded;
         if (pane is LayoutDocumentPane)
         {
-            entry.Tab.RemoveHandler(UIElement.PointerPressedEvent, documentTabPointerPressed);
+            entry.Tab.RemoveHandler(UIElement.PointerPressedEvent, DocumentTabPointerPressed);
         }
         entry.Model.PropertyChanged -= OnContentPropertyChanged;
         if (entry.Header is LayoutDocumentTabItem documentHeader)

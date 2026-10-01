@@ -93,7 +93,7 @@ internal class WeakDictionary<K, V>
         return true;
     }
 
-    /// </summary>
+    /// <summary>Removes entries whose key has been garbage collected.</summary>
     private void CollectGarbage()
     {
         int vIndex = 0;

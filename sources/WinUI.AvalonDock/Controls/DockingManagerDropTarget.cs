@@ -91,7 +91,10 @@ internal class DockingManagerDropTarget : DropTarget<DockingManager>
         }
         else
         {
-            LayoutPanel newOrientedPanel = new() { Orientation = orientation };
+            LayoutPanel newOrientedPanel = new()
+            {
+                Orientation = orientation
+            };
             // Retain the original mutation order: the floating group is attached first.
             newOrientedPanel.Children.Add(floatingPanel);
             if (insertAfter)

@@ -13,6 +13,8 @@ namespace AvalonDock;
 public partial class ToggleDockingManager
 {
     private bool settingUp;
+    // Keep lower/upper zone assignments for tools without an IToolbox model across template rebuilds.
+    private readonly Dictionary<LayoutAnchorable, DockZone> anchorableZones = [];
     private ToggleDockButtonBar[] bars = [];
     internal ToggleDockButtonBar? leftTopBar, leftBottomBar, rightTopBar, rightBottomBar, bottomLeftBar, bottomRightBar;
     internal Grid? injectedLeftDockPanel, injectedRightDockPanel;
@@ -29,8 +31,20 @@ public partial class ToggleDockingManager
         }
 
         settingUp = true;
+        StopZoneDrag();
+        List<LayoutAnchorable> restoreDocked = CollectDockedAnchorables(Layout);
         try
         {
+            foreach (ToggleDockButtonBar bar in Bars)
+            {
+                foreach (ToggleDockButton button in bar.Items.OfType<ToggleDockButton>())
+                {
+                    if (button.Anchorable is { } tool && ReferenceEquals(tool.Root, Layout))
+                    {
+                        anchorableZones[tool] = bar.Zone;
+                    }
+                }
+            }
             RemoveToggleDockButtonBars();
             HideOrdinarySides();
             foreach (LayoutAnchorable? tool in Layout.Descendents().OfType<LayoutAnchorable>().Where(a => a.Parent is LayoutAnchorablePane && !a.IsFloating).ToList())
@@ -53,6 +67,10 @@ public partial class ToggleDockingManager
                     DockZone zone = InitialZone(tool, side.Side);
                     GetBarForZone(zone)?.Items.Add(new ToggleDockButton { Anchorable = tool, Zone = zone });
                 }
+            }
+            foreach (LayoutAnchorable tool in Layout.Descendents().OfType<LayoutAnchorable>().Where(tool => tool.IsFloating))
+            {
+                AddButton(tool, GetAnchorableZone(tool));
             }
             // The original SetAnchorables populates all six bars before registering
             // toolboxes. Registration order is bar order, including duplicate shortcuts.
@@ -78,7 +96,18 @@ public partial class ToggleDockingManager
             UpdateNavigationPanelVisibility();
             RefreshShortcuts();
         }
-        finally { settingUp = false; }
+        finally
+        {
+            settingUp = false;
+        }
+
+        foreach (LayoutAnchorable tool in restoreDocked)
+        {
+            if (ReferenceEquals(tool.Root, Layout) && tool.IsAutoHidden && !IsDetached(tool))
+            {
+                ToggleAnchorable(tool, GetAnchorableZone(tool));
+            }
+        }
     }
     private ToggleDockButtonBar Bar(DockZone zone)
     {
@@ -152,12 +181,20 @@ public partial class ToggleDockingManager
         }
         return grid;
     }
-    private static DockZone InitialZone(LayoutAnchorable tool, AnchorSide side) => side switch
+    private DockZone InitialZone(LayoutAnchorable tool, AnchorSide side)
     {
-        AnchorSide.Left => tool.Content is IToolbox { Zone: DockZone.LeftBottom } ? DockZone.LeftBottom : DockZone.LeftTop,
-        AnchorSide.Right => tool.Content is IToolbox { Zone: DockZone.RightBottom } ? DockZone.RightBottom : DockZone.RightTop,
-        _ => tool.Content is IToolbox { Zone: DockZone.BottomRight } ? DockZone.BottomRight : DockZone.BottomLeft
-    };
+        if (anchorableZones.TryGetValue(tool, out DockZone savedZone))
+        {
+            return savedZone;
+        }
+
+        return side switch
+        {
+            AnchorSide.Left => tool.Content is IToolbox { Zone: DockZone.LeftBottom } ? DockZone.LeftBottom : DockZone.LeftTop,
+            AnchorSide.Right => tool.Content is IToolbox { Zone: DockZone.RightBottom } ? DockZone.RightBottom : DockZone.RightTop,
+            _ => tool.Content is IToolbox { Zone: DockZone.BottomRight } ? DockZone.BottomRight : DockZone.BottomLeft
+        };
+    }
     private void HideOrdinarySides()
     {
         foreach (LayoutAnchorSideControl? side in new[] { LeftSidePanel, RightSidePanel, TopSidePanel, BottomSidePanel })
@@ -210,6 +247,7 @@ public partial class ToggleDockingManager
         }
 
         bar.Items.Add(new ToggleDockButton { Anchorable = tool, Zone = zone });
+        anchorableZones[tool] = zone;
         if (tool.Content is IToolbox toolbox)
         {
             RegisterToolbox(toolbox, tool);
@@ -273,8 +311,19 @@ public partial class ToggleDockingManager
             return DockZone.BottomRight;
         }
 
-        // Fallback
-        if (anchorable.Parent is LayoutAnchorGroup group && group.Parent is LayoutAnchorSide side)
+        if (anchorableZones.TryGetValue(anchorable, out DockZone savedZone))
+        {
+            return savedZone;
+        }
+
+        if (anchorable.Content is IToolbox toolbox)
+        {
+            return toolbox.Zone;
+        }
+
+        ILayoutContainer? container = anchorable.Parent is LayoutRoot
+            ? ((ILayoutPreviousContainer)anchorable).PreviousContainer : anchorable.Parent;
+        if (container is LayoutAnchorGroup group && ReferenceEquals(group.Root, Layout) && group.Parent is LayoutAnchorSide side)
         {
             switch (side.Side)
             {
@@ -285,6 +334,11 @@ public partial class ToggleDockingManager
                 case AnchorSide.Bottom:
                     return DockZone.BottomLeft;
             }
+        }
+
+        if (container is LayoutAnchorablePane pane && ReferenceEquals(pane.Root, Layout) && !pane.IsHostedInFloatingWindow)
+        {
+            return InitialZone(anchorable, pane.GetSide());
         }
 
         return DockZone.LeftTop;

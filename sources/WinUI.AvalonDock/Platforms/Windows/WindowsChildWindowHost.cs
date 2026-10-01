@@ -16,7 +16,7 @@ internal sealed class WindowsChildWindowHost(IChildWindowHostOwner owner) : IChi
     internal FrameworkElement Owner => owner.Element;
     internal int ConnectionVersion => connectionVersion;
     internal bool ContainsNativeChild(nint child) => connected && !disconnecting && source == null
-        && nativeChild != 0 && IsChild(nativeChild, child);
+        && nativeChild != 0 && (child == nativeChild || IsChild(nativeChild, child));
     internal static WindowsChildWindowHost? FindNativeHost(nint child)
     {
         if (nativeHosts == null)
@@ -38,6 +38,9 @@ internal sealed class WindowsChildWindowHost(IChildWindowHostOwner owner) : IChi
     private nint nativeParent;
     private bool semanticContentBuilt;
     private readonly HwndHost? legacyOwner = owner as HwndHost;
+    private readonly List<(UIElement Element, long Token)> visibilityObservers = [];
+    private readonly List<UIElement> visibilityAncestors = [];
+    private bool? nativeVisible;
     public UIElement? RootVisual
     {
         get => root;
@@ -103,15 +106,6 @@ internal sealed class WindowsChildWindowHost(IChildWindowHostOwner owner) : IChi
             connected = true;
             connectionVersion++;
             UpdateBounds();
-            if (source != null)
-            {
-                source.SiteBridge.Show();
-                source.SiteBridge.MoveInZOrderAtTop();
-            }
-            else
-            {
-                ShowWindow(nativeChild, 5);
-            }
         }
         catch (Exception failure)
         {
@@ -132,6 +126,8 @@ internal sealed class WindowsChildWindowHost(IChildWindowHostOwner owner) : IChi
             return;
         }
 
+        ObserveVisibility();
+        UpdateVisibility();
         XamlRoot xamlRoot = element.XamlRoot;
         GeneralTransform transform = element.TransformToVisual(null);
         Rect rectangle = transform.TransformBounds(new Rect(0, 0, element.ActualWidth, element.ActualHeight));
@@ -183,6 +179,78 @@ internal sealed class WindowsChildWindowHost(IChildWindowHostOwner owner) : IChi
         bounds = next;
     }
 
+    private void ObserveVisibility()
+    {
+        visibilityAncestors.Clear();
+        for (DependencyObject? current = owner.Element; current != null; current = VisualTreeHelper.GetParent(current))
+        {
+            if (current is UIElement element)
+            {
+                visibilityAncestors.Add(element);
+            }
+        }
+
+        bool unchanged = visibilityAncestors.Count == visibilityObservers.Count;
+        for (int index = 0; unchanged && index < visibilityAncestors.Count; index++)
+        {
+            unchanged = ReferenceEquals(visibilityAncestors[index], visibilityObservers[index].Element);
+        }
+        if (unchanged)
+        {
+            return;
+        }
+
+        ReleaseVisibilityObservers();
+        foreach (UIElement element in visibilityAncestors)
+        {
+            long token = element.RegisterPropertyChangedCallback(UIElement.VisibilityProperty, (_, _) => UpdateVisibility());
+            visibilityObservers.Add((element, token));
+        }
+    }
+
+    private void UpdateVisibility()
+    {
+        if (!connected || disconnecting)
+        {
+            return;
+        }
+
+        bool visible = owner.Element.IsLoaded && visibilityObservers.All(observer => observer.Element.Visibility == Visibility.Visible);
+        if (nativeVisible == visible)
+        {
+            return;
+        }
+
+        if (source != null)
+        {
+            if (visible)
+            {
+                source.SiteBridge.Show();
+                source.SiteBridge.MoveInZOrderAtTop();
+            }
+            else
+            {
+                source.SiteBridge.Hide();
+            }
+        }
+        else
+        {
+            ShowWindow(nativeChild, visible ? 5 : 0);
+        }
+
+        nativeVisible = visible;
+    }
+
+    private void ReleaseVisibilityObservers()
+    {
+        foreach ((UIElement Element, long Token) observer in visibilityObservers)
+        {
+            observer.Element.UnregisterPropertyChangedCallback(UIElement.VisibilityProperty, observer.Token);
+        }
+
+        visibilityObservers.Clear();
+    }
+
     public void Disconnect()
     {
         if (source == null && !buildStarted || disconnecting)
@@ -191,6 +259,7 @@ internal sealed class WindowsChildWindowHost(IChildWindowHostOwner owner) : IChi
         }
 
         disconnecting = true;
+        ReleaseVisibilityObservers();
         nativeHosts?.RemoveAll(reference => !reference.TryGetTarget(out WindowsChildWindowHost? host) || ReferenceEquals(host, this));
         DesktopWindowXamlSource? previous = source;
         try
@@ -237,6 +306,8 @@ internal sealed class WindowsChildWindowHost(IChildWindowHostOwner owner) : IChi
                 nativeChild = nativeParent = 0;
                 root = null;
                 bounds = default;
+                nativeVisible = null;
+                visibilityAncestors.Clear();
                 if (legacyOwner is { } legacy)
                 {
                     legacy.PreparedChild = default;

@@ -76,9 +76,10 @@ internal sealed class WindowCaptionContextRequest(DragInputPosition position) : 
 }
 
 /// <summary>
-/// Floating bounds in the host's current 96-DPI logical coordinate space. Bounds retains the
-/// last normal rectangle while ActualSize reports the current outer window size for the
-/// original floating control's SizeChanged model notification.
+/// Floating positions use a fixed system-DPI desktop space; sizes use the host's 96-DPI logical
+/// units. Position coordinates remain stable when a window moves between monitors. Bounds retains the
+/// last normal rectangle for layout persistence while ActualSize reports the current outer
+/// window size, which can differ from Bounds when maximized or minimized.
 /// </summary>
 internal sealed record WindowGeometry(Rect Bounds, Size ActualSize, bool IsMaximized, bool IsMinimized = false);
 

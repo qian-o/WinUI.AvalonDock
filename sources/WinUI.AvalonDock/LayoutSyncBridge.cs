@@ -23,6 +23,7 @@ internal sealed class LayoutSyncBridge
     private bool isSyncing;
     private readonly Dictionary<object, AnchorSide> contentToSide = new(ReferenceEqualityComparer.Default);
     private readonly List<(INotifyCollectionChanged Source, NotifyCollectionChangedEventHandler Handler)> subscriptions = new();
+    private readonly List<INotifyPropertyChanged> dockSubscriptions = [];
 
     /// <summary>
     /// Gets a read-only view of the content-to-side mapping populated during tree walk.
@@ -78,6 +79,12 @@ internal sealed class LayoutSyncBridge
 
     private void CollectDockables(IDockable node)
     {
+        if (node is IDock && !ReferenceEquals(node, rootDock) && node is INotifyPropertyChanged notifier)
+        {
+            notifier.PropertyChanged += OnDockPropertyChanged;
+            dockSubscriptions.Add(notifier);
+        }
+
         if (node is IDocumentDock docDock && docDock.VisibleDockables != null)
         {
             foreach (IDockable child in docDock.VisibleDockables)
@@ -108,6 +115,11 @@ internal sealed class LayoutSyncBridge
 
         if (node is IDock dock && dock.VisibleDockables != null)
         {
+            if (node is not IDocumentDock && node is not IToolDock)
+            {
+                SubscribeCollection(dock.VisibleDockables, OnDockTreeCollectionChanged);
+            }
+
             foreach (IDockable child in dock.VisibleDockables)
             {
                 if (child is IDock)
@@ -150,18 +162,63 @@ internal sealed class LayoutSyncBridge
         }
 
         subscriptions.Clear();
+        foreach (INotifyPropertyChanged dock in dockSubscriptions)
+        {
+            dock.PropertyChanged -= OnDockPropertyChanged;
+        }
+
+        dockSubscriptions.Clear();
     }
 
     private void SubscribeToManager()
     {
         manager.ActiveContentChanged += OnManagerActiveContentChanged;
         manager.DocumentClosed += OnManagerDocumentClosed;
+        manager.AnchorableClosed += OnManagerAnchorableClosed;
     }
 
     private void UnsubscribeFromManager()
     {
         manager.ActiveContentChanged -= OnManagerActiveContentChanged;
         manager.DocumentClosed -= OnManagerDocumentClosed;
+        manager.AnchorableClosed -= OnManagerAnchorableClosed;
+    }
+
+    private void OnDockPropertyChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (string.IsNullOrEmpty(e.PropertyName) || e.PropertyName == nameof(IDock.VisibleDockables))
+        {
+            RebuildDockTree();
+        }
+    }
+
+    private void OnDockTreeCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e) => RebuildDockTree();
+
+    private void RebuildDockTree()
+    {
+        if (isSyncing)
+        {
+            return;
+        }
+
+        isSyncing = true;
+        try
+        {
+            // Collection replacement and dock subtree changes must release the exact old
+            // subscriptions before observing the new tree. Reconciliation retains native
+            // layout nodes for models that remain in the tree.
+            UnsubscribeFromMvvm();
+            RebuildDocuments();
+            RebuildAnchorables();
+            CollectDockables(rootDock);
+            SubscribeToMvvm();
+        }
+        finally
+        {
+            isSyncing = false;
+        }
+
+        ReconcileActiveDockable();
     }
 
     private void OnDocumentCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
@@ -174,6 +231,14 @@ internal sealed class LayoutSyncBridge
     {
         if (isSyncing)
         {
+            return;
+        }
+
+        if (e.Action == NotifyCollectionChangedAction.Reset
+            || e.OldItems?.OfType<IDock>().Any() == true
+            || e.NewItems?.OfType<IDock>().Any() == true)
+        {
+            RebuildDockTree();
             return;
         }
 
@@ -210,23 +275,13 @@ internal sealed class LayoutSyncBridge
                     }
                 }
             }
-
-            if (e.Action == NotifyCollectionChangedAction.Reset)
-            {
-                if (isDocument)
-                {
-                    RebuildDocuments();
-                }
-                else
-                {
-                    RebuildAnchorables();
-                }
-            }
         }
         finally
         {
             isSyncing = false;
         }
+
+        ReconcileActiveDockable();
     }
 
     private void OnRootDockPropertyChanged(object? sender, PropertyChangedEventArgs e)
@@ -236,11 +291,13 @@ internal sealed class LayoutSyncBridge
             return;
         }
 
-        if (e.PropertyName == nameof(IRootDock.ActiveDockable))
+        OnDockPropertyChanged(sender, e);
+        if (string.IsNullOrEmpty(e.PropertyName) || e.PropertyName == nameof(IRootDock.ActiveDockable))
         {
             SyncActiveContentToManager();
         }
-        else if (e.PropertyName == nameof(IRootDock.AllowFloatingWindows)
+
+        if (string.IsNullOrEmpty(e.PropertyName) || e.PropertyName == nameof(IRootDock.AllowFloatingWindows)
             || e.PropertyName == nameof(IRootDock.AllowDetachedWindows))
         {
             SyncWindowPolicyToManager();
@@ -288,7 +345,35 @@ internal sealed class LayoutSyncBridge
         }
     }
 
+    private void ReconcileActiveDockable()
+    {
+        // Source notifications run under the synchronization guard, so native active
+        // changes caused by removing a model cannot write back during that operation.
+        // Keep valid model selections; reconcile only a leaf removed from both sources.
+        if (rootDock.ActiveDockable is { } active && active is not IDock
+            && !ContainsReference(documentModels, active) && !ContainsReference(anchorableModels, active))
+        {
+            object? content = manager.Layout.Descendents().OfType<LayoutContent>()
+                .FirstOrDefault(item => ReferenceEquals(item.Content, manager.ActiveContent))?.Content;
+            if (content is IDockable dockable
+                && (ContainsReference(documentModels, dockable) || ContainsReference(anchorableModels, dockable)))
+            {
+                rootDock.ActiveDockable = dockable;
+            }
+            else
+            {
+                rootDock.ActiveDockable = null;
+            }
+        }
+    }
+
     private void OnManagerDocumentClosed(object? sender, DocumentClosedEventArgs e)
+        => OnManagerContentClosed(e.Document.Content, isDocument: true);
+
+    private void OnManagerAnchorableClosed(object? sender, AnchorableClosedEventArgs e)
+        => OnManagerContentClosed(e.Anchorable.Content, isDocument: false);
+
+    private void OnManagerContentClosed(object? content, bool isDocument)
     {
         if (isSyncing)
         {
@@ -298,21 +383,23 @@ internal sealed class LayoutSyncBridge
         isSyncing = true;
         try
         {
-            object? content = e.Document.Content;
-            if (documentModels != null)
+            RemoveReference(isDocument ? documentModels : anchorableModels, content);
+            if (!isDocument && content != null)
             {
-                RemoveReference(documentModels, content);
+                contentToSide.Remove(content);
             }
 
             if (content is IDockable dockable)
             {
-                RemoveDockableFromTree(rootDock, dockable, isDocument: true);
+                RemoveDockableFromTree(rootDock, dockable, isDocument);
             }
         }
         finally
         {
             isSyncing = false;
         }
+
+        ReconcileActiveDockable();
     }
 
     private bool RemoveDockableFromTree(IDockable node, IDockable target, bool isDocument)

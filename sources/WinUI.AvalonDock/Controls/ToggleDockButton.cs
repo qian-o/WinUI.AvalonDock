@@ -1,4 +1,5 @@
 // Adapted from Dirkster.AvalonDock v5.0.0 (MS-PL), Controls/ToggleDockButtonBar.cs.
+using System.ComponentModel;
 using AvalonDock.Core;
 using AvalonDock.Layout;
 using AvalonDock.Platforms;
@@ -28,6 +29,7 @@ public class ToggleDockButton : ToggleButton
     private readonly RotatedHeader rotatedHeader = new();
     private readonly RoutedEventHandler clickHandler;
     private ToggleDockingManager? observedManager;
+    private LayoutAnchorable? observedAnchorable;
     private readonly List<(DependencyProperty Property, long Token)> managerTokens = [];
     public ToggleDockButton()
     {
@@ -212,8 +214,21 @@ public class ToggleDockButton : ToggleButton
         menu.ShowAt(this);
         e.Handled = true;
     }
-    private void Refresh()
+    internal void Refresh()
     {
+        if (!ReferenceEquals(observedAnchorable, Anchorable))
+        {
+            if (observedAnchorable != null)
+            {
+                observedAnchorable.PropertyChanged -= OnAnchorablePropertyChanged;
+            }
+            observedAnchorable = released ? null : Anchorable;
+            if (observedAnchorable != null)
+            {
+                observedAnchorable.PropertyChanged += OnAnchorablePropertyChanged;
+            }
+        }
+
         if (released || Anchorable == null)
         {
             return;
@@ -248,6 +263,13 @@ public class ToggleDockButton : ToggleButton
         }
         RefreshIcon();
         UpdateZoneState();
+    }
+    private void OnAnchorablePropertyChanged(object? sender, PropertyChangedEventArgs args)
+    {
+        if (args.PropertyName is null or "" or nameof(LayoutContent.Title) or nameof(LayoutContent.IconSource) or nameof(LayoutContent.Content))
+        {
+            Refresh();
+        }
     }
     private void UpdateZoneState() => VisualStateManager.GoToState(this,
         Zone is DockZone.RightTop or DockZone.RightBottom or DockZone.BottomRight ? "IndicatorRight" : "IndicatorLeft", false);
@@ -332,6 +354,11 @@ public class ToggleDockButton : ToggleButton
     internal void Release()
     {
         released = true;
+        if (observedAnchorable != null)
+        {
+            observedAnchorable.PropertyChanged -= OnAnchorablePropertyChanged;
+            observedAnchorable = null;
+        }
         ClearManager();
         if (iconHost != null)
         {

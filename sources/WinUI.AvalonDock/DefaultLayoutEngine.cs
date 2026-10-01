@@ -63,7 +63,10 @@ public class DefaultLayoutEngine : ILayoutEngine
             return;
         }
 
-        LayoutPanel panel = new() { Orientation = orientation };
+        LayoutPanel panel = new()
+        {
+            Orientation = orientation
+        };
         // Publish the wrapper before moving children, retaining the layout notification order.
         root.RootPanel = panel;
         panel.Children.Add(insertAtStart ? pane : rootPanel);

@@ -95,8 +95,7 @@ internal class FullWeakDictionary<K, V>
         return true;
     }
 
-    /// have already been garbage collected.
-    /// </summary>
+    /// <summary>Removes entries whose key or value has been garbage collected.</summary>
     private void CollectGarbage()
     {
         int vIndex = 0;

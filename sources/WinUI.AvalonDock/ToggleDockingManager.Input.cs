@@ -149,21 +149,39 @@ public partial class ToggleDockingManager
             }
         };
         modes.Items.Add(separate);
-        modes.Items.Add(MenuItem(global::AvalonDock.Properties.Resources.Toggle_Docked, () =>
-        {
-            if (IsDetached(anchorable))
-            {
-                ReattachAnchorable(anchorable);
-            }
-            else if (anchorable.IsAutoHidden)
-            {
-                ToggleAnchorable(anchorable, GetAnchorableZone(anchorable));
-            }
-        }));
+        modes.Items.Add(MenuItem(global::AvalonDock.Properties.Resources.Toggle_Docked, () => DockAnchorableFromMenu(anchorable)));
         modes.Items.Add(MenuItem(global::AvalonDock.Properties.Resources.Toggle_Hidden, () => HideAnchorableFromMenu(anchorable),
             (GetLayoutItemFromModel(anchorable) as LayoutAnchorableItem)?.HideCommand?.CanExecute(null) == true));
         menu.Items.Add(modes);
         return menu;
+    }
+    internal void DockAnchorableFromMenu(LayoutAnchorable anchorable)
+    {
+        if (IsDisposed || !ReferenceEquals(anchorable.Root, Layout))
+        {
+            return;
+        }
+
+        if (IsDetached(anchorable))
+        {
+            ReattachAnchorable(anchorable);
+        }
+        else if (anchorable.IsAutoHidden)
+        {
+            ToggleAnchorable(anchorable, GetAnchorableZone(anchorable));
+        }
+        else if (anchorable.IsFloating)
+        {
+            ICommand? command = (GetLayoutItemFromModel(anchorable) as LayoutAnchorableItem)?.DockCommand;
+            if (command?.CanExecute(null) == true)
+            {
+                command.Execute(null);
+                if (anchorable.IsAutoHidden)
+                {
+                    ToggleAnchorable(anchorable, GetAnchorableZone(anchorable));
+                }
+            }
+        }
     }
     internal static string GetLocalizedZoneName(DockZone zone) => zone switch
     {
@@ -201,6 +219,7 @@ public partial class ToggleDockingManager
         command.Execute(null);
         if (anchorable.IsHidden || !ReferenceEquals(anchorable.Root, Layout))
         {
+            SetToolboxIsOpen(anchorable);
             RemoveFromAllBars(anchorable);
         }
     }
@@ -229,12 +248,12 @@ public partial class ToggleDockingManager
     }
     internal void RestoreHiddenAnchorable(LayoutAnchorable anchorable)
     {
-        if (anchorable == null)
+        if (IsDisposed || anchorable == null || !anchorable.IsHidden || !ReferenceEquals(anchorable.Root, Layout))
         {
             return;
         }
 
-        DockZone zone = anchorable.Content is IToolbox toolbox ? toolbox.Zone : DockZone.LeftTop;
+        DockZone zone = GetAnchorableZone(anchorable);
         Layout.Hidden.Remove(anchorable);
         LayoutAnchorGroup group = new();
         GetLayoutSideForZone(zone).Children.Add(group);

@@ -12,7 +12,7 @@ namespace AvalonDock;
 /// Extends the generic interface with zone-aware operations that use <see cref="DockZone"/>
 /// for finer-grained control over pane placement (e.g. LeftTop vs LeftBottom).
 /// <para>
-/// All methods operate on the layout model only (no WPF visual tree), making them
+/// All methods operate on the layout model only (no visual tree), making them
 /// independently testable.
 /// </para>
 /// </summary>
@@ -192,17 +192,20 @@ public class ToggleLayoutEngine : ILayoutEngine
             case AnchorSide.Bottom:
                 {
                     LayoutPanel rootPanel = root.RootPanel;
-                    if (rootPanel.Orientation == Orientation.Vertical)
+                    LayoutPanel? bottomPanel = rootPanel.Orientation == Orientation.Vertical ? rootPanel
+                        : rootPanel.Children.OfType<LayoutPanel>().FirstOrDefault(panel => panel.Orientation == Orientation.Vertical
+                            && panel.Descendents().OfType<LayoutDocumentPane>().Any());
+                    if (bottomPanel != null)
                     {
                         if (zone == DockZone.BottomLeft)
                         {
                             // BottomLeft inserts before existing bottom panes/groups
-                            rootPanel.Children.Insert(GetInnerEdgeIndex(rootPanel, fromStart: false), pane);
+                            bottomPanel.Children.Insert(GetInnerEdgeIndex(bottomPanel, fromStart: false), pane);
                         }
                         else
                         {
                             // BottomRight appends at the end
-                            rootPanel.Children.Add(pane);
+                            bottomPanel.Children.Add(pane);
                         }
                     }
                     else
@@ -254,14 +257,103 @@ public class ToggleLayoutEngine : ILayoutEngine
     /// <inheritdoc/>
     public void EnsureBottomFullWidth(LayoutRoot root)
     {
+        if (root == null)
+        {
+            return;
+        }
+
+        if (root.RootPanel is { Orientation: Orientation.Horizontal } rootPanel
+            && rootPanel.Children.OfType<LayoutPanel>().FirstOrDefault(panel => panel.Orientation == Orientation.Vertical
+                && panel.Descendents().OfType<LayoutDocumentPane>().Any()) is { } contentPanel)
+        {
+            List<ILayoutPanelElement> bottomPanes = contentPanel.Children
+                .Reverse().TakeWhile(IsAnchorablePane).Reverse().ToList();
+            if (bottomPanes.Count > 0)
+            {
+                LayoutPanel wrapper = new()
+                {
+                    Orientation = Orientation.Vertical
+                };
+                root.RootPanel = wrapper;
+                foreach (ILayoutPanelElement pane in bottomPanes)
+                {
+                    contentPanel.Children.Remove(pane);
+                }
+                CollapseContentPanel(rootPanel, contentPanel);
+                wrapper.Children.Add(rootPanel);
+                foreach (ILayoutPanelElement pane in bottomPanes)
+                {
+                    wrapper.Children.Add(pane);
+                }
+                return;
+            }
+        }
+
         SharedLayout.EnsureBottomFullWidth(root);
     }
 
     /// <inheritdoc/>
     public void EnsureSidesFullHeight(LayoutRoot root)
     {
+        if (root == null)
+        {
+            return;
+        }
+
+        if (root.RootPanel is { Orientation: Orientation.Vertical } rootPanel
+            && rootPanel.Children.OfType<LayoutPanel>().FirstOrDefault(panel => panel.Orientation == Orientation.Horizontal
+                && panel.Descendents().OfType<LayoutDocumentPane>().Any()) is { } contentPanel)
+        {
+            List<ILayoutPanelElement> leftPanes = contentPanel.Children.TakeWhile(IsAnchorablePane).ToList();
+            List<ILayoutPanelElement> rightPanes = contentPanel.Children.Reverse().TakeWhile(IsAnchorablePane).Reverse().ToList();
+            if (leftPanes.Count > 0 || rightPanes.Count > 0)
+            {
+                LayoutPanel wrapper = new()
+                {
+                    Orientation = Orientation.Horizontal
+                };
+                root.RootPanel = wrapper;
+                foreach (ILayoutPanelElement pane in leftPanes.Concat(rightPanes))
+                {
+                    contentPanel.Children.Remove(pane);
+                }
+                CollapseContentPanel(rootPanel, contentPanel);
+                foreach (ILayoutPanelElement pane in leftPanes)
+                {
+                    wrapper.Children.Add(pane);
+                }
+                wrapper.Children.Add(rootPanel);
+                foreach (ILayoutPanelElement pane in rightPanes)
+                {
+                    wrapper.Children.Add(pane);
+                }
+                return;
+            }
+        }
+
         SharedLayout.EnsureSidesFullHeight(root);
     }
 
+    private static bool IsAnchorablePane(ILayoutPanelElement element) => element is LayoutAnchorablePane or LayoutAnchorablePaneGroup;
 
+    private static void CollapseContentPanel(LayoutPanel parent, LayoutPanel content)
+    {
+        if (content.Children.Count != 1)
+        {
+            return;
+        }
+
+        int index = parent.Children.IndexOf(content);
+        ILayoutPanelElement child = content.Children[0];
+        if (child is ILayoutPositionableElement positionableChild)
+        {
+            positionableChild.DockWidth = content.DockWidth;
+            positionableChild.DockHeight = content.DockHeight;
+            positionableChild.DockMinWidth = Math.Max(positionableChild.DockMinWidth, content.DockMinWidth);
+            positionableChild.DockMinHeight = Math.Max(positionableChild.DockMinHeight, content.DockMinHeight);
+        }
+        content.Children.Remove(child);
+        parent.Children.Remove(content);
+        parent.Children.Insert(index, child);
+    }
 }

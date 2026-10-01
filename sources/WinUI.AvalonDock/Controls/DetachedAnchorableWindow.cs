@@ -33,7 +33,12 @@ public class DetachedAnchorableWindow : Window
         Model = model;
         this.hostedView = hostedView;
         manager = model.Root?.Manager;
-        root = new Grid();
+        // Detached content and its header can be transparent. Give the native client
+        // an opaque theme surface so Dark foregrounds keep their contrast.
+        root = (Grid)Microsoft.UI.Xaml.Markup.XamlReader.Load("""
+            <Grid xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                  Background="{ThemeResource SolidBackgroundFillColorTertiaryBrush}" />
+            """);
         Closed += OnNativeClosed;
         try
         {

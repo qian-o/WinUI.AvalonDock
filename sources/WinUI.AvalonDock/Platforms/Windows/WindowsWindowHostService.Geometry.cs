@@ -83,9 +83,7 @@ internal sealed partial class WindowsWindowHostService
             }
 
             double scale = GetWindowScale(handle);
-            window.AppWindow.MoveAndResize(new global::Windows.Graphics.RectInt32(
-                (int)Math.Round(bounds.X * scale), (int)Math.Round(bounds.Y * scale),
-                Math.Max(1, (int)Math.Round(bounds.Width * scale)), Math.Max(1, (int)Math.Round(bounds.Height * scale))));
+            PlaceWindow(window, handle, bounds, scale, WindowPlacement.PreserveBounds);
         }
 
         public Thickness GetFrameThickness()
@@ -137,7 +135,8 @@ internal sealed partial class WindowsWindowHostService
             PointInt32 position = window.AppWindow.Position;
             SizeInt32 size = window.AppWindow.Size;
             double scale = GetWindowScale(handle);
-            return new Rect(position.X / scale, position.Y / scale, size.Width / scale, size.Height / scale);
+            return WindowsWindowBounds.ToLayout(new Rect(position.X, position.Y, size.Width, size.Height),
+                WindowsWindowGeometryService.DesktopScale, scale);
         }
 
         private Size ReadActualLogicalSize()

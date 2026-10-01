@@ -30,7 +30,6 @@ public abstract partial class LayoutFloatingWindowControl : Window, ILayoutContr
     private bool applyingGeometry;
     private bool activationHookReady;
     private FloatingWindowState observedWindowState;
-    private global::Windows.Foundation.Size? observedActualSize;
     private UIElement? keyInputRoot;
     private global::Windows.Foundation.Rect requestedBounds = new(80, 80, 600, 400);
 
@@ -569,12 +568,9 @@ public abstract partial class LayoutFloatingWindowControl : Window, ILayoutContr
                 return;
             }
 
-            Size actualSize = geometry.ActualSize;
-            if (observedActualSize is not { } previousSize || previousSize.Width != actualSize.Width || previousSize.Height != actualSize.Height)
-            {
-                observedActualSize = actualSize;
-                OnSizeChanged(actualSize);
-            }
+            // Persist the normal rectangle on every geometry update, including position-only
+            // changes. Maximized/minimized outer dimensions are presentation state only.
+            UpdatePositionAndSizeOfPanes();
         }
         finally { applyingGeometry = false; }
     }
@@ -606,15 +602,6 @@ public abstract partial class LayoutFloatingWindowControl : Window, ILayoutContr
             posElement.FloatingTop = Top;
             posElement.FloatingWidth = Width;
             posElement.FloatingHeight = Height;
-            posElement.RaiseFloatingPropertiesUpdated();
-        }
-    }
-    private void OnSizeChanged(global::Windows.Foundation.Size actualSize)
-    {
-        foreach (ILayoutElementForFloatingWindow posElement in (Model ?? constructorModel).Descendents().OfType<ILayoutElementForFloatingWindow>())
-        {
-            posElement.FloatingWidth = actualSize.Width;
-            posElement.FloatingHeight = actualSize.Height;
             posElement.RaiseFloatingPropertiesUpdated();
         }
     }

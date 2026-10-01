@@ -80,7 +80,20 @@ public class NavigatorWindow : Window
         UpdateThemeResources();
         view.PreviewKeyDown += (_, args) => OnKeyDown(args);
         view.AddHandler(UIElement.KeyUpEvent, new KeyEventHandler((_, args) => OnKeyUp(args)), true);
-        view.Loaded += (_, _) => FocusSelection();
+        view.Loaded += (_, _) =>
+        {
+            FocusSelection();
+            // A quick Ctrl+Tab can release Control while the new window is acquiring
+            // its XamlRoot and focus, before this view can receive the KeyUp event.
+            // Reconcile after queued input and the initial focus transfer complete.
+            DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Low, () =>
+            {
+                if (running && !closed && !closing && !PlatformServices.Keyboard.IsKeyDown(VirtualKey.Control))
+                {
+                    CloseAndActivateSelected();
+                }
+            });
+        };
         Activated += OnActivated;
         Closed += OnClosed;
         manager.ActualThemeChanged += OnManagerThemeChanged;

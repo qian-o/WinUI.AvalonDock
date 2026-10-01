@@ -17,7 +17,7 @@ public partial class ToggleDockingManager
     internal void BeginZoneDrag(LayoutAnchorable tool, FrameworkElement origin, bool waitForLeave = false,
         Point? pressPosition = null)
     {
-        if (IsDisposed || zoneInput != null || tool.Root?.Manager != this || IsDetached(tool) || !IsLoaded)
+        if (IsDisposed || zoneInput != null || !tool.CanMove || tool.Root?.Manager != this || IsDetached(tool) || !IsLoaded)
         {
             return;
         }
