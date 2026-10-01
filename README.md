@@ -79,9 +79,13 @@ Build and run instructions are available in the [samples README](https://github.
 
 ## Screenshots
 
-![Classic docking in Light theme](https://raw.githubusercontent.com/qian-o/WinUI.AvalonDock/master/assets/classic-light.png)
+Classic workspace in the light theme, with horizontal document groups and docked tool panes.
 
-![Toggle docking in Dark theme](https://raw.githubusercontent.com/qian-o/WinUI.AvalonDock/master/assets/toggle-dark.png)
+![Classic docking application window in the light theme](https://raw.githubusercontent.com/qian-o/WinUI.AvalonDock/master/assets/classic-light.png)
+
+Toggle workspace in the dark theme, with six tool zones surrounding the document area.
+
+![Toggle docking application window in the dark theme](https://raw.githubusercontent.com/qian-o/WinUI.AvalonDock/master/assets/toggle-dark.png)
 
 ## Feedback
 
