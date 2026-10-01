@@ -2,19 +2,36 @@
 
 [![NuGet version](https://img.shields.io/nuget/vpre/WinUI.AvalonDock?label=NuGet)](https://www.nuget.org/packages/WinUI.AvalonDock)
 
-A WinUI 3 port of [AvalonDock](https://github.com/Dirkster99/AvalonDock), autonomously developed by AI and functionally tested.
+WinUI.AvalonDock is an unofficial WinUI 3 port of [AvalonDock](https://github.com/Dirkster99/AvalonDock) for Windows desktop applications. It provides document tabs and dockable tool panes for IDEs, editors, and other applications with customizable workspaces.
 
-The project targets .NET 10 and `net10.0-windows10.0.19041.0` with the Windows App SDK. The current implementation supports Windows desktop applications.
+**AI leads the development and ongoing maintenance of this project**, including feature implementation, bug fixes, refactoring, and documentation.
 
-The library provides classic document/tool docking through `DockingManager`, six-zone tool layouts through `ToggleDockingManager`, floating and independent tool windows, auto-hide, layout themes, and integration with the upstream MVVM and XML serialization packages.
+## Features
 
-## Usage
+- Classic document and tool docking with `DockingManager`.
+- Six-zone tool layouts with `ToggleDockingManager`: upper and lower areas on each side, plus left and right areas along the bottom.
+- Drag-and-drop docking, floating windows, independent tool windows, and resizable panes.
+- Auto-hide and tool visibility controls.
+- Light and dark themes, custom styles, and content templates.
+- Collection binding and integration with AvalonDock's MVVM models and layout service.
+- XML layout saving and loading through AvalonDock's serialization package.
+
+## Requirements
+
+- Windows 10 build 19041 or later.
+- .NET 10 and a WinUI 3 desktop application using the Windows App SDK.
+
+The library targets `net10.0-windows10.0.19041.0`.
+
+## Installation
 
 ```shell
 dotnet add package WinUI.AvalonDock --prerelease
 ```
 
-Add the manager to a WinUI 3 window:
+## Quick start
+
+Add a `DockingManager` to your WinUI window or page. The `AvalonDock` namespace contains the controls, and `AvalonDock.Layout` contains the layout models:
 
 ```xml
 <dock:DockingManager x:Name="Manager"
@@ -35,23 +52,30 @@ Add the manager to a WinUI 3 window:
 </dock:DockingManager>
 ```
 
-Give each document and tool a stable, unique `ContentId` when saving and restoring layouts. The upstream XML serializer reuses matching content from the current layout. Use `LayoutSerializationCallback` to provide content that is not already available; the [MVVM sample](https://github.com/qian-o/WinUI.AvalonDock/tree/master/sources/Experiments/Mvvm) demonstrates that flow.
+For a collection-based workspace, bind documents and tools through `DocumentsSource` and `AnchorablesSource`. For a six-zone workspace, use `ToggleDockingManager` and set each tool model's initial placement through `IToolbox.Zone`.
 
-`ToggleDockingManager` follows the upstream placement rules. Declare a tool's initial six-zone placement through `IToolbox.Zone`. When a layout is rebuilt, its left/right/bottom side determines the stripe, and the connected tool model's `Zone` selects the matching half. A plain `LayoutAnchorable` uses that side's default half (`LeftTop`, `RightTop`, or `BottomLeft`). Moving a tool does not rewrite its `IToolbox.Zone`. Layout saving and loading use the upstream XML format and do not require a separate application settings store for zones.
+## MVVM and layout serialization
 
-The WinUI manager also exposes `Dispose()` for permanently releasing native resources and model subscriptions, for example when an application discards a manager:
+Add the upstream packages for the integrations your application uses:
 
-```csharp
-Closed += (_, _) => Manager.Dispose();
+```shell
+dotnet add package Dirkster.AvalonDock.Mvvm --version 5.0.0
+dotnet add package Dirkster.AvalonDock.Serializer.Xml --version 5.0.0
 ```
 
-More [examples](https://github.com/qian-o/WinUI.AvalonDock/tree/master/sources/Experiments).
+The MVVM integration uses `DockLayout` with AvalonDock's models and `DockLayoutService`. XML layouts use `XmlLayoutSerializer`; assign a stable, unique `ContentId` to each document and tool. The serializer reuses existing content with matching identifiers, and `LayoutSerializationCallback` supplies content that needs to be created or retrieved.
 
-## Framework structure
+See the [sample applications](https://github.com/qian-o/WinUI.AvalonDock/tree/master/sources/Experiments) for complete workspace setup and integration examples.
 
-`Layout` contains the WinUI layout tree and content state. `DockingManager` coordinates that tree with the typed views in `Controls`; `ILayoutEngine` supplies the layout placement strategy. `LayoutSyncBridge` connects upstream MVVM models, and `Serialization/LayoutDtoMapper` maps the WinUI tree to upstream serialization DTOs.
+## Samples
 
-`Platforms` defines internal services for windows, input, focus, overlays, and coordinate conversion. The implementations in `Platforms/Windows` contain native Windows integration. These interfaces organize the Windows implementation; an Uno backend has not been implemented.
+| Application | Demonstrates |
+| --- | --- |
+| [Docking](https://github.com/qian-o/WinUI.AvalonDock/tree/master/sources/Experiments/Docking) | Classic document and tool docking, collection binding, auto-hide, floating windows, themes, and XML layout saving and loading. |
+| [ToggleDocking](https://github.com/qian-o/WinUI.AvalonDock/tree/master/sources/Experiments/ToggleDocking) | Six-zone tools, zone movement, independent windows, layout priorities, and themes. |
+| [Mvvm](https://github.com/qian-o/WinUI.AvalonDock/tree/master/sources/Experiments/Mvvm) | View models, commands, document and tool collections, active-item binding, and XML layout saving and loading. |
+
+Build and run instructions are available in the [samples README](https://github.com/qian-o/WinUI.AvalonDock/blob/master/sources/Experiments/README.md).
 
 ## Screenshots
 
@@ -59,4 +83,10 @@ More [examples](https://github.com/qian-o/WinUI.AvalonDock/tree/master/sources/E
 
 ![Toggle docking in Dark theme](https://raw.githubusercontent.com/qian-o/WinUI.AvalonDock/master/assets/toggle-dark.png)
 
-[Microsoft Public License (Ms-PL)](https://github.com/qian-o/WinUI.AvalonDock/blob/master/LICENSE).
+## Feedback
+
+Report bugs and request features through [GitHub Issues](https://github.com/qian-o/WinUI.AvalonDock/issues). For a bug report, include your package version, Windows version, and a minimal example or steps to reproduce the issue.
+
+## License
+
+WinUI.AvalonDock is distributed under the [Microsoft Public License (Ms-PL)](https://github.com/qian-o/WinUI.AvalonDock/blob/master/LICENSE). The project builds on [AvalonDock](https://github.com/Dirkster99/AvalonDock).
