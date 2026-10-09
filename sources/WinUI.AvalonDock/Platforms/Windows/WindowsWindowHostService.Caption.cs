@@ -16,6 +16,8 @@ internal sealed partial class WindowsWindowHostService
     private sealed partial class WindowHost
     {
         private int? nativeBorderColor;
+        private bool captionColorsApplied;
+        private nint? originalCaptionStyle;
 
         public WindowCaptionMetrics GetCaptionMetrics()
         {
@@ -52,33 +54,36 @@ internal sealed partial class WindowsWindowHostService
                 captionInput?.ClearRegionRects(NonClientRegionKind.Caption);
                 captionInput?.ClearRegionRects(NonClientRegionKind.Passthrough);
                 customCaption = false;
-                if (clientCaptionButtons && appWindow.Presenter is OverlappedPresenter standard)
+                if (clientCaptionButtons)
                 {
-                    standard.SetBorderAndTitleBar(true, true);
+                    SetClientCaption(false);
                     nativeBorderColor = null;
                 }
 
                 clientCaptionButtons = false;
                 ResetCaptionColors();
-                window.ExtendsContentIntoTitleBar = false;
+                if (window.ExtendsContentIntoTitleBar)
+                {
+                    window.ExtendsContentIntoTitleBar = false;
+                }
                 SetNativeBorderColor(false);
                 return;
             }
             if (!customCaption)
             {
                 customCaption = true;
-                window.ExtendsContentIntoTitleBar = true;
                 captionInput = InputNonClientPointerSource.GetForWindowId(appWindow.Id);
                 captionInput.RegionsChanged += OnCaptionRegionsChanged;
             }
             if (clientCaptionButtons != layout.HasClientButtons)
             {
                 clientCaptionButtons = layout.HasClientButtons;
-                if (appWindow.Presenter is OverlappedPresenter presenter)
-                {
-                    presenter.SetBorderAndTitleBar(true, !clientCaptionButtons);
-                    nativeBorderColor = null;
-                }
+                SetClientCaption(clientCaptionButtons);
+                nativeBorderColor = null;
+            }
+            if (!clientCaptionButtons && !window.ExtendsContentIntoTitleBar)
+            {
+                window.ExtendsContentIntoTitleBar = true;
             }
             double scale = GetWindowScale(handle);
             global::Windows.Graphics.RectInt32 Physical(Rect rectangle) => new((int)Math.Floor(rectangle.X * scale), (int)Math.Floor(rectangle.Y * scale),
@@ -95,14 +100,18 @@ internal sealed partial class WindowsWindowHostService
             else
             {
                 Color foreground = layout.IsDark ? Microsoft.UI.Colors.White : Microsoft.UI.Colors.Black;
-                appWindow.TitleBar.ButtonForegroundColor = foreground;
-                appWindow.TitleBar.ButtonInactiveForegroundColor = Microsoft.UI.Colors.Gray;
-                appWindow.TitleBar.ButtonHoverForegroundColor = foreground;
-                appWindow.TitleBar.ButtonPressedForegroundColor = foreground;
-                appWindow.TitleBar.ButtonBackgroundColor = Microsoft.UI.Colors.Transparent;
-                appWindow.TitleBar.ButtonInactiveBackgroundColor = Microsoft.UI.Colors.Transparent;
-                appWindow.TitleBar.ButtonHoverBackgroundColor = global::Windows.UI.Color.FromArgb(30, foreground.R, foreground.G, foreground.B);
-                appWindow.TitleBar.ButtonPressedBackgroundColor = global::Windows.UI.Color.FromArgb(50, foreground.R, foreground.G, foreground.B);
+                AppWindowTitleBar titleBar = appWindow.TitleBar;
+                if (titleBar.ButtonForegroundColor != foreground) titleBar.ButtonForegroundColor = foreground;
+                if (titleBar.ButtonInactiveForegroundColor != Microsoft.UI.Colors.Gray) titleBar.ButtonInactiveForegroundColor = Microsoft.UI.Colors.Gray;
+                if (titleBar.ButtonHoverForegroundColor != foreground) titleBar.ButtonHoverForegroundColor = foreground;
+                if (titleBar.ButtonPressedForegroundColor != foreground) titleBar.ButtonPressedForegroundColor = foreground;
+                if (titleBar.ButtonBackgroundColor != Microsoft.UI.Colors.Transparent) titleBar.ButtonBackgroundColor = Microsoft.UI.Colors.Transparent;
+                if (titleBar.ButtonInactiveBackgroundColor != Microsoft.UI.Colors.Transparent) titleBar.ButtonInactiveBackgroundColor = Microsoft.UI.Colors.Transparent;
+                Color hover = global::Windows.UI.Color.FromArgb(30, foreground.R, foreground.G, foreground.B);
+                Color pressed = global::Windows.UI.Color.FromArgb(50, foreground.R, foreground.G, foreground.B);
+                if (titleBar.ButtonHoverBackgroundColor != hover) titleBar.ButtonHoverBackgroundColor = hover;
+                if (titleBar.ButtonPressedBackgroundColor != pressed) titleBar.ButtonPressedBackgroundColor = pressed;
+                captionColorsApplied = true;
             }
             SetNativeBorderColor(layout.IsDark && !highContrast);
             EnforceMinimumSize();
@@ -150,15 +159,57 @@ internal sealed partial class WindowsWindowHostService
 
         private void ResetCaptionColors()
         {
-            appWindow.TitleBar.ButtonForegroundColor = null;
-            appWindow.TitleBar.ButtonInactiveForegroundColor = null;
-            appWindow.TitleBar.ButtonHoverForegroundColor = null;
-            appWindow.TitleBar.ButtonPressedForegroundColor = null;
-            appWindow.TitleBar.ButtonBackgroundColor = null;
-            appWindow.TitleBar.ButtonInactiveBackgroundColor = null;
-            appWindow.TitleBar.ButtonHoverBackgroundColor = null;
-            appWindow.TitleBar.ButtonPressedBackgroundColor = null;
+            if (!captionColorsApplied)
+            {
+                return;
+            }
+            // Even writing an unchanged value invokes native title-bar rendering.
+            // Read the actual properties so consumer changes are still reconciled.
+            AppWindowTitleBar titleBar = appWindow.TitleBar;
+            if (titleBar.ButtonForegroundColor != null) titleBar.ButtonForegroundColor = null;
+            if (titleBar.ButtonInactiveForegroundColor != null) titleBar.ButtonInactiveForegroundColor = null;
+            if (titleBar.ButtonHoverForegroundColor != null) titleBar.ButtonHoverForegroundColor = null;
+            if (titleBar.ButtonPressedForegroundColor != null) titleBar.ButtonPressedForegroundColor = null;
+            if (titleBar.ButtonBackgroundColor != null) titleBar.ButtonBackgroundColor = null;
+            if (titleBar.ButtonInactiveBackgroundColor != null) titleBar.ButtonInactiveBackgroundColor = null;
+            if (titleBar.ButtonHoverBackgroundColor != null) titleBar.ButtonHoverBackgroundColor = null;
+            if (titleBar.ButtonPressedBackgroundColor != null) titleBar.ButtonPressedBackgroundColor = null;
+            captionColorsApplied = false;
         }
+
+        private void SetClientCaption(bool enabled)
+        {
+            const long captionMask = 0x00C00000; // WS_CAPTION
+            nint style = GetWindowLongPtrW(handle, -16 /* GWL_STYLE */);
+            originalCaptionStyle ??= style & (nint)captionMask;
+            nint next = (style & ~(nint)captionMask) | (enabled ? 0 : originalCaptionStyle.Value);
+            if (window.ExtendsContentIntoTitleBar)
+            {
+                window.ExtendsContentIntoTitleBar = false;
+            }
+            if (next == style)
+            {
+                return;
+            }
+
+            // Change only the library window's caption bits. Keep resize, system menu,
+            // minimize and maximize styles; FRAMECHANGED updates the cached frame.
+            Marshal.SetLastPInvokeError(0);
+            nint previous = SetWindowLongPtrW(handle, -16, next);
+            int error = Marshal.GetLastPInvokeError();
+            if (previous == 0 && error != 0)
+            {
+                throw new Win32Exception(error);
+            }
+            if (!SetWindowPos(handle, 0, 0, 0, 0, 0, 0x0237 /* NOSIZE | NOMOVE | NOZORDER | NOACTIVATE | NOOWNERZORDER | FRAMECHANGED */))
+            {
+                throw new Win32Exception(Marshal.GetLastPInvokeError());
+            }
+        }
+
+        [DllImport("user32.dll", ExactSpelling = true, SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        private static extern bool SetWindowPos(nint hwnd, nint insertAfter, int x, int y, int width, int height, uint flags);
 
         private void SetNativeBorderColor(bool dark)
         {

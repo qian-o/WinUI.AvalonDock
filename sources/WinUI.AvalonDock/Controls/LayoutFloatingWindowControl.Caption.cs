@@ -153,8 +153,10 @@ public abstract partial class LayoutFloatingWindowControl
                 return;
             }
 
-            WindowCaptionMetrics metrics = host.GetCaptionMetrics();
             bool clientButtons = templateView.Part("PART_MaximizeButton") is Button && templateView.Part("PART_CloseButton") is Button;
+            // A template with its own caption buttons does not use the SDK title bar.
+            // Choose its metrics before querying an uninitialized native title bar.
+            WindowCaptionMetrics metrics = clientButtons ? new WindowCaptionMetrics(36, 0, 0) : host.GetCaptionMetrics();
             if (!clientButtons && caption.MinHeight != metrics.Height)
             {
                 caption.MinHeight = metrics.Height;

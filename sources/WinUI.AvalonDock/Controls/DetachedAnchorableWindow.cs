@@ -21,6 +21,7 @@ public class DetachedAnchorableWindow : Window
     private ResourceDictionary? themeResources;
     private readonly DockingManager? manager;
     private WindowIconPresenter? iconPresenter;
+    private InheritedPresentation? inheritedPresentation;
     private readonly List<(DependencyProperty Property, long Token)> managerTokens = [];
 
     public DetachedAnchorableWindow(LayoutAnchorable model, ContentPresenter hostedView, FrameworkElement? header = null)
@@ -66,10 +67,14 @@ public class DetachedAnchorableWindow : Window
             if (manager != null)
             {
                 manager.ActualThemeChanged += OnManagerThemeChanged;
-                foreach (DependencyProperty? property in new[] { FrameworkElement.DataContextProperty, FrameworkElement.FlowDirectionProperty })
+                foreach (DependencyProperty property in InheritedPresentation.Properties.Append(FrameworkElement.StyleProperty))
                 {
                     managerTokens.Add((property, manager.RegisterPropertyChangedCallback(property, (_, _) => UpdatePresentation())));
                 }
+
+                // The detached root is outside the manager's native tree. Mirror onto
+                // the library's presenter so user content keeps ordinary inheritance.
+                inheritedPresentation = new InheritedPresentation(manager, hostedView);
             }
             UpdatePresentation();
         }
@@ -96,6 +101,8 @@ public class DetachedAnchorableWindow : Window
     }
     public ContentPresenter? ReleaseView()
     {
+        inheritedPresentation?.Dispose();
+        inheritedPresentation = null;
         ContentPresenter? view = hostedView;
         hostedView = null;
         if (view != null)
@@ -120,21 +127,21 @@ public class DetachedAnchorableWindow : Window
             }
             else
             {
-                ResourceDictionary? toRemove = resources.MergedDictionaries.FirstOrDefault(r => r.Source == oldTheme.GetResourceUri());
-                if (toRemove != null)
+                ResourceDictionary? previous = resources.MergedDictionaries.FirstOrDefault(
+                    dictionary => dictionary.Source == oldTheme.GetResourceUri());
+                if (previous != null)
                 {
-                    resources.MergedDictionaries.Remove(toRemove);
+                    resources.MergedDictionaries.Remove(previous);
                 }
             }
         }
 
-        if (newTheme is DictionaryTheme && candidate is not null)
+        if (candidate != null)
         {
-            themeResources = candidate;
-            resources.MergedDictionaries.Add(themeResources);
-        }
-        else if (candidate != null)
-        {
+            if (newTheme is DictionaryTheme)
+            {
+                themeResources = candidate;
+            }
             resources.MergedDictionaries.Add(candidate);
         }
     }
@@ -192,6 +199,8 @@ public class DetachedAnchorableWindow : Window
     private void OnNativeClosed(object? sender, WindowEventArgs args)
     {
         IsClosed = true;
+        inheritedPresentation?.Dispose();
+        inheritedPresentation = null;
         iconPresenter?.Dispose();
         Model.PropertyChanged -= OnModelChanged;
         if (host != null)
@@ -248,5 +257,6 @@ public class DetachedAnchorableWindow : Window
         root.DataContext = manager.DataContext;
         root.FlowDirection = manager.FlowDirection;
         root.RequestedTheme = manager.ActualTheme;
+        inheritedPresentation?.Refresh();
     }
 }

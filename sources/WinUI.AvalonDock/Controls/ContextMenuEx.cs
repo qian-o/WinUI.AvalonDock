@@ -11,10 +11,10 @@ public class ContextMenuEx : MenuFlyout
 {
     private readonly List<(object Model, MenuFlyoutItemBase Container)> generated = [];
     private readonly HashSet<MenuItemEx> defaultHeaders = [];
+    private readonly Dictionary<MenuItemEx, (Style Style, object LocalValue)> containerStyles = [];
     private INotifyCollectionChanged? observedSource;
     private NotifyCollectionChangedEventHandler? observedHandler;
     private bool opening;
-    private bool hasOpened;
     public ContextMenuEx()
     {
         // Native flyouts need their items before opening, including a source that
@@ -40,7 +40,6 @@ public class ContextMenuEx : MenuFlyout
         }
         ObserveSource(ItemsSource as INotifyCollectionChanged);
         RefreshItems();
-        hasOpened = true;
     }
     public static readonly DependencyProperty ItemsSourceProperty = DependencyProperty.Register(nameof(ItemsSource), typeof(IEnumerable), typeof(ContextMenuEx),
         new PropertyMetadata(null, (owner, _) => ((ContextMenuEx)owner).OnItemsSourceChanged()));
@@ -72,16 +71,6 @@ public class ContextMenuEx : MenuFlyout
         }
 
         RefreshItems();
-        if (hasOpened)
-        {
-            foreach ((object Model, MenuFlyoutItemBase Container) entry in generated)
-            {
-                if (ReferenceEquals(entry.Model, entry.Container) && entry.Container is MenuItemEx item)
-                {
-                    item.Style = ItemContainerStyle;
-                }
-            }
-        }
     }
     private void OnItemsSourceChanged()
     {
@@ -168,6 +157,10 @@ public class ContextMenuEx : MenuFlyout
                 && !generated.Any(next => ReferenceEquals(next.Container, entry.Container))).Container;
             MenuFlyoutItemBase container = retained ?? model as MenuFlyoutItemBase ?? GetContainerForItemOverride() as MenuFlyoutItemBase
                 ?? throw new InvalidOperationException("A menu container must map to a native menu item.");
+            if (container is MenuItemEx styledItem)
+            {
+                ApplyContainerStyle(styledItem);
+            }
             if (!ReferenceEquals(model, container) && container is MenuItemEx item)
             {
                 bool needsPreparation = retained == null || replaced?.Contains(container) == true;
@@ -176,7 +169,6 @@ public class ContextMenuEx : MenuFlyout
                     item.DataContext = model;
                 }
 
-                item.Style = ItemContainerStyle;
                 if (ConfigureItem != null)
                 {
                     if (needsPreparation)
@@ -198,6 +190,7 @@ public class ContextMenuEx : MenuFlyout
             if (entry.Container is MenuItemEx item)
             {
                 defaultHeaders.Remove(item);
+                ClearContainerStyle(item);
             }
 
             if (!ReferenceEquals(entry.Model, entry.Container))
@@ -221,15 +214,50 @@ public class ContextMenuEx : MenuFlyout
 
             Items.Insert(index, item);
         }
-        if (opening)
+    }
+
+    private void ApplyContainerStyle(MenuItemEx item)
+    {
+        // WPF's generator styles both generated and directly supplied containers,
+        // but never replaces a style locally supplied by the consumer.
+        if (item.GetBindingExpression(FrameworkElement.StyleProperty) != null)
         {
-            foreach ((object Model, MenuFlyoutItemBase Container) entry in generated)
-            {
-                if (ReferenceEquals(entry.Model, entry.Container) && entry.Container is MenuItemEx item)
-                {
-                    item.Style = ItemContainerStyle;
-                }
-            }
+            containerStyles.Remove(item);
+            return;
         }
+
+        object local = item.ReadLocalValue(FrameworkElement.StyleProperty);
+        bool owned = OwnsContainerStyle(item, local);
+        if (!owned && local != DependencyProperty.UnsetValue)
+        {
+            containerStyles.Remove(item);
+            return;
+        }
+
+        if (ItemContainerStyle is { } style)
+        {
+            item.Style = style;
+            containerStyles[item] = (style, item.ReadLocalValue(FrameworkElement.StyleProperty));
+        }
+        else if (owned)
+        {
+            ClearContainerStyle(item);
+        }
+    }
+
+    private bool OwnsContainerStyle(MenuItemEx item, object local)
+        => item.GetBindingExpression(FrameworkElement.StyleProperty) == null
+            && containerStyles.TryGetValue(item, out (Style Style, object LocalValue) installed)
+            && ReferenceEquals(item.Style, installed.Style) && ReferenceEquals(local, installed.LocalValue);
+
+    private void ClearContainerStyle(MenuItemEx item)
+    {
+        if (OwnsContainerStyle(item, item.ReadLocalValue(FrameworkElement.StyleProperty)))
+        {
+            item.Style = null;
+            item.ClearValue(FrameworkElement.StyleProperty);
+        }
+
+        containerStyles.Remove(item);
     }
 }

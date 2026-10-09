@@ -8,6 +8,7 @@ namespace AvalonDock.Controls;
 internal sealed class LayoutContentViewHost(Control owner, DependencyProperty layoutItemProperty)
 {
     private ContentPresenter? contentHost;
+    private ContentPresenter? hostedView;
     private LayoutItem? LayoutItem => (LayoutItem?)owner.GetValue(layoutItemProperty);
 
     internal void Attach(ContentPresenter? nextHost)
@@ -26,8 +27,17 @@ internal sealed class LayoutContentViewHost(Control owner, DependencyProperty la
         // Releasing an old parent can run consumer callbacks. Resolve the current
         // item afterwards, just as the owning controls did before sharing this host.
         ContentPresenter? view = LayoutItem?.View;
+        if (contentHost.GetBindingExpression(ContentPresenter.ContentProperty) != null)
+        {
+            // A consumer template owns its live binding, including an initially
+            // unresolved value. Assigning Content here would replace that binding.
+            hostedView = ReferenceEquals(contentHost.Content, view) ? view : null;
+            return;
+        }
+
         if (ReferenceEquals(contentHost.Content, view))
         {
+            hostedView = view;
             return;
         }
 
@@ -37,11 +47,12 @@ internal sealed class LayoutContentViewHost(Control owner, DependencyProperty la
         }
 
         contentHost.Content = view;
+        hostedView = view;
     }
 
     internal void RememberBoundTemplateHost()
     {
-        if (contentHost != null || LayoutItem?.IsViewExists() != true)
+        if (LayoutItem?.IsViewExists() != true)
         {
             return;
         }
@@ -50,20 +61,40 @@ internal sealed class LayoutContentViewHost(Control owner, DependencyProperty la
         // disconnects their tree before Template changes; remember the actual owner
         // so the retired template can release its native binding and parent.
         ContentPresenter view = LayoutItem!.View;
+        if (contentHost != null)
+        {
+            if (ReferenceEquals(contentHost.Content, view))
+            {
+                hostedView = view;
+            }
+
+            return;
+        }
+
         contentHost = owner.FindVisualChildren<ContentPresenter>()
             .FirstOrDefault(host => ReferenceEquals(host.Content, view));
+        hostedView = contentHost == null ? null : view;
     }
 
     internal void Release(bool preserveBinding = false)
     {
+        // A named host's binding may resolve after Attach but before LayoutUpdated.
+        // Recognize that current view without claiming unrelated consumer content.
+        if (contentHost != null && LayoutItem?.IsViewExists() == true && ReferenceEquals(contentHost.Content, LayoutItem.View))
+        {
+            hostedView = LayoutItem.View;
+        }
+
         // A still-current consumer template follows the LayoutItem DP change itself;
         // only a retired template must have that binding explicitly disconnected.
-        if (contentHost != null && (!preserveBinding || contentHost.GetBindingExpression(ContentPresenter.ContentProperty) == null))
+        if (contentHost != null && hostedView != null && ReferenceEquals(contentHost.Content, hostedView)
+            && (!preserveBinding || contentHost.GetBindingExpression(ContentPresenter.ContentProperty) == null))
         {
             contentHost.Content = null;
         }
 
         contentHost = null;
+        hostedView = null;
     }
 
     private static void Detach(ContentPresenter view)

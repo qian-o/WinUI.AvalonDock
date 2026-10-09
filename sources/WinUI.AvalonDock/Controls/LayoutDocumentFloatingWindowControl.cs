@@ -21,13 +21,7 @@ public partial class LayoutDocumentFloatingWindowControl : LayoutFloatingWindowC
         this.model = model;
         HideWindowCommand = new RelayCommand<object>(OnExecuteHideWindowCommand, CanExecuteHideWindowCommand);
         CloseWindowCommand = new RelayCommand<object>(OnExecuteCloseWindowCommand, CanExecuteCloseWindowCommand);
-        Closed += (_, _) =>
-        {
-            if (OwnedByDockingManagerWindow && ownerAtInitialization?.IsLoaded == true)
-            {
-                PlatformServices.Coordinates.ActivateWindow(ownerAtInitialization);
-            }
-        };
+        Closed += OnNativeDocumentWindowClosed;
     }
     public override ILayoutElement Model => model;
     public static readonly DependencyProperty SingleContentLayoutItemProperty = RegisterWindowProperty(nameof(SingleContentLayoutItem), typeof(LayoutItem),
@@ -46,6 +40,16 @@ public partial class LayoutDocumentFloatingWindowControl : LayoutFloatingWindowC
     public ICommand CloseWindowCommand
     {
         get;
+    }
+    private void OnNativeDocumentWindowClosed(object sender, WindowEventArgs args)
+    {
+        // WinUI owns the native event registration. Remove this final instance
+        // delegate when the window closes so the closed window is not rooted by it.
+        Closed -= OnNativeDocumentWindowClosed;
+        if (OwnedByDockingManagerWindow && ownerAtInitialization?.IsLoaded == true)
+        {
+            PlatformServices.Coordinates.ActivateWindow(ownerAtInitialization);
+        }
     }
     public void HideOverlayWindow()
     {

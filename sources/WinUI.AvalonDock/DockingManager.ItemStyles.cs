@@ -121,7 +121,9 @@ public partial class DockingManager
         ApplyStyleToLayoutItem(layoutItem);
         if (contentToAttach.Content is UIElement)
         {
-            InternalAddLogicalChild(contentToAttach.Content);
+            // Content belongs to the application. Bridge inherited properties through
+            // LayoutItem.View instead of installing local values on the user's control.
+            InternalAddLogicalChild(contentToAttach.Content, inheritPresentation: false);
         }
 
         LayoutItemCreated?.Invoke(contentToAttach);

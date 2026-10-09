@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using System.Runtime.InteropServices;
 using Microsoft.UI;
 using Microsoft.UI.Dispatching;
@@ -14,7 +15,8 @@ internal sealed class WindowsModalWindowHost(Window window, FrameworkElement own
     private bool running;
     private bool closed;
     private bool disposed;
-    private nint previousForeground;
+    private bool windowsRestored;
+    private nint previousActive;
     private nint handle;
 
     public void Run(Size logicalSize)
@@ -27,7 +29,22 @@ internal sealed class WindowsModalWindowHost(Window window, FrameworkElement own
 
         handle = WinRT.Interop.WindowNative.GetWindowHandle(window);
         nint parent = Win32Interop.GetWindowFromWindowId(owner.XamlRoot.ContentIslandEnvironment.AppWindowId);
-        previousForeground = GetForegroundWindow();
+        parent = GetAncestor(parent, 2 /* GA_ROOT */);
+        if (parent != 0 && parent != handle && IsWindow(parent))
+        {
+            // WPF assigns NavigatorWindow.Owner. WinUI exposes the same native
+            // relationship through GWLP_HWNDPARENT, as in Microsoft's Gallery.
+            Marshal.SetLastPInvokeError(0);
+            nint previousOwner = SetWindowLongPtrW(handle, -8 /* GWLP_HWNDPARENT */, parent);
+            int error = Marshal.GetLastPInvokeError();
+            if (previousOwner == 0 && error != 0)
+            {
+                throw new Win32Exception(error);
+            }
+        }
+        // WPF ShowDialog remembers activity on this UI thread's input queue.
+        // A desktop foreground HWND may belong to a different application.
+        previousActive = GetActiveWindow();
         double scale = GetDpiForWindow(parent) / 96d;
         if (scale <= 0)
         {
@@ -162,6 +179,14 @@ internal sealed class WindowsModalWindowHost(Window window, FrameworkElement own
     }
     private void RestoreWindows()
     {
+        if (windowsRestored)
+        {
+            return;
+        }
+
+        windowsRestored = true;
+        // Capture before enabling peers, which can itself transfer activation.
+        bool wasActive = GetActiveWindow() == handle;
         foreach (nint candidate in disabled)
         {
             if (IsWindow(candidate))
@@ -171,9 +196,9 @@ internal sealed class WindowsModalWindowHost(Window window, FrameworkElement own
         }
 
         disabled.Clear();
-        if ((GetForegroundWindow() == handle || GetForegroundWindow() == 0) && IsWindow(previousForeground))
+        if (wasActive && previousActive != 0 && IsWindow(previousActive))
         {
-            SetForegroundWindow(previousForeground);
+            SetActiveWindow(previousActive);
         }
     }
     public void Dispose()
@@ -219,11 +244,14 @@ internal sealed class WindowsModalWindowHost(Window window, FrameworkElement own
     [DllImport("user32.dll")] private static extern bool EnableWindow(nint hwnd, bool enable);
     [DllImport("user32.dll")] private static extern bool IsWindow(nint hwnd);
     [DllImport("user32.dll")] private static extern nint GetAncestor(nint hwnd, uint flags);
+    [DllImport("user32.dll", ExactSpelling = true, SetLastError = true)]
+    private static extern nint SetWindowLongPtrW(nint hwnd, int index, nint value);
     [DllImport("user32.dll")] private static extern bool IsWindowVisible(nint hwnd);
     [DllImport("user32.dll")] private static extern bool IsWindowEnabled(nint hwnd);
     [DllImport("user32.dll")] private static extern bool IsIconic(nint hwnd);
     [DllImport("user32.dll")] private static extern bool ShowWindow(nint hwnd, int command);
-    [DllImport("user32.dll")] private static extern nint GetForegroundWindow();
+    [DllImport("user32.dll")] private static extern nint GetActiveWindow();
+    [DllImport("user32.dll")] private static extern nint SetActiveWindow(nint hwnd);
     [DllImport("user32.dll")] private static extern bool SetForegroundWindow(nint hwnd);
     [DllImport("user32.dll")] private static extern uint GetDpiForWindow(nint hwnd);
     [DllImport("user32.dll")] private static extern bool GetWindowRect(nint hwnd, out NativeRect rectangle);

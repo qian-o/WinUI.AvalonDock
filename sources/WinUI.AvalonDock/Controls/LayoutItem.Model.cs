@@ -122,7 +122,7 @@ public abstract partial class LayoutItem
             case nameof(LayoutContent.Content):
                 logicalOwner?.InternalRemoveLogicalChild(logicalContent);
                 logicalContent = LayoutElement?.Content as UIElement;
-                logicalOwner?.InternalAddLogicalChild(logicalContent);
+                logicalOwner?.InternalAddLogicalChild(logicalContent, inheritPresentation: false);
                 break;
         }
 

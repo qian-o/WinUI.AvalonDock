@@ -79,6 +79,14 @@ internal sealed class InheritedPresentation : IDisposable
                     continue;
                 }
 
+                // Bindings belong to the target even when their current value equals
+                // a value previously mirrored by the manager.
+                if (target.GetBindingExpression(mapped) != null)
+                {
+                    mirrored.Remove(mapped);
+                    continue;
+                }
+
                 object local = target.ReadLocalValue(mapped);
                 bool owned = mirrored.TryGetValue(mapped, out object? old) && Equals(local, old);
                 if (!owned && local != DependencyProperty.UnsetValue)
@@ -232,7 +240,7 @@ internal sealed class InheritedPresentation : IDisposable
         tokens.Clear();
         foreach (KeyValuePair<DependencyProperty, object?> pair in mirrored)
         {
-            if (Equals(target.ReadLocalValue(pair.Key), pair.Value))
+            if (target.GetBindingExpression(pair.Key) == null && Equals(target.ReadLocalValue(pair.Key), pair.Value))
             {
                 target.ClearValue(pair.Key);
             }

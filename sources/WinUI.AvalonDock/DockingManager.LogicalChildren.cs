@@ -43,7 +43,7 @@ public partial class DockingManager
         }
     }
 
-    internal void InternalAddLogicalChild(object? child)
+    internal void InternalAddLogicalChild(object? child, bool inheritPresentation = true)
     {
         if (child == null || logicalChildren.Select(ch => ch.GetValueOrDefault<object>()).Contains(child))
         {
@@ -51,7 +51,7 @@ public partial class DockingManager
         }
 
         logicalChildren.Add(new WeakReference(child));
-        AddNativeLogicalChild(child);
+        AddNativeLogicalChild(child, inheritPresentation);
     }
     internal void InternalRemoveLogicalChild(object? child)
     {
@@ -111,10 +111,10 @@ public partial class DockingManager
         return base.ArrangeOverride(arrangeBounds);
     }
 
-    private void AddNativeLogicalChild(object child)
+    private void AddNativeLogicalChild(object child, bool inheritPresentation)
     {
         NativeLogicalTree.Register(child, this);
-        if (child is FrameworkElement element)
+        if (inheritPresentation && child is FrameworkElement element)
         {
             logicalPresentation.Add(element, new InheritedPresentation(this, element));
         }

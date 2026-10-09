@@ -20,6 +20,7 @@ public sealed partial class MainWindow : Window
         Manager.LayoutItemContainerStyleSelector = SampleStyles.CreateItemStyleSelector();
         Manager.DocumentClosing += OnDocumentClosing;
         Manager.DocumentClosed += OnDocumentClosed;
+        BoundarySmokeTests.StartIfRequested(this, Manager);
     }
 
     private void SaveLayout_Click(object sender, RoutedEventArgs e)

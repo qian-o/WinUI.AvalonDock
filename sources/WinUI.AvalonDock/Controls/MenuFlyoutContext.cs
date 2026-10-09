@@ -5,6 +5,7 @@ using AvalonDock.Themes;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
+using Microsoft.UI.Xaml.Data;
 using Windows.Foundation;
 using Windows.Graphics;
 
@@ -28,6 +29,7 @@ internal static class MenuFlyoutContext
         private readonly MenuFlyout menu;
         private readonly ConditionalWeakTable<MenuFlyoutPresenter, ResourceDictionary> installed = new();
         private Style? originalStyle;
+        private object originalStyleValue = DependencyProperty.UnsetValue;
         private Style? temporaryStyle;
 
         internal ResourceDictionary? Source
@@ -51,6 +53,7 @@ internal static class MenuFlyoutContext
             }
 
             originalStyle = menu.MenuFlyoutPresenterStyle;
+            originalStyleValue = menu.ReadLocalValue(MenuFlyout.MenuFlyoutPresenterStyleProperty);
             temporaryStyle = new Style(typeof(MenuFlyoutPresenter)) { BasedOn = originalStyle };
             temporaryStyle.Setters.Add(new Setter(InstallProperty, new InstallRequest(this)));
             menu.MenuFlyoutPresenterStyle = temporaryStyle;
@@ -66,11 +69,23 @@ internal static class MenuFlyoutContext
         {
             if (temporaryStyle != null && ReferenceEquals(menu.MenuFlyoutPresenterStyle, temporaryStyle))
             {
-                menu.MenuFlyoutPresenterStyle = originalStyle;
+                if (originalStyleValue is BindingExpression expression)
+                {
+                    BindingOperations.SetBinding(menu, MenuFlyout.MenuFlyoutPresenterStyleProperty, expression.ParentBinding);
+                }
+                else if (originalStyleValue == DependencyProperty.UnsetValue)
+                {
+                    menu.ClearValue(MenuFlyout.MenuFlyoutPresenterStyleProperty);
+                }
+                else
+                {
+                    menu.SetValue(MenuFlyout.MenuFlyoutPresenterStyleProperty, originalStyleValue);
+                }
             }
 
             temporaryStyle = null;
             originalStyle = null;
+            originalStyleValue = DependencyProperty.UnsetValue;
         }
 
         private static void OnInstall(DependencyObject owner, DependencyPropertyChangedEventArgs args)
@@ -143,6 +158,7 @@ internal static class MenuFlyoutContext
         private readonly MenuFlyout menu;
         private readonly Dictionary<FrameworkElement, object?> assigned = [];
         private readonly Dictionary<MenuFlyoutItem, long> policyTokens = [];
+        private readonly Dictionary<MenuFlyoutItem, Visibility> policyValues = [];
         private LayoutItem? policyContext;
         private long closableToken;
         private FrameworkElement? source;
@@ -161,7 +177,16 @@ internal static class MenuFlyoutContext
             foreach (MenuFlyoutItemBase entry in Descendants(menu.Items))
             {
                 object local = entry.ReadLocalValue(FrameworkElement.DataContextProperty);
-                if (local == DependencyProperty.UnsetValue || assigned.TryGetValue(entry, out object? previous) && ReferenceEquals(local, previous))
+                if (HasSetter(entry is MenuItemEx mapped ? mapped.Style : entry.Style, FrameworkElement.DataContextProperty))
+                {
+                    if (entry.GetBindingExpression(FrameworkElement.DataContextProperty) == null
+                        && assigned.Remove(entry, out object? ownedContext) && ReferenceEquals(local, ownedContext))
+                    {
+                        entry.ClearValue(FrameworkElement.DataContextProperty);
+                    }
+                }
+                else if (entry.GetBindingExpression(FrameworkElement.DataContextProperty) == null
+                    && (local == DependencyProperty.UnsetValue || assigned.TryGetValue(entry, out object? previous) && ReferenceEquals(local, previous)))
                 {
                     entry.DataContext = Context;
                     assigned[entry] = Context;
@@ -193,13 +218,27 @@ internal static class MenuFlyoutContext
         {
             foreach (MenuFlyoutItem item in policyTokens.Keys)
             {
+                object local = item.ReadLocalValue(UIElement.VisibilityProperty);
+                if (item.GetBindingExpression(UIElement.VisibilityProperty) != null
+                    || local != DependencyProperty.UnsetValue
+                    && (!policyValues.TryGetValue(item, out Visibility previous) || !Equals(local, previous)))
+                {
+                    continue;
+                }
+                // Tagged default items reproduce Generic.xaml's local Visibility
+                // bindings, which take precedence over a consumer's Style setter.
                 object enabled = EnabledVisibility.Convert(item.IsEnabled, typeof(Visibility), null, System.Globalization.CultureInfo.InvariantCulture);
-                item.Visibility = Equals(item.Tag, "AvalonDock.Menu.Hide")
+                Visibility value = Equals(item.Tag, "AvalonDock.Menu.Hide")
                     ? (Visibility)HideVisibility.Convert([enabled, policyContext is null ? DependencyProperty.UnsetValue : policyContext.CanClose],
                         typeof(Visibility), null, System.Globalization.CultureInfo.InvariantCulture)
                     : (Visibility)enabled;
+                item.Visibility = value;
+                policyValues[item] = value;
             }
         }
+        private static bool HasSetter(Style? style, DependencyProperty property) => style != null
+            && (style.Setters.OfType<Setter>().Any(setter => setter.Property == property)
+                || HasSetter(style.BasedOn, property));
         private void ClearPolicy()
         {
             foreach (KeyValuePair<MenuFlyoutItem, long> pair in policyTokens)
@@ -208,6 +247,16 @@ internal static class MenuFlyoutContext
             }
 
             policyTokens.Clear();
+            foreach (KeyValuePair<MenuFlyoutItem, Visibility> pair in policyValues)
+            {
+                if (pair.Key.GetBindingExpression(UIElement.VisibilityProperty) == null
+                    && Equals(pair.Key.ReadLocalValue(UIElement.VisibilityProperty), pair.Value))
+                {
+                    pair.Key.ClearValue(UIElement.VisibilityProperty);
+                }
+            }
+
+            policyValues.Clear();
             if (policyContext != null && closableToken != 0)
             {
                 policyContext.UnregisterPropertyChangedCallback(LayoutItem.CanCloseProperty, closableToken);
@@ -227,7 +276,8 @@ internal static class MenuFlyoutContext
             ClearPolicy();
             foreach (KeyValuePair<FrameworkElement, object?> pair in assigned)
             {
-                if (ReferenceEquals(pair.Key.ReadLocalValue(FrameworkElement.DataContextProperty), pair.Value))
+                if (pair.Key.GetBindingExpression(FrameworkElement.DataContextProperty) == null
+                    && ReferenceEquals(pair.Key.ReadLocalValue(FrameworkElement.DataContextProperty), pair.Value))
                 {
                     pair.Key.ClearValue(FrameworkElement.DataContextProperty);
                 }

@@ -6,6 +6,7 @@ using AvalonDock.Layout;
 using AvalonDock.Platforms;
 using AvalonDock.Themes;
 using Microsoft.UI.Dispatching;
+using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Data;
@@ -24,6 +25,7 @@ public partial class OverlayWindow : Window
     private readonly TemplateView view;
     private readonly IOverlayWindowSurface surface;
     private readonly Style defaultStyle;
+    private readonly long templateChangedToken;
     private bool automaticStyle = true;
     private readonly Dictionary<string, Grid> groups = [];
     private readonly HashSet<FrameworkElement> preparedGroups = [];
@@ -62,21 +64,49 @@ public partial class OverlayWindow : Window
         view.Style = defaultStyle;
         Content = view;
         surface = PlatformServices.CreateOverlayWindowSurface(this, destination);
-        view.Loaded += (_, _) => Invalidate();
-        view.RegisterPropertyChangedCallback(Control.TemplateProperty, (_, _) => Invalidate());
-        AppWindow.Closing += (_, args) =>
+        view.Loaded += OnViewLoaded;
+        templateChangedToken = view.RegisterPropertyChangedCallback(Control.TemplateProperty, OnTemplateChanged);
+        AppWindow.Closing += OnNativeClosing;
+        Closed += OnNativeClosed;
+    }
+
+    private void OnViewLoaded(object sender, RoutedEventArgs args) => Invalidate();
+    private void OnTemplateChanged(DependencyObject sender, DependencyProperty property) => Invalidate();
+    private void OnNativeClosing(AppWindow sender, AppWindowClosingEventArgs args)
+    {
+        CancelEventArgs cancel = new();
+        OnClosing(cancel);
+        args.Cancel = cancel.Cancel;
+    }
+    private void OnNativeClosed(object sender, WindowEventArgs args) => ReleaseClosedResources();
+
+    private void ReleaseClosedResources()
+    {
+        if (closed)
         {
-            CancelEventArgs cancel = new();
-            OnClosing(cancel);
-            args.Cancel = cancel.Cancel;
-        };
-        Closed += (_, _) =>
+            return;
+        }
+
+        closed = true;
+        floatingWindow = null;
+        revision++;
+        // WinUI can retain the native event source after its HWND closes. Remove only
+        // subscriptions and the private template view owned by this overlay.
+        try
         {
-            closed = true;
-            floatingWindow = null;
-            revision++;
+            Closed -= OnNativeClosed;
+            AppWindow.Closing -= OnNativeClosing;
+            view.Loaded -= OnViewLoaded;
+            view.UnregisterPropertyChangedCallback(Control.TemplateProperty, templateChangedToken);
+            if (ReferenceEquals(Content, view))
+            {
+                Content = null;
+            }
+        }
+        finally
+        {
             surface.Dispose();
-        };
+        }
     }
 
     [System.ComponentModel.Bindable(false)]
@@ -242,8 +272,7 @@ public partial class OverlayWindow : Window
 
         if (surface.IsClosed)
         {
-            closed = true;
-            surface.Dispose();
+            ReleaseClosedResources();
             return;
         }
         Hide();

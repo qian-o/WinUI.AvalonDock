@@ -31,8 +31,7 @@ public partial class DockingManager
 
         // WinUI loads Source immediately. Prepare it before altering the old theme so
         // an invalid URI cannot remove a still-working native resource dictionary.
-        ResourceDictionary? candidate = newTheme is DictionaryTheme dictionary ? dictionary.ThemeResourceDictionary
-            : newTheme?.GetResourceUri() is { } uri ? new ResourceDictionary { Source = uri } : null;
+        ResourceDictionary? candidate = ThemeResourceFactory.Create(newTheme);
 
         // Detached windows have separate XamlRoots and do not inherit manager resources.
         foreach (DetachedEntry entry in detachedEntries.Values)

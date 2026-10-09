@@ -412,7 +412,12 @@ internal sealed class WindowsDragInputService(FrameworkElement origin) : IDragIn
             internal int Y;
         }
 
-        internal static bool IsLeftButtonDown() => (GetAsyncKeyState(1) & 0x8000) != 0;
+        // Mouse messages use logical buttons, while GetAsyncKeyState uses physical ones.
+        // Respect the user's existing left/right mapping without changing system settings.
+        internal static bool IsLeftButtonDown() => (GetAsyncKeyState(GetSystemMetrics(23 /* SM_SWAPBUTTON */) != 0 ? 2 : 1) & 0x8000) != 0;
+
+        [DllImport("user32.dll")]
+        private static extern int GetSystemMetrics(int index);
 
         [DllImport("user32.dll")]
         [return: MarshalAs(UnmanagedType.Bool)]

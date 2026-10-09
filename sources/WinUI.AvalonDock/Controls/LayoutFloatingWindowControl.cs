@@ -449,7 +449,13 @@ public abstract partial class LayoutFloatingWindowControl : Window, ILayoutContr
             ?? model?.Descendents().OfType<LayoutContent>().FirstOrDefault();
         if (content != null)
         {
-            Title = content.Title ?? string.Empty;
+            string title = content.Title ?? string.Empty;
+            // WPF's Title dependency property updates native text only when its
+            // effective value changes; WinUI's Window setter is a native call.
+            if (!string.Equals(Title, title, StringComparison.Ordinal))
+            {
+                Title = title;
+            }
         }
 
         templateView.RefreshBindings();

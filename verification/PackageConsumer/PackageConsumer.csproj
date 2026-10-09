@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <RootNamespace>WinUI.AvalonDock.Verification.PackageConsumer</RootNamespace>
+    </PropertyGroup>
+    <ItemGroup>
+        <PackageReference Include="WinUI.AvalonDock" Version="0.1.0-alpha" />
+        <PackageReference Include="Microsoft.WindowsAppSDK" Version="2.5.1" />
+        <PackageReference Include="Dirkster.AvalonDock.Mvvm" Version="5.0.0" />
+        <PackageReference Include="Dirkster.AvalonDock.Serializer.Xml" Version="5.0.0" />
+    </ItemGroup>
+    <ItemGroup>
+        <!-- Test code is shared; the product is consumed exclusively as a package. -->
+        <Compile Include="..\..\sources\Experiments\Shared\BoundarySmokeTests.cs" Link="Checks\BoundarySmokeTests.cs" />
+        <Compile Include="..\..\sources\Experiments\Shared\LayoutSyncSmokeTests.cs" Link="Checks\LayoutSyncSmokeTests.cs" />
+        <Compile Include="..\..\sources\Experiments\Shared\WorkspaceLifecycleSmokeTests.cs" Link="Checks\WorkspaceLifecycleSmokeTests.cs" />
+        <Compile Include="..\..\sources\Experiments\Shared\ModalCompatibilitySmokeTests.cs" Link="Checks\ModalCompatibilitySmokeTests.cs" />
+        <Compile Include="..\..\sources\Experiments\Shared\ContainerStyleCompatibilitySmokeTests.cs" Link="Checks\ContainerStyleCompatibilitySmokeTests.cs" />
+        <Compile Include="..\..\sources\Experiments\Shared\OverlayLifetimeSmokeTests.cs" Link="Checks\OverlayLifetimeSmokeTests.cs" />
+        <Compile Include="..\..\sources\Experiments\Shared\WorkspaceContent.cs" Link="Checks\WorkspaceContent.cs" />
+    </ItemGroup>
+</Project>

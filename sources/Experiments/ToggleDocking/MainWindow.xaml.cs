@@ -17,6 +17,7 @@ public sealed partial class MainWindow : Window
     public MainWindow()
     {
         InitializeComponent();
+        BoundarySmokeTests.StartIfRequested(this, Manager);
         Title = "ToggleDocking: Six-Zone Workspace";
         Closed += OnClosed;
 

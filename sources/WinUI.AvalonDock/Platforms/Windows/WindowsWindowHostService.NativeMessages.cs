@@ -26,6 +26,12 @@ internal sealed partial class WindowsWindowHostService
                     return DefSubclassProc(hwnd, message, wParam, lParam);
                 }
 
+                if (target.ownerHookRemovalPending)
+                {
+                    target.ReleaseOwnerHook(message == 0x0082);
+                    return DefSubclassProc(hwnd, message, wParam, lParam);
+                }
+
                 if (message == 0x0046 && lParam != 0 && (Marshal.PtrToStructure<NativeWindowPosition>(lParam).Flags & 0x80) != 0
                     && target.owned && GetWindowLongPtrW(target.handle, -8) == hwnd)
                 {
@@ -76,7 +82,7 @@ internal sealed partial class WindowsWindowHostService
                 }
                 if (message == 0x0082)
                 {
-                    target.ReleaseOwnerHook();
+                    target.ReleaseOwnerHook(true);
                 }
             }
             catch (Exception)
@@ -84,7 +90,7 @@ internal sealed partial class WindowsWindowHostService
                 // Exceptions must not escape the native window procedure.
                 if (message == 0x0082)
                 {
-                    target?.ReleaseOwnerHook();
+                    target?.ReleaseOwnerHook(true);
                 }
             }
             return DefSubclassProc(hwnd, message, wParam, lParam);
@@ -101,19 +107,25 @@ internal sealed partial class WindowsWindowHostService
             SetWindowLongPtrW(handle, -8, ownerHandle);
         }
 
-        private void ReleaseOwnerHook()
+        private void ReleaseOwnerHook(bool windowDestroyed = false)
         {
             if (!ownerHookInstalled)
             {
                 return;
             }
 
-            ownerHookInstalled = false;
-            RemoveWindowSubclass(ownerHandle, OwnerProcedure, unchecked((nuint)handle));
-            if (ownerReference.IsAllocated)
+            ownerHookRemovalPending = true;
+            if (RemoveWindowSubclass(ownerHandle, OwnerProcedure, ownerSubclassId) || windowDestroyed || !IsWindow(ownerHandle))
             {
-                ownerReference.Free();
+                ownerHookInstalled = false;
+                ownerHookRemovalPending = false;
+                if (ownerReference.IsAllocated)
+                {
+                    ownerReference.Free();
+                }
             }
+            // Native code still owns the reference if removal failed. Keep it rooted and
+            // retry on the next owner message; WM_NCDESTROY releases the final reference.
         }
 
         private static nint OnNativeMessage(nint hwnd, uint message, nuint wParam, nint lParam, nuint subclassId, nuint reference)

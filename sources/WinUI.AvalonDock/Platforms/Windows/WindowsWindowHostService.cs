@@ -54,7 +54,7 @@ internal sealed partial class WindowsWindowHostService(FrameworkElement owner) :
         }
     }
 
-    [DllImport("user32.dll", ExactSpelling = true)]
+    [DllImport("user32.dll", ExactSpelling = true, SetLastError = true)]
     private static extern nint SetWindowLongPtrW(nint window, int index, nint value);
 
     private static double GetWindowScale(nint handle)
@@ -104,7 +104,9 @@ internal sealed partial class WindowsWindowHostService(FrameworkElement owner) :
         private readonly nint ownerHandle;
         private readonly AppWindow appWindow;
         private GCHandle ownerReference;
+        private readonly nuint ownerSubclassId;
         private bool ownerHookInstalled;
+        private bool ownerHookRemovalPending;
         private bool ownerDetachedForShutdown;
         private bool owned;
         private bool disposing;
@@ -146,7 +148,10 @@ internal sealed partial class WindowsWindowHostService(FrameworkElement owner) :
             if (ownerHandle != 0)
             {
                 ownerReference = GCHandle.Alloc(this);
-                if (!SetWindowSubclass(ownerHandle, OwnerProcedure, unchecked((nuint)handle), unchecked((nuint)GCHandle.ToIntPtr(ownerReference))))
+                // A closed floating HWND can be reused before a failed owner-hook removal
+                // is retried. The rooted allocation keeps this callback identity unique.
+                ownerSubclassId = unchecked((nuint)GCHandle.ToIntPtr(ownerReference));
+                if (!SetWindowSubclass(ownerHandle, OwnerProcedure, ownerSubclassId, ownerSubclassId))
                 {
                     ownerReference.Free();
                     UnsubscribeWindowEvents();
