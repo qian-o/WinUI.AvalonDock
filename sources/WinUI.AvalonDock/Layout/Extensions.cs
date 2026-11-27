@@ -5,16 +5,8 @@ using System.Collections.Generic;
 
 namespace AvalonDock.Layout;
 
-/// <summary>
-/// Represents a extensions.
-/// </summary>
 public static class Extensions
 {
-    /// <summary>
-    /// Executes the descendents operation.
-    /// </summary>
-    /// <param name="element">The layout element.</param>
-    /// <returns>The resulting value.</returns>
     public static IEnumerable<ILayoutElement> Descendents(this ILayoutElement? element)
     {
         if (!(element is ILayoutContainer container))
@@ -37,7 +29,6 @@ public static class Extensions
     /// </summary>
     /// <typeparam name="T">The type of the related value.</typeparam>
     /// <param name="element">The layout element.</param>
-    /// <returns>The resulting value.</returns>
     public static T? FindParent<T>(this ILayoutElement element)
     {
         ILayoutContainer? parent = element.Parent;
@@ -53,7 +44,6 @@ public static class Extensions
     /// Gets the root.
     /// </summary>
     /// <param name="element">The layout element.</param>
-    /// <returns>The resulting value.</returns>
     public static ILayoutRoot? GetRoot(this ILayoutElement element)
     {
         if (element is ILayoutRoot layoutRoot)
@@ -70,12 +60,6 @@ public static class Extensions
         return parent as ILayoutRoot;
     }
 
-    /// <summary>
-    /// Executes the contains child of type operation.
-    /// </summary>
-    /// <typeparam name="T">The type of the related value.</typeparam>
-    /// <param name="element">The layout element.</param>
-    /// <returns><see langword="true"/> if the operation succeeds; otherwise, <see langword="false"/>.</returns>
     public static bool ContainsChildOfType<T>(this ILayoutContainer element)
     {
         foreach (ILayoutElement childElement in element.Descendents())
@@ -122,7 +106,6 @@ public static class Extensions
     /// Gets the side.
     /// </summary>
     /// <param name="element">The layout element.</param>
-    /// <returns>The resulting value.</returns>
     public static AnchorSide GetSide(this ILayoutElement element)
     {
         if (element.Parent is ILayoutOrientableGroup parentContainer)
@@ -141,12 +124,6 @@ public static class Extensions
         return AnchorSide.Right;
     }
 
-    /// <summary>
-    /// Executes the is in anchorable pane at start of panel operation.
-    /// </summary>
-    /// <param name="element">The layout element.</param>
-    /// <param name="layoutPanel">The layout panel.</param>
-    /// <returns><see langword="true"/> if the operation succeeds; otherwise, <see langword="false"/>.</returns>
     private static bool IsInAnchorablePaneAtStartOfPanel(this ILayoutElement element, LayoutPanel layoutPanel)
     {
         foreach (ILayoutPanelElement child in layoutPanel.Children)

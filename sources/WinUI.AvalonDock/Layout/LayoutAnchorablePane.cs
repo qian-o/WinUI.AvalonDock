@@ -8,9 +8,6 @@ using Microsoft.UI.Xaml.Markup;
 
 namespace AvalonDock.Layout;
 
-/// <summary>
-/// Represents a layout anchorable pane.
-/// </summary>
 [ContentProperty(Name = nameof(Children))]
 [Serializable]
 public class LayoutAnchorablePane : LayoutPositionableGroup<LayoutAnchorable>, ILayoutAnchorablePane, ILayoutPositionableElement, ILayoutContentSelector, ILayoutPaneSerializable, Core.Serialization.ISerializableLayoutPane
@@ -27,17 +24,10 @@ public class LayoutAnchorablePane : LayoutPositionableGroup<LayoutAnchorable>, I
     private string? paneName;
     private string? id;
 
-    /// <summary>
-    /// Initializes a new instance of the <see cref="LayoutAnchorablePane"/> class.
-    /// </summary>
     public LayoutAnchorablePane()
     {
     }
 
-    /// <summary>
-    /// Initializes a new instance of the <see cref="LayoutAnchorablePane"/> class.
-    /// </summary>
-    /// <param name="anchorable">The anchorable.</param>
     public LayoutAnchorablePane(LayoutAnchorable anchorable)
     {
         Children.Add(anchorable);
@@ -185,11 +175,6 @@ public class LayoutAnchorablePane : LayoutPositionableGroup<LayoutAnchorable>, I
         base.OnParentChanged(oldValue, newValue);
     }
 
-    /// <summary>
-    /// Executes the index of operation.
-    /// </summary>
-    /// <param name="content">The layout content.</param>
-    /// <returns>The resulting value.</returns>
     public int IndexOf(LayoutContent content)
     {
         if (!(content is LayoutAnchorable anchorableChild))
@@ -235,9 +220,6 @@ public class LayoutAnchorablePane : LayoutPositionableGroup<LayoutAnchorable>, I
     /// </summary>
     internal void UpdateIsDirectlyHostedInFloatingWindow() => RaisePropertyChanged(nameof(IsDirectlyHostedInFloatingWindow));
 
-    /// <summary>
-    /// Executes the auto fix selected content operation.
-    /// </summary>
     private void AutoFixSelectedContent()
     {
         if (!autoFixSelectedContent)
@@ -265,10 +247,5 @@ public class LayoutAnchorablePane : LayoutPositionableGroup<LayoutAnchorable>, I
         SelectedContentIndex = lastActivatedDocument == null ? -1 : Children.IndexOf(lastActivatedDocument);
     }
 
-    /// <summary>
-    /// Executes the on parent children collection changed operation.
-    /// </summary>
-    /// <param name="sender">The sender.</param>
-    /// <param name="e">The e.</param>
     private void OnParentChildrenCollectionChanged(object? sender, EventArgs e) => RaisePropertyChanged(nameof(IsDirectlyHostedInFloatingWindow));
 }

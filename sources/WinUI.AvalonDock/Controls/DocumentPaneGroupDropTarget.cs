@@ -8,19 +8,10 @@ using Windows.Foundation;
 
 namespace AvalonDock.Controls;
 
-/// <summary>
-/// Represents the document pane group drop target.
-/// </summary>
 internal class DocumentPaneGroupDropTarget : DropTarget<LayoutDocumentPaneGroupControl>
 {
     private LayoutDocumentPaneGroupControl targetPane;
 
-    /// <summary>
-    /// Initializes a new instance of the <see cref="DocumentPaneGroupDropTarget"/> class.
-    /// </summary>
-    /// <param name="paneControl">The pane control.</param>
-    /// <param name="detectionRect">The detection rectangle.</param>
-    /// <param name="type">The drop target type.</param>
     internal DocumentPaneGroupDropTarget(
         LayoutDocumentPaneGroupControl paneControl,
         Rect detectionRect,

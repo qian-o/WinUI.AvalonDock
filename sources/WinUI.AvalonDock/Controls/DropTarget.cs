@@ -11,10 +11,6 @@ using Windows.Foundation;
 
 namespace AvalonDock.Controls;
 
-/// <summary>
-/// Represents the drop target.
-/// </summary>
-/// <typeparam name="T">The type of t.</typeparam>
 internal abstract class DropTarget<T> : DropTargetBase, IDropTarget
     where T : FrameworkElement
 {
@@ -22,12 +18,6 @@ internal abstract class DropTarget<T> : DropTargetBase, IDropTarget
     private T targetElement;
     private DropTargetType type;
 
-    /// <summary>
-    /// Initializes a new instance of the <see cref="DropTarget{T}"/> class.
-    /// </summary>
-    /// <param name="targetElement">The target element.</param>
-    /// <param name="detectionRect">The detection rectangle.</param>
-    /// <param name="type">The drop target type.</param>
     protected DropTarget(T targetElement, Rect detectionRect, DropTargetType type)
     {
         this.targetElement = targetElement;
@@ -35,12 +25,6 @@ internal abstract class DropTarget<T> : DropTargetBase, IDropTarget
         this.type = type;
     }
 
-    /// <summary>
-    /// Initializes a new instance of the <see cref="DropTarget{T}"/> class.
-    /// </summary>
-    /// <param name="targetElement">The target element.</param>
-    /// <param name="detectionRects">The detection rectangles.</param>
-    /// <param name="type">The drop target type.</param>
     protected DropTarget(T targetElement, IEnumerable<Rect> detectionRects, DropTargetType type)
     {
         this.targetElement = targetElement;

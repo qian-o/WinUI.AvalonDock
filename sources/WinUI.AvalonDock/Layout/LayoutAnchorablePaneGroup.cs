@@ -8,9 +8,6 @@ using Microsoft.UI.Xaml.Markup;
 
 namespace AvalonDock.Layout;
 
-/// <summary>
-/// Represents a layout anchorable pane group.
-/// </summary>
 [ContentProperty(Name = nameof(Children))]
 [Serializable]
 public class LayoutAnchorablePaneGroup : LayoutPositionableGroup<ILayoutAnchorablePane>, ILayoutAnchorablePane, ILayoutOrientableGroup
@@ -22,17 +19,10 @@ public class LayoutAnchorablePaneGroup : LayoutPositionableGroup<ILayoutAnchorab
     // WPF Horizontal is zero; WinUI Vertical is zero. Preserve the upstream default explicitly.
     private Orientation paneOrientation = Orientation.Horizontal;
 
-    /// <summary>
-    /// Initializes a new instance of the <see cref="LayoutAnchorablePaneGroup"/> class.
-    /// </summary>
     public LayoutAnchorablePaneGroup()
     {
     }
 
-    /// <summary>
-    /// Initializes a new instance of the <see cref="LayoutAnchorablePaneGroup"/> class.
-    /// </summary>
-    /// <param name="firstChild">The first child.</param>
     public LayoutAnchorablePaneGroup(LayoutAnchorablePane firstChild)
     {
         Children.Add(firstChild);

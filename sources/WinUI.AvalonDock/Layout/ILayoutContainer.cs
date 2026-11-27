@@ -5,9 +5,6 @@ using System.Collections.Generic;
 
 namespace AvalonDock.Layout;
 
-/// <summary>
-/// Interface for layout container.
-/// </summary>
 public interface ILayoutContainer : ILayoutElement
 {
     /// <summary>

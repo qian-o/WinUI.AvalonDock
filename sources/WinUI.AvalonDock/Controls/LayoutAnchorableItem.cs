@@ -12,9 +12,6 @@ using BindableAttribute = System.ComponentModel.BindableAttribute;
 
 namespace AvalonDock.Controls;
 
-/// <summary>
-/// Represents the layout anchorable item.
-/// </summary>
 public class LayoutAnchorableItem : LayoutItem
 {
     private LayoutAnchorable? anchorable;   // The content of this item
@@ -25,9 +22,6 @@ public class LayoutAnchorableItem : LayoutItem
     private readonly ReentrantFlag visibilityReentrantFlag = new();
     private readonly ReentrantFlag anchorableVisibilityReentrantFlag = new();
 
-    /// <summary>
-    /// Initializes a new instance of the <see cref="LayoutAnchorableItem"/> class.
-    /// </summary>
     internal LayoutAnchorableItem()
     {
         SetModelValue(CanCloseProperty, false);

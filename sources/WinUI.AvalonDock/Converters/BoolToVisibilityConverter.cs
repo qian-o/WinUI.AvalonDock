@@ -7,9 +7,6 @@ using Microsoft.UI.Xaml.Markup;
 
 namespace AvalonDock.Converters;
 
-/// <summary>
-/// Represents the bool To Visibility Converter.
-/// </summary>
 [Microsoft.UI.Xaml.Data.Bindable]
 public class BoolToVisibilityConverter : MarkupExtension, IValueConverter
 {

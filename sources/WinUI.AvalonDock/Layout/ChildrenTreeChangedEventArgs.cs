@@ -23,10 +23,6 @@ public enum ChildrenTreeChange
 /// </summary>
 public class ChildrenTreeChangedEventArgs : EventArgs
 {
-    /// <summary>
-    /// Initializes a new instance of the <see cref="ChildrenTreeChangedEventArgs"/> class.
-    /// </summary>
-    /// <param name="change">The change.</param>
     public ChildrenTreeChangedEventArgs(ChildrenTreeChange change)
     {
         Change = change;

@@ -4,18 +4,8 @@ using System;
 
 namespace AvalonDock;
 
-/// <summary>
-/// Provides helper members for math Helper.
-/// </summary>
 internal static class MathHelper
 {
-    /// <summary>
-    /// Executes the min Max operation.
-    /// </summary>
-    /// <param name="value">The value.</param>
-    /// <param name="min">The min.</param>
-    /// <param name="max">The max.</param>
-    /// <returns>The result of the operation.</returns>
     public static double MinMax(double value, double min, double max)
     {
         if (min > max)
@@ -31,10 +21,6 @@ internal static class MathHelper
         return value > max ? max : value;
     }
 
-    /// <summary>
-    /// Executes the assert Is Positive Or Zero operation.
-    /// </summary>
-    /// <param name="value">The value.</param>
     public static void AssertIsPositiveOrZero(double value)
     {
         if (value < 0.0)

@@ -5,9 +5,6 @@ using Microsoft.UI.Xaml;
 
 namespace AvalonDock.Controls;
 
-/// <summary>
-/// Provides helper members for toggle Dock.
-/// </summary>
 public static class ToggleDock
 {
     /// <summary>
@@ -24,7 +21,6 @@ public static class ToggleDock
     /// Gets the get Icon.
     /// </summary>
     /// <param name="element">The element.</param>
-    /// <returns>The requested value.</returns>
     public static object? GetIcon(DependencyObject element) => element.GetValue(IconProperty);
 
     /// <summary>
@@ -48,7 +44,6 @@ public static class ToggleDock
     /// Gets the get Tool Tip.
     /// </summary>
     /// <param name="element">The element.</param>
-    /// <returns>The requested value.</returns>
     public static object? GetToolTip(DependencyObject element) => element.GetValue(ToolTipProperty);
 
     /// <summary>
@@ -72,7 +67,6 @@ public static class ToggleDock
     /// Gets the get Icon Template.
     /// </summary>
     /// <param name="element">The element.</param>
-    /// <returns>The requested value.</returns>
     public static DataTemplate? GetIconTemplate(DependencyObject element) => (DataTemplate?)element.GetValue(IconTemplateProperty);
 
     /// <summary>

@@ -10,10 +10,6 @@ namespace AvalonDock.Layout;
 /// </summary>
 public class LayoutElementEventArgs : EventArgs
 {
-    /// <summary>
-    /// Initializes a new instance of the <see cref="LayoutElementEventArgs"/> class.
-    /// </summary>
-    /// <param name="element">The layout element.</param>
     public LayoutElementEventArgs(LayoutElement element)
     {
         Element = element;

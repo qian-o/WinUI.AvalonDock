@@ -3,9 +3,6 @@
 
 namespace AvalonDock.Layout;
 
-/// <summary>
-/// Interface for layout pane serializable.
-/// </summary>
 public interface ILayoutPaneSerializable
 {
     /// <summary>

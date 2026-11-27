@@ -11,7 +11,6 @@
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
-            <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
         <controls:MenuBar Grid.Row="0">
             <controls:MenuBarItem Title="File">
@@ -60,8 +59,5 @@
                              Grid.Row="2"
                              DockLayout="{x:Bind ViewModel.Layout, Mode=OneWay}"
                              LayoutItemTemplate="{StaticResource WorkspaceContentTemplate}" />
-        <TextBlock Grid.Row="3"
-                   Opacity="0.75"
-                   Text="The ViewModel manages documents and tools. Use Edit to mark a document as modified, then try saving, closing, replacing, resetting, and restoring the layout." />
     </Grid>
 </Window>

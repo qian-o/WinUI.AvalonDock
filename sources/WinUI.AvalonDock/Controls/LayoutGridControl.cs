@@ -35,7 +35,7 @@ public abstract class LayoutGridControl<T> : Grid, ILayoutControl, IAdjustableSi
     private ResizeState? resize;
     private IDisposable? dropRegistration;
 
-    internal LayoutGridControl(LayoutPositionableGroup<T> model, Orientation orientation)
+    internal LayoutGridControl(LayoutPositionableGroup<T> model)
     {
         this.model = model ?? throw new ArgumentNullException(nameof(model));
         FlowDirection = FlowDirection.LeftToRight;
@@ -63,6 +63,22 @@ public abstract class LayoutGridControl<T> : Grid, ILayoutControl, IAdjustableSi
     }
 
     protected abstract void OnFixChildrenDockLengths();
+
+    internal void EnsureStarLengths()
+    {
+        bool horizontal = Orientation == Orientation.Horizontal;
+        foreach (ILayoutPositionableElement child in model.Children)
+        {
+            if (horizontal && !child.DockWidth.IsStar)
+            {
+                child.DockWidth = new GridLength(1, GridUnitType.Star);
+            }
+            else if (!horizontal && !child.DockHeight.IsStar)
+            {
+                child.DockHeight = new GridLength(1, GridUnitType.Star);
+            }
+        }
+    }
 
     internal void InitializeView() => Attach();
 

@@ -9,9 +9,6 @@ using Microsoft.UI.Xaml.Markup;
 
 namespace AvalonDock.Layout;
 
-/// <summary>
-/// Represents a layout document pane.
-/// </summary>
 [ContentProperty(Name = nameof(Children))]
 [Serializable]
 public class LayoutDocumentPane : LayoutPositionableGroup<LayoutContent>, ILayoutDocumentPane, ILayoutPositionableElement, ILayoutContentSelector, ILayoutPaneSerializable, Core.Serialization.ISerializableLayoutPane
@@ -27,17 +24,10 @@ public class LayoutDocumentPane : LayoutPositionableGroup<LayoutContent>, ILayou
     [XmlIgnore]
     private readonly bool autoFixSelectedContent = true;
 
-    /// <summary>
-    /// Initializes a new instance of the <see cref="LayoutDocumentPane"/> class.
-    /// </summary>
     public LayoutDocumentPane()
     {
     }
 
-    /// <summary>
-    /// Initializes a new instance of the <see cref="LayoutDocumentPane"/> class.
-    /// </summary>
-    /// <param name="firstChild">The first child.</param>
     public LayoutDocumentPane(LayoutContent firstChild)
     {
         Children.Add(firstChild);
@@ -178,9 +168,6 @@ public class LayoutDocumentPane : LayoutPositionableGroup<LayoutContent>, ILayou
         RaisePropertyChanged(nameof(ChildrenSorted));
     }
 
-    /// <summary>
-    /// Executes the auto fix selected content operation.
-    /// </summary>
     private void AutoFixSelectedContent()
     {
         if (!autoFixSelectedContent)
@@ -211,11 +198,6 @@ public class LayoutDocumentPane : LayoutPositionableGroup<LayoutContent>, ILayou
         }
     }
 
-    /// <summary>
-    /// Executes the index of operation.
-    /// </summary>
-    /// <param name="content">The layout content.</param>
-    /// <returns>The resulting value.</returns>
     public int IndexOf(LayoutContent content)
     {
         return !(content is LayoutDocument documentChild) ? -1 : Children.IndexOf(documentChild);
@@ -270,10 +252,5 @@ public class LayoutDocumentPane : LayoutPositionableGroup<LayoutContent>, ILayou
         base.OnParentChanged(oldValue, newValue);
     }
 
-    /// <summary>
-    /// Executes the on parent children collection changed operation.
-    /// </summary>
-    /// <param name="sender">The sender.</param>
-    /// <param name="e">The e.</param>
     private void OnParentChildrenCollectionChanged(object? sender, EventArgs e) => RaisePropertyChanged(nameof(IsDirectlyHostedInFloatingWindow));
 }

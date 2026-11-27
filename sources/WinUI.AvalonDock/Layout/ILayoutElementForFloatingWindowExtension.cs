@@ -6,9 +6,6 @@ using Windows.Foundation;
 
 namespace AvalonDock.Layout;
 
-/// <summary>
-/// Represents a layout element for floating window extension.
-/// </summary>
 public static class ILayoutElementForFloatingWindowExtension
 {
     /// <summary>

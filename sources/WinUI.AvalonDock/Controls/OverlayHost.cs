@@ -15,11 +15,8 @@ internal static class OverlayHost
             case DockingManager manager:
                 manager.InvalidateDropAreas();
                 break;
-            case LayoutDocumentFloatingWindowControl documents:
-                documents.InvalidateDropAreas();
-                break;
-            case LayoutAnchorableFloatingWindowControl tools:
-                tools.InvalidateDropAreas();
+            case LayoutFloatingWindowControl window:
+                window.InvalidateDropAreas();
                 break;
         }
     }
@@ -43,6 +40,7 @@ internal static class OverlayHost
 
 public partial class LayoutDocumentFloatingWindowControl : IOverlayWindowHost
 {
+    public IEnumerable<IDropArea> GetDropAreas(LayoutFloatingWindowControl draggingWindow) => GetFloatingDropAreas(draggingWindow, acceptsDocumentWindows: true);
     DockingManager IOverlayWindowHost.Manager => Manager ?? throw new InvalidOperationException("浮动覆盖层宿主必须附接到 DockingManager。");
     bool IOverlayWindowHost.HitTestScreen(Point dragPoint) => OverlayHost.HitTest(this, dragPoint);
     IOverlayWindow IOverlayWindowHost.ShowOverlayWindow(LayoutFloatingWindowControl draggingWindow) => ((IOverlayWindowHost)this).Manager.ShowOverlayWindow(this, draggingWindow);
@@ -50,6 +48,7 @@ public partial class LayoutDocumentFloatingWindowControl : IOverlayWindowHost
 
 public partial class LayoutAnchorableFloatingWindowControl : IOverlayWindowHost
 {
+    IEnumerable<IDropArea> IOverlayWindowHost.GetDropAreas(LayoutFloatingWindowControl draggingWindow) => GetFloatingDropAreas(draggingWindow, acceptsDocumentWindows: false);
     DockingManager IOverlayWindowHost.Manager => Manager ?? throw new InvalidOperationException("浮动覆盖层宿主必须附接到 DockingManager。");
     bool IOverlayWindowHost.HitTestScreen(Point dragPoint) => OverlayHost.HitTest(this, dragPoint);
     IOverlayWindow IOverlayWindowHost.ShowOverlayWindow(LayoutFloatingWindowControl draggingWindow) => ((IOverlayWindowHost)this).Manager.ShowOverlayWindow(this, draggingWindow);

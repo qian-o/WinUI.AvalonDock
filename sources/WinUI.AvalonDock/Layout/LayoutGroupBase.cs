@@ -39,9 +39,6 @@ public abstract class LayoutGroupBase : LayoutElement, Core.Serialization.ISeria
         }
     }
 
-    /// <summary>
-    /// Executes the on children collection changed operation.
-    /// </summary>
     protected virtual void OnChildrenCollectionChanged()
     {
         if (ChildrenCollectionChanged != null)
@@ -50,10 +47,6 @@ public abstract class LayoutGroupBase : LayoutElement, Core.Serialization.ISeria
         }
     }
 
-    /// <summary>
-    /// Executes the on children tree changed operation.
-    /// </summary>
-    /// <param name="change">The change.</param>
     protected virtual void OnChildrenTreeChanged(ChildrenTreeChange change)
     {
         if (ChildrenTreeChanged != null)
@@ -62,10 +55,6 @@ public abstract class LayoutGroupBase : LayoutElement, Core.Serialization.ISeria
         }
     }
 
-    /// <summary>
-    /// Executes the notify children tree changed operation.
-    /// </summary>
-    /// <param name="change">The change.</param>
     protected void NotifyChildrenTreeChanged(ChildrenTreeChange change)
     {
         OnChildrenTreeChanged(change);

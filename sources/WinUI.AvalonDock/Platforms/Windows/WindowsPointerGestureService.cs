@@ -8,7 +8,7 @@ using Windows.Foundation;
 namespace AvalonDock.Platforms.Windows;
 
 /// <summary>Tracks click sequences using Windows timing, pointer positions and DPI-aware system metrics.</summary>
-internal sealed class WindowsPointerGestureService : IPointerGestureService
+internal sealed class WindowsPointerGestureService
 {
     private readonly ConditionalWeakTable<object, ClickHistory> history = new();
     private WeakReference<object>? previousOrigin;

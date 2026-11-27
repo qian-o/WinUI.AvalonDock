@@ -10,19 +10,10 @@ using Windows.Foundation;
 
 namespace AvalonDock.Controls;
 
-/// <summary>
-/// Represents the docking manager drop target.
-/// </summary>
 internal class DockingManagerDropTarget : DropTarget<DockingManager>
 {
     private DockingManager manager;
 
-    /// <summary>
-    /// Initializes a new instance of the <see cref="DockingManagerDropTarget"/> class.
-    /// </summary>
-    /// <param name="manager">The manager.</param>
-    /// <param name="detectionRect">The detection rectangle.</param>
-    /// <param name="type">The drop target type.</param>
     internal DockingManagerDropTarget(
         DockingManager manager,
         Rect detectionRect,

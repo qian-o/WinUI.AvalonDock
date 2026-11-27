@@ -22,22 +22,12 @@ public partial class DockingManager
         List<IOverlayWindowHost> topFloatingWindows = new();
         List<IOverlayWindowHost> bottomFloatingWindows = new();
 
-        foreach (WindowOrderEntry entry in PlatformServices.WindowOrder.GetWindowsByZOrder(this, floatingControls.Cast<Window>().ToArray()))
+        foreach (var (window, aboveOwner) in PlatformServices.WindowOrder.GetWindowsByZOrder(this, floatingControls))
         {
-            LayoutFloatingWindowControl fw = (LayoutFloatingWindowControl)entry.Window;
-            if (fw is IOverlayWindowHost host && fw != dragFloatingWindow && fw.Visible)
+            if (window is LayoutFloatingWindowControl { Visible: true } floating && floating != dragFloatingWindow
+                && floating.Model.Root?.Manager == this && floating is IOverlayWindowHost host)
             {
-                if (fw.Model.Root != null && fw.Model.Root.Manager == this)
-                {
-                    if (fw.OwnedByDockingManagerWindow || entry.AboveOwner)
-                    {
-                        topFloatingWindows.Add(host);
-                    }
-                    else
-                    {
-                        bottomFloatingWindows.Add(host);
-                    }
-                }
+                (floating.OwnedByDockingManagerWindow || aboveOwner ? topFloatingWindows : bottomFloatingWindows).Add(host);
             }
         }
 

@@ -20,9 +20,6 @@ public abstract class LayoutElement : DependencyObject, ILayoutElement, Core.Ser
     [NonSerialized]
     private ILayoutRoot? layoutRoot;
 
-    /// <summary>
-    /// Initializes a new instance of the <see cref="LayoutElement"/> class.
-    /// </summary>
     internal LayoutElement()
     {
     }
@@ -93,9 +90,6 @@ public abstract class LayoutElement : DependencyObject, ILayoutElement, Core.Ser
         }
     }
 
-    /// <summary>
-    /// Executes the fix cached root on deserialize operation.
-    /// </summary>
     public void FixCachedRootOnDeserialize()
     {
         if (layoutRoot == null)
@@ -104,29 +98,14 @@ public abstract class LayoutElement : DependencyObject, ILayoutElement, Core.Ser
         }
     }
 
-    /// <summary>
-    /// Executes the on parent changing operation.
-    /// </summary>
-    /// <param name="oldValue">The previous value.</param>
-    /// <param name="newValue">The new value.</param>
     protected virtual void OnParentChanging(ILayoutContainer? oldValue, ILayoutContainer? newValue)
     {
     }
 
-    /// <summary>
-    /// Executes the on parent changed operation.
-    /// </summary>
-    /// <param name="oldValue">The previous value.</param>
-    /// <param name="newValue">The new value.</param>
     protected virtual void OnParentChanged(ILayoutContainer? oldValue, ILayoutContainer? newValue)
     {
     }
 
-    /// <summary>
-    /// Executes the on root changed operation.
-    /// </summary>
-    /// <param name="oldRoot">The old root.</param>
-    /// <param name="newRoot">The new root.</param>
     protected virtual void OnRootChanged(ILayoutRoot? oldRoot, ILayoutRoot? newRoot)
     {
         (oldRoot as LayoutRoot)?.OnLayoutElementRemoved(this);

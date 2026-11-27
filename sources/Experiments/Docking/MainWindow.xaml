@@ -12,7 +12,6 @@
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
-            <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
         <controls:MenuBar Grid.Row="0">
             <controls:MenuBarItem Title="File">
@@ -61,7 +60,7 @@
         </controls:MenuBar>
         <TextBlock x:Name="StatusText"
                    Grid.Row="1"
-                   Text="Classic workspace using XAML LayoutRoot and data sources." />
+                   Text="Ready." />
         <dock:DockingManager x:Name="Manager"
                              Grid.Row="2"
                              AllowDetachedWindows="True"
@@ -78,8 +77,5 @@
                 </layout:LayoutPanel>
             </layout:LayoutRoot>
         </dock:DockingManager>
-        <TextBlock Grid.Row="3"
-                   Opacity="0.75"
-                   Text="Drag document tabs or tool headers to rearrange the workspace with docking guides. Right-click a tab for more commands." />
     </Grid>
 </Window>

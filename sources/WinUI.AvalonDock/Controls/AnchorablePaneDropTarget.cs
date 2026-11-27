@@ -8,20 +8,11 @@ using Windows.Foundation;
 
 namespace AvalonDock.Controls;
 
-/// <summary>
-/// Represents the anchorable pane drop target.
-/// </summary>
 internal class AnchorablePaneDropTarget : DropTarget<LayoutAnchorablePaneControl>
 {
     private LayoutAnchorablePaneControl targetPane;
     private int tabIndex = -1;
 
-    /// <summary>
-    /// Initializes a new instance of the <see cref="AnchorablePaneDropTarget"/> class.
-    /// </summary>
-    /// <param name="paneControl">The pane control.</param>
-    /// <param name="detectionRect">The detection rectangle.</param>
-    /// <param name="type">The drop target type.</param>
     internal AnchorablePaneDropTarget(
         LayoutAnchorablePaneControl paneControl,
         Rect detectionRect,
@@ -31,13 +22,6 @@ internal class AnchorablePaneDropTarget : DropTarget<LayoutAnchorablePaneControl
         targetPane = paneControl;
     }
 
-    /// <summary>
-    /// Initializes a new instance of the <see cref="AnchorablePaneDropTarget"/> class.
-    /// </summary>
-    /// <param name="paneControl">The pane control.</param>
-    /// <param name="detectionRect">The detection rectangle.</param>
-    /// <param name="type">The drop target type.</param>
-    /// <param name="tabIndex">The tab index.</param>
     internal AnchorablePaneDropTarget(
         LayoutAnchorablePaneControl paneControl,
         Rect detectionRect,

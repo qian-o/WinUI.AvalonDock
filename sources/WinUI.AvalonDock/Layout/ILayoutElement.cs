@@ -5,9 +5,6 @@ using System.ComponentModel;
 
 namespace AvalonDock.Layout;
 
-/// <summary>
-/// Interface for layout elements that participate in the AvalonDock layout tree.
-/// </summary>
 public interface ILayoutElement : INotifyPropertyChanged, INotifyPropertyChanging
 {
     /// <summary>Gets the parent <see cref="ILayoutContainer"/> for this layout element.</summary>

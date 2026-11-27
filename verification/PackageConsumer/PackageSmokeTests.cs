@@ -1,149 +1,90 @@
 using System.Collections.ObjectModel;
-using System.Reflection;
-using System.Text;
+using System.Diagnostics;
 using AvalonDock;
+using AvalonDock.Controls;
 using AvalonDock.Core;
 using AvalonDock.Layout;
 using AvalonDock.Mvvm;
-using AvalonDock.Themes;
+using AvalonDock.Serializer.Xml;
 using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
+using Windows.Foundation;
 using WinUI.AvalonDock.Experiments.Shared;
 
 namespace WinUI.AvalonDock.Verification.PackageConsumer;
 
-/// <summary>Tests a real package consumer through public product APIs.</summary>
 internal static class PackageSmokeTests
 {
-    internal static void StartIfRequested(MainWindow window)
+    internal static async Task RunAsync(DockingManager manager)
     {
-        string[] arguments = Environment.GetCommandLineArgs();
-        int option = Array.IndexOf(arguments, "--package-smoke");
-        if (option < 0)
+        WorkspaceDocument editor = new() { Id = "editor", Title = "Editor" };
+        WorkspaceDocument notes = new() { Id = "notes", Title = "Notes" };
+        DocumentDock documents = new() { VisibleDockables = new ObservableCollection<IDockable> { editor, notes } };
+        manager.LayoutItemContainerStyleSelector = SampleStyles.CreateItemStyleSelector();
+        manager.LayoutItemTemplate = (DataTemplate)Application.Current.Resources["ConsumerContentTemplate"];
+        manager.DockLayout = new RootDock { VisibleDockables = new ObservableCollection<IDockable> { documents }, ActiveDockable = notes };
+
+        LayoutDocument? FindNotes() => manager.Layout.Descendents().OfType<LayoutDocument>().SingleOrDefault(doc => doc.Content == notes);
+        LayoutDocumentPaneControl? Pane(LayoutDocument doc) => manager.GetLayoutItemFromModel(doc)?.View.FindVisualAncestor<LayoutDocumentPaneControl>();
+
+        await Until(() => FindNotes() is { } doc && Pane(doc)?.TabItems.Count == 2, "The package did not render both MVVM documents.");
+        LayoutDocument document = FindNotes()!;
+        notes.Title = "Updated notes";
+        await Until(() => document.Title == notes.Title && document.ContentId == notes.Id, "Document title or identifier binding failed.");
+
+        LayoutDocumentPaneControl pane = Pane(document)!;
+        TabViewItem active = (TabViewItem)pane.SelectedItem;
+        TabViewItem other = pane.TabItems.Cast<TabViewItem>().Single(tab => tab != active);
+        Require(VisualStateManager.GoToState(other, "PointerOver", false), "The inactive tab has no hover state.");
+        pane.UpdateLayout();
+        Grid tabRoot = other.FindVisualChildren<Grid>().First(grid => grid.Name == "LayoutRoot");
+        Border surface = tabRoot.Children.OfType<Border>().Single(border => border.Name == "Surface");
+        Rect Bounds(FrameworkElement element) => element.TransformToVisual(pane).TransformBounds(new Rect(0, 0, element.ActualWidth, element.ActualHeight));
+        Rect selected = Bounds(active);
+        Rect hover = Bounds(surface);
+        Require(selected.Height > 0 && Math.Abs(selected.Top - hover.Top) < 0.1 && Math.Abs(selected.Bottom - hover.Bottom) < 0.1,
+            "The inactive tab surface is misaligned.");
+        VisualStateManager.GoToState(other, "Normal", false);
+
+        document.Float();
+        await Until(() => document.IsFloating && Pane(document) is { IsLoaded: true } floatingPane && floatingPane != pane && BodyTop(floatingPane) == 0,
+            "The floating document has an extra header row.");
+        LayoutDocumentFloatingWindowControl window = manager.FloatingWindows.OfType<LayoutDocumentFloatingWindowControl>().Single();
+        XamlRoot root = ((FrameworkElement)((Window)window).Content).XamlRoot;
+        int inset = root.CoordinateConverter.ConvertLocalToScreen(new Point()).Y - window.AppWindow.Position.Y;
+        Require(inset >= 0 && inset <= Math.Ceiling(root.RasterizationScale) && window.SingleContentLayoutItem == manager.GetLayoutItemFromModel(document),
+            "The floating caption is inset or targets the wrong document.");
+
+        using MemoryStream layout = new();
+        XmlLayoutSerializer serializer = new(manager);
+        serializer.Serialize(layout);
+        document.Dock();
+        await Until(() => !manager.FloatingWindows.Any() && Pane(document) is { } docked && BodyTop(docked) > 0,
+            "Redocking did not release the window and restore the tab strip.");
+        layout.Position = 0;
+        serializer.Deserialize(layout);
+        await Until(() => FindNotes() is { IsFloating: true, ContentId: "notes" } restored && Pane(restored)?.IsLoaded == true,
+            "XML restore did not reconnect the floating document to its original model.");
+    }
+
+    private static double? BodyTop(TabControlEx pane) => pane.FindVisualChildren<FrameworkElement>().FirstOrDefault(element => element.Name == "ContentPanel")
+        ?.TransformToVisual(pane).TransformPoint(new Point()).Y;
+
+    private static async Task Until(Func<bool> condition, string failure)
+    {
+        Stopwatch elapsed = Stopwatch.StartNew();
+        while (!condition())
         {
-            return;
-        }
-        string output = option + 1 < arguments.Length ? arguments[option + 1]
-            : Path.Combine(AppContext.BaseDirectory, "package-smoke.log");
-        window.Manager.Loaded += Run;
-
-        async void Run(object sender, RoutedEventArgs args)
-        {
-            window.Manager.Loaded -= Run;
-            List<string> checks = [];
-            DockingManager? mvvmManager = null;
-            try
-            {
-                await Settle();
-                DockingManager manager = window.Manager;
-                Assembly assembly = typeof(DockingManager).Assembly;
-                checks.Add($"INFO: product assembly {assembly.Location}");
-                checks.Add($"INFO: product informational version {assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion}");
-                Check(assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion.StartsWith("0.1.0-alpha", StringComparison.Ordinal) == true,
-                    "loaded product assembly has candidate package version");
-                Check(manager.IsLoaded && manager.GetLayoutItemFromModel(window.FirstDocument()!)?.View.IsLoaded == true,
-                    "package provides working default theme, templates and content presenters");
-                Check(manager.Layout.Descendents().OfType<LayoutDocument>().Count() == 2,
-                    "consumer document source imports both models");
-                LayoutDocument document = FindDocument(window.FirstModel);
-                Check(document.ContentId == window.FirstModel.Id && document.Title == window.FirstModel.Title,
-                    "consumer style binds model title and stable identifier");
-                window.FirstModel.Title = "Updated consumer title";
-                await Settle();
-                Check(document.Title == window.FirstModel.Title, "consumer title binding remains live");
-
-                GenericTheme theme = new();
-                manager.Theme = theme;
-                await Settle();
-                Check(manager.Resources.MergedDictionaries.Any(value => value.Source == theme.GetResourceUri()),
-                    "package theme URI resolves packaged resource dictionary");
-                manager.Theme = null;
-                await Settle();
-                Check(!manager.Resources.MergedDictionaries.Any(value => value.Source == theme.GetResourceUri()),
-                    "package theme can be removed without a missing resource error");
-
-                WorkspaceDocument secondModel = window.SecondModel;
-                FindDocument(secondModel).Float();
-                await Settle();
-                Check(FindDocument(secondModel).IsFloating, "package consumer document creates floating window");
-                byte[] saved = window.SaveLayout();
-                Check(Encoding.UTF8.GetString(saved).Contains(secondModel.Id, StringComparison.Ordinal),
-                    "upstream XML serializer writes stable consumer ContentId");
-                FindDocument(secondModel).Dock();
-                await Settle();
-                window.RestoreLayout(saved);
-                await Settle();
-                Check(ReferenceEquals(FindDocument(secondModel).Content, secondModel) && FindDocument(secondModel).IsFloating,
-                    "XML restore reconnects original consumer model and floating state");
-                Check(manager.Layout.Descendents().OfType<LayoutAnchorable>().Any(value => ReferenceEquals(value.Content, window.ToolModel)),
-                    "XML restore retains consumer tool model");
-                FindDocument(secondModel).Dock();
-                await Settle();
-
-                WorkspaceDocument retired = window.FirstModel;
-                WorkspaceDocument replacement = new()
-                {
-                    Id = "consumer-replacement", Title = "Replacement", Text = "New consumer model", IsModified = false
-                };
-                window.ReplaceFirst(replacement);
-                await Settle();
-                Check(!manager.Layout.Descendents().OfType<LayoutDocument>().Any(value => ReferenceEquals(value.Content, retired)),
-                    "consumer collection replacement removes retired document");
-                Check(FindDocument(replacement).ContentId == replacement.Id,
-                    "consumer collection replacement imports replacement with stable identifier");
-
-                manager.Dispose();
-                mvvmManager = new DockingManager
-                {
-                    LayoutItemTemplate = manager.LayoutItemTemplate,
-                    LayoutItemContainerStyleSelector = MainWindow.CreateItemStyleSelector()
-                };
-                window.Content = mvvmManager;
-                WorkspaceDocument mvvmDocument = new()
-                {
-                    Id = "consumer-mvvm-document", Title = "MVVM document", Text = "MVVM package model", IsModified = false
-                };
-                DocumentDock documentDock = new() { VisibleDockables = new ObservableCollection<IDockable> { mvvmDocument } };
-                RootDock root = new()
-                {
-                    VisibleDockables = new ObservableCollection<IDockable> { documentDock },
-                    ActiveDockable = mvvmDocument
-                };
-                mvvmManager.DockLayout = root;
-                await Settle();
-                LayoutDocument nativeDocument = mvvmManager.Layout.Descendents().OfType<LayoutDocument>()
-                    .Single(value => ReferenceEquals(value.Content, mvvmDocument));
-                Check(nativeDocument.ContentId == mvvmDocument.Id && nativeDocument.Title == mvvmDocument.Title,
-                    "upstream MVVM model maps to real package layout");
-                mvvmManager.DockLayout = null;
-                await Settle();
-                checks.AddRange(await LayoutSyncSmokeTests.RunAsync(mvvmManager));
-                File.WriteAllLines(output, checks.Append($"PASS: {checks.Count(value => value.StartsWith("PASS:", StringComparison.Ordinal))} checks"));
-
-                LayoutDocument FindDocument(object content) => manager.Layout.Descendents().OfType<LayoutDocument>()
-                    .Single(value => ReferenceEquals(value.Content, content));
-                void Check(bool condition, string description)
-                {
-                    if (!condition)
-                    {
-                        throw new InvalidOperationException(description);
-                    }
-                    checks.Add($"PASS: {description}");
-                }
-            }
-            catch (Exception exception)
-            {
-                File.WriteAllLines(output, checks.Append($"FAIL: {exception}"));
-                Environment.ExitCode = 1;
-            }
-            finally
-            {
-                mvvmManager?.Dispose();
-                window.Manager.Dispose();
-                window.Close();
-                Application.Current.Exit();
-            }
+            Require(elapsed.Elapsed < TimeSpan.FromSeconds(5), failure);
+            await Task.Delay(20);
         }
     }
 
-    private static async Task Settle() => await Task.Delay(180);
+    private static void Require(bool condition, string failure)
+    {
+        if (!condition)
+        {
+            throw new InvalidOperationException(failure);
+        }
+    }
 }

@@ -3,7 +3,6 @@
         <RootNamespace>WinUI.AvalonDock.Experiments.Mvvm</RootNamespace>
     </PropertyGroup>
     <ItemGroup>
-        <PackageReference Include="Dirkster.AvalonDock.Mvvm" />
         <PackageReference Include="Dirkster.AvalonDock.Serializer.Xml" />
     </ItemGroup>
 </Project>

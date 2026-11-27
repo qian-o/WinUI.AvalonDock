@@ -6,7 +6,9 @@ using Microsoft.UI.Xaml;
 
 namespace AvalonDock.Platforms.Windows;
 
-internal sealed class WindowsWindowOrderService : IWindowOrderService
+internal readonly record struct WindowOrderEntry(Window Window, bool AboveOwner);
+
+internal sealed class WindowsWindowOrderService
 {
     public void BringToFront(Window window) => BringToFront(WinRT.Interop.WindowNative.GetWindowHandle(window));
     public void BringToFront(FrameworkElement element)

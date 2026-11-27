@@ -5,9 +5,6 @@ using System.Collections.ObjectModel;
 
 namespace AvalonDock.Layout;
 
-/// <summary>
-/// Interface for layout root.
-/// </summary>
 public interface ILayoutRoot
 {
     /// <summary>

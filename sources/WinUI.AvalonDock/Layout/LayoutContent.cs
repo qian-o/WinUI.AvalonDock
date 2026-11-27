@@ -19,9 +19,6 @@ namespace AvalonDock.Layout;
 [Serializable]
 public abstract class LayoutContent : LayoutElement, ILayoutElementForFloatingWindow, IComparable<LayoutContent>, ILayoutPreviousContainer, Core.Serialization.ISerializableLayoutContent, Core.Serialization.ISerializablePreviousContainer
 {
-    /// <summary>
-    /// Initializes a new instance of the <see cref="LayoutContent"/> class.
-    /// </summary>
     internal LayoutContent()
     {
     }
@@ -119,11 +116,6 @@ public abstract class LayoutContent : LayoutElement, ILayoutElementForFloatingWi
         set => SetValue(ContentIdProperty, value);
     }
 
-    /// <summary>
-    /// Executes the on content id property changed operation.
-    /// </summary>
-    /// <param name="obj">The object instance.</param>
-    /// <param name="args">The event arguments.</param>
     private static void OnContentIdPropertyChanged(DependencyObject obj, DependencyPropertyChangedEventArgs args)
     {
         if (obj is LayoutContent layoutContent)
@@ -132,11 +124,6 @@ public abstract class LayoutContent : LayoutElement, ILayoutElementForFloatingWi
         }
     }
 
-    /// <summary>
-    /// Executes the on content id property changed operation.
-    /// </summary>
-    /// <param name="oldValue">The previous value.</param>
-    /// <param name="newValue">The new value.</param>
     private void OnContentIdPropertyChanged(string? oldValue, string? newValue)
     {
         if (oldValue != newValue)
@@ -189,11 +176,6 @@ public abstract class LayoutContent : LayoutElement, ILayoutElementForFloatingWi
         }
     }
 
-    /// <summary>
-    /// Executes the on is selected changed operation.
-    /// </summary>
-    /// <param name="oldValue">The previous value.</param>
-    /// <param name="newValue">The new value.</param>
     protected virtual void OnIsSelectedChanged(bool oldValue, bool newValue) => IsSelectedChanged?.Invoke(this, EventArgs.Empty);
 
     /// <summary>
@@ -245,11 +227,6 @@ public abstract class LayoutContent : LayoutElement, ILayoutElementForFloatingWi
         }
     }
 
-    /// <summary>
-    /// Executes the on is active changed operation.
-    /// </summary>
-    /// <param name="oldValue">The previous value.</param>
-    /// <param name="newValue">The new value.</param>
     protected virtual void OnIsActiveChanged(bool oldValue, bool newValue)
     {
         if (newValue)
@@ -634,16 +611,8 @@ public abstract class LayoutContent : LayoutElement, ILayoutElementForFloatingWi
         get; internal set;
     }
 
-    /// <summary>
-    /// Executes the close operation.
-    /// </summary>
     public abstract void Close();
 
-    /// <summary>
-    /// Executes the compare to operation.
-    /// </summary>
-    /// <param name="other">The other.</param>
-    /// <returns>The resulting value.</returns>
     public int CompareTo(LayoutContent? other)
     {
         if (other == null)
@@ -659,9 +628,6 @@ public abstract class LayoutContent : LayoutElement, ILayoutElementForFloatingWi
         return string.Compare(Title, other.Title);
     }
 
-    /// <summary>
-    /// Executes the float operation.
-    /// </summary>
     public void Float()
     {
         if (Root is not { } root)
@@ -718,9 +684,6 @@ public abstract class LayoutContent : LayoutElement, ILayoutElementForFloatingWi
         RaisePropertyChanged(nameof(IsFloating));
     }
 
-    /// <summary>
-    /// Executes the dock as document operation.
-    /// </summary>
     public void DockAsDocument()
     {
         if (!(Root is LayoutRoot root))
@@ -775,9 +738,6 @@ public abstract class LayoutContent : LayoutElement, ILayoutElementForFloatingWi
         }
     }
 
-    /// <summary>
-    /// Executes the dock operation.
-    /// </summary>
     public void Dock()
     {
         bool wasFloating = IsFloating;
@@ -848,10 +808,6 @@ public abstract class LayoutContent : LayoutElement, ILayoutElementForFloatingWi
         base.OnParentChanged(oldValue, newValue);
     }
 
-    /// <summary>
-    /// Executes the test can close operation.
-    /// </summary>
-    /// <returns><see langword="true"/> if the operation succeeds; otherwise, <see langword="false"/>.</returns>
     internal bool TestCanClose()
     {
         CancelEventArgs args = new();
@@ -859,9 +815,6 @@ public abstract class LayoutContent : LayoutElement, ILayoutElementForFloatingWi
         return !args.Cancel;
     }
 
-    /// <summary>
-    /// Executes the close internal operation.
-    /// </summary>
     internal void CloseInternal()
     {
         ILayoutRoot? root = Root;
@@ -907,20 +860,10 @@ public abstract class LayoutContent : LayoutElement, ILayoutElementForFloatingWi
         OnClosed();
     }
 
-    /// <summary>
-    /// Executes the on closed operation.
-    /// </summary>
     protected virtual void OnClosed() => Closed?.Invoke(this, EventArgs.Empty);
 
-    /// <summary>
-    /// Executes the on closing operation.
-    /// </summary>
-    /// <param name="args">The event arguments.</param>
     protected virtual void OnClosing(CancelEventArgs args) => Closing?.Invoke(this, args);
 
-    /// <summary>
-    /// Executes the internal dock operation.
-    /// </summary>
     protected virtual void InternalDock()
     {
     }

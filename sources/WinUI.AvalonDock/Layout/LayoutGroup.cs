@@ -21,9 +21,6 @@ public abstract class LayoutGroup<T> : LayoutGroupBase, ILayoutGroup
     private readonly HashSet<LayoutElement> ownedChildren = new(ReferenceEqualityComparer.Default);
     private bool isVisible = true;
 
-    /// <summary>
-    /// Initializes a new instance of the <see cref="LayoutGroup{T}"/> class.
-    /// </summary>
     internal LayoutGroup()
     {
         groupChildren.CollectionChanged += OnGroupChildrenCollectionChanged;
@@ -63,16 +60,8 @@ public abstract class LayoutGroup<T> : LayoutGroupBase, ILayoutGroup
         }
     }
 
-    /// <summary>
-    /// Executes the compute visibility operation.
-    /// </summary>
     public void ComputeVisibility() => IsVisible = GetVisibility();
 
-    /// <summary>
-    /// Executes the move child operation.
-    /// </summary>
-    /// <param name="oldIndex">The old index.</param>
-    /// <param name="newIndex">The new index.</param>
     public void MoveChild(int oldIndex, int newIndex)
     {
         if (oldIndex == newIndex)
@@ -93,11 +82,6 @@ public abstract class LayoutGroup<T> : LayoutGroupBase, ILayoutGroup
         groupChildren.RemoveAt(childIndex);
     }
 
-    /// <summary>
-    /// Executes the index of child operation.
-    /// </summary>
-    /// <param name="element">The layout element.</param>
-    /// <returns>The resulting value.</returns>
     public int IndexOfChild(ILayoutElement element)
     {
         return groupChildren.Cast<ILayoutElement>().ToList().IndexOf(element);
@@ -153,9 +137,6 @@ public abstract class LayoutGroup<T> : LayoutGroupBase, ILayoutGroup
         groupChildren[index] = (T)element;
     }
 
-    /// <summary>
-    /// Executes the on is visible changed operation.
-    /// </summary>
     protected virtual void OnIsVisibleChanged()
     {
         UpdateParentVisibility();
@@ -167,11 +148,6 @@ public abstract class LayoutGroup<T> : LayoutGroupBase, ILayoutGroup
     /// <returns><see langword="true"/> if the operation succeeds; otherwise, <see langword="false"/>.</returns>
     protected abstract bool GetVisibility();
 
-    /// <summary>
-    /// Executes the child moved operation.
-    /// </summary>
-    /// <param name="oldIndex">The old index.</param>
-    /// <param name="newIndex">The new index.</param>
     protected virtual void ChildMoved(int oldIndex, int newIndex)
     {
     }
@@ -183,11 +159,6 @@ public abstract class LayoutGroup<T> : LayoutGroupBase, ILayoutGroup
         ComputeVisibility();
     }
 
-    /// <summary>
-    /// Executes the children collection changed operation.
-    /// </summary>
-    /// <param name="sender">The sender.</param>
-    /// <param name="e">The e.</param>
     private void OnGroupChildrenCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
     {
         if (e.Action == NotifyCollectionChangedAction.Reset)

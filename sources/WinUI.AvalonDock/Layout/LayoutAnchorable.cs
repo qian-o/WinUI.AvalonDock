@@ -10,9 +10,6 @@ using Microsoft.UI.Xaml.Controls;
 
 namespace AvalonDock.Layout;
 
-/// <summary>
-/// Represents a layout anchorable.
-/// </summary>
 [Serializable]
 public class LayoutAnchorable : LayoutContent, Core.Serialization.ISerializableLayoutAnchorable
 {
@@ -26,9 +23,6 @@ public class LayoutAnchorable : LayoutContent, Core.Serialization.ISerializableL
     private bool canDockAsTabbedDocument = true;
     private bool canMove = true;
 
-    /// <summary>
-    /// Initializes a new instance of the <see cref="LayoutAnchorable"/> class.
-    /// </summary>
     public LayoutAnchorable()
     {
         // LayoutAnchorable will hide by default, not close.
@@ -346,10 +340,6 @@ public class LayoutAnchorable : LayoutContent, Core.Serialization.ISerializableL
         }
     }
 
-    /// <summary>
-    /// Executes the on hiding operation.
-    /// </summary>
-    /// <param name="args">The event arguments.</param>
     protected virtual void OnHiding(CancelEventArgs args) => Hiding?.Invoke(this, args);
 
     internal bool TestCanHide()
@@ -359,9 +349,6 @@ public class LayoutAnchorable : LayoutContent, Core.Serialization.ISerializableL
         return !args.Cancel;
     }
 
-    /// <summary>
-    /// Executes the hide operation.
-    /// </summary>
     public void Hide()
     {
         if (Root?.Manager is DockingManager dockingManager)
@@ -374,11 +361,6 @@ public class LayoutAnchorable : LayoutContent, Core.Serialization.ISerializableL
         }
     }
 
-    /// <summary>
-    /// Executes the hide anchorable operation.
-    /// </summary>
-    /// <param name="cancelable">The cancelable.</param>
-    /// <returns><see langword="true"/> if the operation succeeds; otherwise, <see langword="false"/>.</returns>
     public bool HideAnchorable(bool cancelable)
     {
         if (!IsVisible)
@@ -430,9 +412,6 @@ public class LayoutAnchorable : LayoutContent, Core.Serialization.ISerializableL
         Root?.Hidden?.Remove(this);
     }
 
-    /// <summary>
-    /// Executes the show operation.
-    /// </summary>
     public void Show()
     {
         if (IsVisible)
@@ -528,11 +507,6 @@ public class LayoutAnchorable : LayoutContent, Core.Serialization.ISerializableL
         return pane;
     }
 
-    /// <summary>
-    /// Executes the add to layout operation.
-    /// </summary>
-    /// <param name="manager">The manager.</param>
-    /// <param name="strategy">The strategy.</param>
     public void AddToLayout(DockingManager manager, AnchorableShowStrategy strategy)
     {
         if (IsVisible || IsHidden)
@@ -626,9 +600,6 @@ public class LayoutAnchorable : LayoutContent, Core.Serialization.ISerializableL
         }
     }
 
-    /// <summary>
-    /// Executes the toggle auto hide operation.
-    /// </summary>
     public void ToggleAutoHide()
     {
         if (Root is not LayoutRoot root)
@@ -736,9 +707,6 @@ public class LayoutAnchorable : LayoutContent, Core.Serialization.ISerializableL
         }
     }
 
-    /// <summary>
-    /// Executes the toggle single auto hide operation.
-    /// </summary>
     public void ToggleSingleAutoHide()
     {
         if (Root is not LayoutRoot root)
@@ -893,10 +861,6 @@ public class LayoutAnchorable : LayoutContent, Core.Serialization.ISerializableL
         }
     }
 
-    /// <summary>
-    /// Executes the close anchorable operation.
-    /// </summary>
-    /// <returns><see langword="true"/> if the operation succeeds; otherwise, <see langword="false"/>.</returns>
     internal bool CloseAnchorable(bool closingChecked = false)
     {
         if (!closingChecked && !TestCanClose())
@@ -913,9 +877,6 @@ public class LayoutAnchorable : LayoutContent, Core.Serialization.ISerializableL
         return true;
     }
 
-    /// <summary>
-    /// Executes the notify is visible changed operation.
-    /// </summary>
     private void NotifyIsVisibleChanged() => IsVisibleChanged?.Invoke(this, EventArgs.Empty);
 
     /// <summary>

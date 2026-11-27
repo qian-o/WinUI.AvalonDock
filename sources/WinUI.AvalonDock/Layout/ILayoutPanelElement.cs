@@ -3,9 +3,6 @@
 
 namespace AvalonDock.Layout;
 
-/// <summary>
-/// Interface for layout panel element.
-/// </summary>
 public interface ILayoutPanelElement : ILayoutElement
 {
     /// <summary>

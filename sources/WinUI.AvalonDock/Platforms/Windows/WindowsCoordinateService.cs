@@ -6,7 +6,7 @@ using Windows.Graphics;
 
 namespace AvalonDock.Platforms.Windows;
 
-internal sealed class WindowsCoordinateService : ICoordinateService
+internal sealed class WindowsCoordinateService
 {
     public bool ActivateWindow(FrameworkElement element) => WindowsModalWindowHost.Activate(element);
     public bool TryGetPointerPosition(out Point position)

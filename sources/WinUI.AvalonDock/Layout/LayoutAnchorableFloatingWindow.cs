@@ -9,9 +9,6 @@ using Microsoft.UI.Xaml.Markup;
 
 namespace AvalonDock.Layout;
 
-/// <summary>
-/// Represents a layout anchorable floating window.
-/// </summary>
 [Serializable]
 [ContentProperty(Name = nameof(RootPanel))]
 public class LayoutAnchorableFloatingWindow : LayoutFloatingWindow, ILayoutElementWithVisibility
@@ -138,19 +135,11 @@ public class LayoutAnchorableFloatingWindow : LayoutFloatingWindow, ILayoutEleme
     /// <inheritdoc/>
     public override bool IsValid => RootPanel != null;
 
-    /// <summary>
-    /// Executes the root panel children tree changed operation.
-    /// </summary>
-    /// <param name="sender">The sender.</param>
-    /// <param name="e">The e.</param>
     private void OnRootPanelChildrenTreeChanged(object? sender, ChildrenTreeChangedEventArgs e)
     {
         RaisePropertyChanged(nameof(IsSinglePane));
         RaisePropertyChanged(nameof(SinglePane));
     }
 
-    /// <summary>
-    /// Executes the compute visibility operation.
-    /// </summary>
     private void ComputeVisibility() => IsVisible = RootPanel != null && RootPanel.IsVisible;
 }

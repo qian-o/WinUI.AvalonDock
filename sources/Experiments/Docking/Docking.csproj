@@ -4,6 +4,5 @@
     </PropertyGroup>
     <ItemGroup>
         <PackageReference Include="Dirkster.AvalonDock.Serializer.Xml" />
-        <PackageReference Include="Dirkster.AvalonDock.Mvvm" />
     </ItemGroup>
 </Project>

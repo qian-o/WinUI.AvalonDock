@@ -7,16 +7,10 @@ using Microsoft.UI.Xaml;
 
 namespace AvalonDock.Controls;
 
-/// <summary>
-/// Represents the layout Document Item.
-/// </summary>
 public class LayoutDocumentItem : LayoutItem
 {
     private LayoutDocument? document;   // The content of this item
 
-    /// <summary>
-    /// Initializes a new instance of the <see cref="LayoutDocumentItem"/> class.
-    /// </summary>
     internal LayoutDocumentItem()
     {
     }

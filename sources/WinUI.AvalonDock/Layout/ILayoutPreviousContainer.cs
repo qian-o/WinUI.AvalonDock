@@ -3,9 +3,6 @@
 
 namespace AvalonDock.Layout;
 
-/// <summary>
-/// Interface for layout previous container.
-/// </summary>
 public interface ILayoutPreviousContainer
 {
     /// <summary>

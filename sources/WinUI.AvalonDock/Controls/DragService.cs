@@ -9,9 +9,6 @@ using Windows.Foundation;
 
 namespace AvalonDock.Controls;
 
-/// <summary>
-/// Represents the drag Service.
-/// </summary>
 internal class DragService
 {
     private DockingManager manager;
@@ -30,20 +27,12 @@ internal class DragService
     private IDropTarget? currentDropTarget;
     private bool isDrag;
 
-    /// <summary>
-    /// Initializes a new instance of the <see cref="DragService"/> class.
-    /// </summary>
-    /// <param name="floatingWindow">The floating Window.</param>
     public DragService(LayoutFloatingWindowControl floatingWindow)
     {
         this.floatingWindow = floatingWindow;
         manager = floatingWindow.Model.Root?.Manager ?? throw new ArgumentException("浮动窗口必须属于停靠管理器。", nameof(floatingWindow));
     }
 
-    /// <summary>
-    /// Executes the update Mouse Location operation.
-    /// </summary>
-    /// <param name="dragPosition">The drag Position.</param>
     internal void UpdateMouseLocation(Point dragPosition)
     {
         if (!isDrag)
@@ -211,11 +200,6 @@ internal class DragService
         }
     }
 
-    /// <summary>
-    /// Executes the drop operation.
-    /// </summary>
-    /// <param name="dropLocation">The drop Location.</param>
-    /// <param name="dropHandled">The drop Handled.</param>
     internal void Drop(Point dropLocation, out bool dropHandled)
     {
         dropHandled = false;
@@ -262,9 +246,6 @@ internal class DragService
         manager?.HideAllOverlayWindows();
     }
 
-    /// <summary>
-    /// Executes the abort operation.
-    /// </summary>
     internal void Abort()
     {
         // An abort also runs when the dragged window is closed while the drag is still in progress,

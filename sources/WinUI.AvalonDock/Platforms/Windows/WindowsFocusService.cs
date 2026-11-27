@@ -6,7 +6,7 @@ using Microsoft.UI.Xaml.Input;
 
 namespace AvalonDock.Platforms.Windows;
 
-internal sealed class WindowsFocusService : IFocusService
+internal sealed class WindowsFocusService
 {
     public IDisposable ObserveNativeFocus(Action<UIElement, INativeFocusTarget> focusChanged) => new NativeFocusSubscription(focusChanged);
 

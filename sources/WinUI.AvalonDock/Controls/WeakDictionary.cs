@@ -6,11 +6,6 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace AvalonDock.Controls;
 
-/// <summary>
-/// Represents the weak dictionary.
-/// </summary>
-/// <typeparam name="K">The type of k.</typeparam>
-/// <typeparam name="V">The type of v.</typeparam>
 internal class WeakDictionary<K, V>
     where K : class
     where V : class

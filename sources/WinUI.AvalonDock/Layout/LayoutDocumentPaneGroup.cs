@@ -7,9 +7,6 @@ using Microsoft.UI.Xaml.Markup;
 
 namespace AvalonDock.Layout;
 
-/// <summary>
-/// Represents a layout document pane group.
-/// </summary>
 [ContentProperty(Name = nameof(Children))]
 [Serializable]
 public class LayoutDocumentPaneGroup : LayoutPositionableGroup<ILayoutDocumentPane>, ILayoutDocumentPane, ILayoutOrientableGroup
@@ -21,17 +18,10 @@ public class LayoutDocumentPaneGroup : LayoutPositionableGroup<ILayoutDocumentPa
     // WPF Horizontal is zero; WinUI Vertical is zero. Preserve the upstream default explicitly.
     private Orientation paneOrientation = Orientation.Horizontal;
 
-    /// <summary>
-    /// Initializes a new instance of the <see cref="LayoutDocumentPaneGroup"/> class.
-    /// </summary>
     public LayoutDocumentPaneGroup()
     {
     }
 
-    /// <summary>
-    /// Initializes a new instance of the <see cref="LayoutDocumentPaneGroup"/> class.
-    /// </summary>
-    /// <param name="documentPane">The document pane.</param>
     public LayoutDocumentPaneGroup(LayoutDocumentPane documentPane)
     {
         Children.Add(documentPane);

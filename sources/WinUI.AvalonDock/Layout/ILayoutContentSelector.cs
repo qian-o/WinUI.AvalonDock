@@ -3,9 +3,6 @@
 
 namespace AvalonDock.Layout;
 
-/// <summary>
-/// Interface for layout content selector.
-/// </summary>
 public interface ILayoutContentSelector
 {
     /// <summary>
@@ -24,10 +21,5 @@ public interface ILayoutContentSelector
         get;
     }
 
-    /// <summary>
-    /// Executes the index of operation.
-    /// </summary>
-    /// <param name="content">The layout content.</param>
-    /// <returns>The resulting value.</returns>
     int IndexOf(LayoutContent content);
 }

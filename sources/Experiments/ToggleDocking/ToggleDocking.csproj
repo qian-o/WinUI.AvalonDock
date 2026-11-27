@@ -2,7 +2,4 @@
     <PropertyGroup>
         <RootNamespace>WinUI.AvalonDock.Experiments.ToggleDocking</RootNamespace>
     </PropertyGroup>
-    <ItemGroup>
-        <PackageReference Include="Dirkster.AvalonDock.Mvvm" />
-    </ItemGroup>
 </Project>

@@ -9,9 +9,6 @@ using Microsoft.UI.Xaml.Markup;
 
 namespace AvalonDock.Layout;
 
-/// <summary>
-/// Represents a layout document floating window.
-/// </summary>
 [ContentProperty(Name = nameof(RootPanel))]
 [Serializable]
 public class LayoutDocumentFloatingWindow : LayoutFloatingWindow, ILayoutElementWithVisibility
@@ -63,11 +60,6 @@ public class LayoutDocumentFloatingWindow : LayoutFloatingWindow, ILayoutElement
         }
     }
 
-    /// <summary>
-    /// Executes the root panel children tree changed operation.
-    /// </summary>
-    /// <param name="sender">The sender.</param>
-    /// <param name="e">The e.</param>
     private void OnRootPanelChildrenTreeChanged(object? sender, ChildrenTreeChangedEventArgs e) => NotifyPaneChanges();
 
     private void NotifyPaneChanges()

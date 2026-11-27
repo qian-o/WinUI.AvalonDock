@@ -6,9 +6,6 @@ using System.Linq;
 
 namespace AvalonDock.Layout;
 
-/// <summary>
-/// Represents a layout document.
-/// </summary>
 [Serializable]
 public class LayoutDocument : LayoutContent, Core.Serialization.ISerializableLayoutDocument
 {
@@ -66,10 +63,6 @@ public class LayoutDocument : LayoutContent, Core.Serialization.ISerializableLay
         }
     }
 
-    /// <summary>
-    /// Executes the close document operation.
-    /// </summary>
-    /// <returns><see langword="true"/> if the operation succeeds; otherwise, <see langword="false"/>.</returns>
     internal bool CloseDocument()
     {
         if (!TestCanClose())

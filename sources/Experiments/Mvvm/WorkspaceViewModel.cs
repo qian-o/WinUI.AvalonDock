@@ -12,7 +12,7 @@ public sealed class WorkspaceViewModel : INotifyPropertyChanged
 {
     private int nextDocumentNumber = 1;
     private int nextToolNumber = 1;
-    private string statusText = "MVVM workspace using DockLayoutService, RootDock, and model content.";
+    private string statusText = string.Empty;
 
     public WorkspaceViewModel()
     {
@@ -26,7 +26,7 @@ public sealed class WorkspaceViewModel : INotifyPropertyChanged
         ];
         LayoutService = new DockLayoutService(Tools);
 
-        OpenCommand = new RelayCommand(_ => OpenDocument($"Document {nextDocumentNumber}", "This document was created by the ViewModel.\n\nUse Edit to mark it as modified."));
+        OpenCommand = new RelayCommand(_ => OpenDocument($"Document {nextDocumentNumber}", string.Empty));
         MarkModifiedCommand = new RelayCommand(_ => MarkActiveDocumentModified());
         SaveCommand = new RelayCommand(_ => SaveActiveDocument());
         CloseActiveCommand = new RelayCommand(_ => CloseActiveDocument());
@@ -38,8 +38,8 @@ public sealed class WorkspaceViewModel : INotifyPropertyChanged
         ResetToolsCommand = new RelayCommand(_ => ResetTools());
         ToggleFloatingCommand = new RelayCommand(_ => ToggleFloating());
 
-        OpenDocument("Main Document", "This note was added through DockLayoutService.OpenDocument.\n\nUse Edit to mark it as modified, then save it before closing.\n\nDrag the tab to rearrange or dock the document.\n");
-        OpenDocument("Model Overview", "RootDock, DocumentDock, and ToolDock come from the MVVM package.\n\nThe window binds DockLayout and ICommand while the model tree stores the layout state.\n");
+        OpenDocument("Main Document", "Use Edit to mark this document as modified.");
+        OpenDocument("Model Overview", "Documents and tools share a RootDock.");
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
@@ -270,7 +270,7 @@ public sealed class WorkspaceViewModel : INotifyPropertyChanged
         }
 
         Documents.Clear();
-        OpenDocument("Reset Document", "The ViewModel reset the document collection.\n\nYou can continue opening, replacing, and saving documents.\n");
+        OpenDocument("Reset Document", string.Empty);
         SetStatus("Document collection reset.");
     }
 

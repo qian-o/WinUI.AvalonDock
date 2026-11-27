@@ -6,9 +6,6 @@ using Windows.Foundation;
 
 namespace AvalonDock.Controls;
 
-/// <summary>
-/// Represents the drop Target Base.
-/// </summary>
 internal abstract class DropTargetBase : DependencyObject, IDropTarget
 {
     // Native overlay measurements and a source snapshot are supplied by the shared session.

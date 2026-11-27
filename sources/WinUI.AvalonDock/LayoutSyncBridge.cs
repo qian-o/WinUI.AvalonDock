@@ -12,9 +12,6 @@ using Microsoft.UI.Dispatching;
 
 namespace AvalonDock;
 
-/// <summary>
-/// Represents the layout Sync Bridge.
-/// </summary>
 internal sealed class LayoutSyncBridge
 {
     private readonly DockingManager manager;
@@ -33,20 +30,12 @@ internal sealed class LayoutSyncBridge
     /// </summary>
     internal IReadOnlyDictionary<object, AnchorSide> ContentToSideMap => contentToSide;
 
-    /// <summary>
-    /// Initializes a new instance of the <see cref="LayoutSyncBridge"/> class.
-    /// </summary>
-    /// <param name="manager">The manager.</param>
-    /// <param name="rootDock">The root Dock.</param>
     public LayoutSyncBridge(DockingManager manager, IRootDock rootDock)
     {
         this.manager = manager ?? throw new ArgumentNullException(nameof(manager));
         this.rootDock = rootDock ?? throw new ArgumentNullException(nameof(rootDock));
     }
 
-    /// <summary>
-    /// Executes the attach operation.
-    /// </summary>
     public void Attach()
     {
         documentModels = new ObservableCollection<object>();
@@ -65,9 +54,6 @@ internal sealed class LayoutSyncBridge
         isAttached = true;
     }
 
-    /// <summary>
-    /// Executes the detach operation.
-    /// </summary>
     public void Detach()
     {
         isAttached = false;

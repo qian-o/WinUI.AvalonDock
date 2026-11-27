@@ -7,9 +7,6 @@ using Microsoft.UI.Xaml.Markup;
 
 namespace AvalonDock.Layout;
 
-/// <summary>
-/// Represents a layout anchor group.
-/// </summary>
 [ContentProperty(Name = nameof(Children))]
 [Serializable]
 public class LayoutAnchorGroup : LayoutGroup<LayoutAnchorable>, ILayoutPreviousContainer, ILayoutPaneSerializable,

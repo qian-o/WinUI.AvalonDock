@@ -9,8 +9,6 @@
         <PackageReference Include="Dirkster.AvalonDock.Serializer.Xml" Version="5.0.0" />
     </ItemGroup>
     <ItemGroup>
-        <!-- Test code is shared; the product is consumed exclusively as a package. -->
-        <Compile Include="..\Shared\*.cs" Link="Checks/%(Filename)%(Extension)" />
-        <Compile Include="..\..\sources\Experiments\Shared\WorkspaceContent.cs" Link="Checks\WorkspaceContent.cs" />
+        <Compile Include="..\..\sources\Experiments\Shared\*.cs" Link="Sample/%(Filename)%(Extension)" />
     </ItemGroup>
 </Project>

@@ -11,7 +11,6 @@
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
-            <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
         <controls:MenuBar Grid.Row="0">
             <controls:MenuBarItem Title="File">
@@ -55,14 +54,11 @@
         </controls:MenuBar>
         <TextBlock x:Name="StatusText"
                    Grid.Row="1"
-                   Text="ToggleDocking: six tool zones with sidebar buttons." />
+                   Text="Ready." />
         <dock:ToggleDockingManager x:Name="Manager"
                                    Grid.Row="2"
                                    ButtonSize="40"
                                    LayoutItemTemplate="{StaticResource WorkspaceContentTemplate}"
                                    LayoutPriority="BottomFullWidth" />
-        <TextBlock Grid.Row="3"
-                   Opacity="0.75"
-                   Text="Each tool's Zone selects a sidebar position. Drag a tool to explore the zone guides." />
     </Grid>
 </Window>

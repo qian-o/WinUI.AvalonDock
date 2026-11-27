@@ -17,27 +17,24 @@ public sealed partial class MainWindow : Window
     public MainWindow()
     {
         InitializeComponent();
-#if DOCKING_VERIFICATION
-        Verification.BoundarySmokeTests.StartIfRequested(this, Manager);
-#endif
         Title = "ToggleDocking: Six-Zone Workspace";
         Closed += OnClosed;
 
         WorkspaceTool[] tools =
         [
-            CreateTool("toggle-explorer", "Explorer", DockZone.LeftTop, "\uE838", "Upper-left tool zone for project navigation."),
-            CreateTool("toggle-outline", "Outline", DockZone.LeftBottom, "\uE8A5", "Lower-left tool zone for document structure."),
-            CreateTool("toggle-properties", "Properties", DockZone.RightTop, "\uE713", "Upper-right tool zone for inspecting the selection."),
-            CreateTool("toggle-diagnostics", "Diagnostics", DockZone.RightBottom, "\uE814", "Lower-right tool zone for errors, warnings, and logs."),
-            CreateTool("toggle-output", "Output", DockZone.BottomLeft, "\uE756", "Bottom-left tool zone for build and debug output."),
-            CreateTool("toggle-terminal", "Terminal", DockZone.BottomRight, "\uE756", "Bottom-right tool zone for commands and tasks.")
+            CreateTool("toggle-explorer", "Explorer", DockZone.LeftTop, "\uE838", "Project files"),
+            CreateTool("toggle-outline", "Outline", DockZone.LeftBottom, "\uE8A5", "Document outline"),
+            CreateTool("toggle-properties", "Properties", DockZone.RightTop, "\uE713", "Selection properties"),
+            CreateTool("toggle-diagnostics", "Diagnostics", DockZone.RightBottom, "\uE814", "No issues"),
+            CreateTool("toggle-output", "Output", DockZone.BottomLeft, "\uE756", "Build output"),
+            CreateTool("toggle-terminal", "Terminal", DockZone.BottomRight, "\uE756", "Terminal output")
         ];
         layoutService = new DockLayoutService(tools);
         layoutService.OpenDocument(new WorkspaceDocument
         {
             Id = "toggle-editor",
             Title = "Workspace",
-            Text = "ToggleDocking manages all six tool zones in one layout tree.",
+            Text = "Select a sidebar tool to show or hide it.",
             IsModified = false
         });
         layoutService.OpenDocument(new WorkspaceDocument
@@ -51,7 +48,6 @@ public sealed partial class MainWindow : Window
         Manager.LayoutItemContainerStyleSelector = SampleStyles.CreateItemStyleSelector();
         Manager.DockLayout = layoutService.Layout;
         Manager.ActiveContentChanged += OnActiveContentChanged;
-        PageRoot.LayoutUpdated += OnRootLayoutUpdated;
     }
 
     private static WorkspaceTool CreateTool(string id, string title, DockZone zone, string glyph, string text)
@@ -80,8 +76,6 @@ public sealed partial class MainWindow : Window
         {
             Id = $"toggle-document-{number}",
             Title = $"Document {number}",
-            Text = "DockLayoutService.OpenDocument adds dynamic documents to the MVVM layout.",
-            IsModified = false
         };
         layoutService.OpenDocument(document);
         Manager.ActiveContent = document;
@@ -186,28 +180,7 @@ public sealed partial class MainWindow : Window
             return;
         }
 
-        StatusText.Text = GetActiveToolStatus(model);
-    }
-
-    private void OnRootLayoutUpdated(object? sender, object args)
-    {
-        if (StatusText.Text.StartsWith("Current tool: ", StringComparison.Ordinal)
-            && Manager.ActiveContent is WorkspaceTool model)
-        {
-            string status = GetActiveToolStatus(model);
-            if (StatusText.Text != status)
-            {
-                StatusText.Text = status;
-            }
-        }
-    }
-
-    private string GetActiveToolStatus(WorkspaceTool model)
-    {
-        LayoutAnchorable? tool = Manager.Layout?.Descendents().OfType<LayoutAnchorable>()
-            .FirstOrDefault(item => ReferenceEquals(item.Content, model));
-        DockZone zone = tool is null ? model.Zone : GetToolZone(tool);
-        return $"Current tool: {model.Title} ({zone}).";
+        StatusText.Text = $"Current tool: {model.Title}.";
     }
 
     private DockZone GetToolZone(LayoutAnchorable tool) => PageRoot.FindVisualChildren<ToggleDockButton>()
@@ -216,7 +189,7 @@ public sealed partial class MainWindow : Window
 
     private void OnClosed(object sender, WindowEventArgs args)
     {
-        PageRoot.LayoutUpdated -= OnRootLayoutUpdated;
+        Manager.ActiveContentChanged -= OnActiveContentChanged;
         Manager.Dispose();
     }
 }

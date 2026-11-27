@@ -9,20 +9,11 @@ using Windows.Foundation;
 
 namespace AvalonDock.Controls;
 
-/// <summary>
-/// Represents the document pane drop target.
-/// </summary>
 internal class DocumentPaneDropTarget : DropTarget<LayoutDocumentPaneControl>
 {
     private LayoutDocumentPaneControl targetPane;
     private int tabIndex = -1;
 
-    /// <summary>
-    /// Initializes a new instance of the <see cref="DocumentPaneDropTarget"/> class.
-    /// </summary>
-    /// <param name="paneControl">The pane control.</param>
-    /// <param name="detectionRect">The detection rectangle.</param>
-    /// <param name="type">The drop target type.</param>
     internal DocumentPaneDropTarget(
         LayoutDocumentPaneControl paneControl,
         Rect detectionRect,
@@ -32,13 +23,6 @@ internal class DocumentPaneDropTarget : DropTarget<LayoutDocumentPaneControl>
         targetPane = paneControl;
     }
 
-    /// <summary>
-    /// Initializes a new instance of the <see cref="DocumentPaneDropTarget"/> class.
-    /// </summary>
-    /// <param name="paneControl">The pane control.</param>
-    /// <param name="detectionRect">The detection rectangle.</param>
-    /// <param name="type">The drop target type.</param>
-    /// <param name="tabIndex">The tab index.</param>
     internal DocumentPaneDropTarget(
         LayoutDocumentPaneControl paneControl,
         Rect detectionRect,

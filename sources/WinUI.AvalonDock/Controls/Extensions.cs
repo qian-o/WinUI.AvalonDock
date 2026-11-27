@@ -7,17 +7,8 @@ using Microsoft.UI.Xaml.Media;
 
 namespace AvalonDock.Controls;
 
-/// <summary>
-/// Provides helper members for extensions.
-/// </summary>
 public static class Extensions
 {
-    /// <summary>
-    /// Executes the find Visual Children operation.
-    /// </summary>
-    /// <typeparam name="T">The t type.</typeparam>
-    /// <param name="depObj">The dep Obj.</param>
-    /// <returns>The result of the operation.</returns>
     public static IEnumerable<T> FindVisualChildren<T>(this DependencyObject? depObj)
         where T : DependencyObject
     {
@@ -43,11 +34,6 @@ public static class Extensions
 
 
 
-    /// <summary>
-    /// Executes the find Visual Tree Root operation.
-    /// </summary>
-    /// <param name="initial">The initial.</param>
-    /// <returns>The result of the operation.</returns>
     public static DependencyObject FindVisualTreeRoot(this DependencyObject initial)
     {
         DependencyObject? current = initial;
@@ -71,12 +57,6 @@ public static class Extensions
         return result;
     }
 
-    /// <summary>
-    /// Executes the find Visual Ancestor operation.
-    /// </summary>
-    /// <typeparam name="T">The t type.</typeparam>
-    /// <param name="dependencyObject">The dependency Object.</param>
-    /// <returns>The result of the operation.</returns>
     public static T? FindVisualAncestor<T>(this DependencyObject dependencyObject)
         where T : class
     {

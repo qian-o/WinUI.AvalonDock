@@ -12,9 +12,6 @@ using Microsoft.UI.Xaml.Markup;
 
 namespace AvalonDock.Layout;
 
-/// <summary>
-/// Represents a layout root.
-/// </summary>
 [ContentProperty(Name = nameof(RootPanel))]
 [Serializable]
 public class LayoutRoot : LayoutElement, ILayoutContainer, ILayoutRoot, Core.Serialization.ISerializableLayoutRoot
@@ -41,9 +38,6 @@ public class LayoutRoot : LayoutElement, ILayoutContainer, ILayoutRoot, Core.Ser
     [NonSerialized]
     private DockingManager? dockingManager;
 
-    /// <summary>
-    /// Initializes a new instance of the <see cref="LayoutRoot"/> class.
-    /// </summary>
     public LayoutRoot()
     {
         RightSide = new LayoutAnchorSide();
@@ -651,21 +645,10 @@ public class LayoutRoot : LayoutElement, ILayoutContainer, ILayoutRoot, Core.Ser
 
     }
 
-    /// <summary>
-    /// Executes the fire layout updated operation.
-    /// </summary>
     internal void FireLayoutUpdated() => Updated?.Invoke(this, EventArgs.Empty);
 
-    /// <summary>
-    /// Executes the on layout element added operation.
-    /// </summary>
-    /// <param name="element">The layout element.</param>
     internal void OnLayoutElementAdded(LayoutElement element) => ElementAdded?.Invoke(this, new LayoutElementEventArgs(element));
 
-    /// <summary>
-    /// Executes the on layout element removed operation.
-    /// </summary>
-    /// <param name="element">The layout element.</param>
     internal void OnLayoutElementRemoved(LayoutElement element)
     {
         if (element.Descendents().OfType<LayoutContent>().Any(c => c == LastFocusedDocument))
@@ -681,11 +664,6 @@ public class LayoutRoot : LayoutElement, ILayoutContainer, ILayoutRoot, Core.Ser
         ElementRemoved?.Invoke(this, new LayoutElementEventArgs(element));
     }
 
-    /// <summary>
-    /// Executes the floating windows collection changed operation.
-    /// </summary>
-    /// <param name="sender">The sender.</param>
-    /// <param name="e">The e.</param>
     private void OnFloatingWindowsCollectionChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
     {
         bool bNotifyChildren = false;
@@ -751,11 +729,6 @@ public class LayoutRoot : LayoutElement, ILayoutContainer, ILayoutRoot, Core.Ser
         }
     }
 
-    /// <summary>
-    /// Executes the hidden anchorables collection changed operation.
-    /// </summary>
-    /// <param name="sender">The sender.</param>
-    /// <param name="e">The e.</param>
     private void OnHiddenAnchorablesCollectionChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
     {
         bool bNotifyChildren = false;
@@ -833,11 +806,6 @@ public class LayoutRoot : LayoutElement, ILayoutContainer, ILayoutRoot, Core.Ser
         }
     }
 
-    /// <summary>
-    /// Executes the internal set active content operation.
-    /// </summary>
-    /// <param name="currentValue">The current value.</param>
-    /// <param name="newActiveContent">The new active content.</param>
     private void InternalSetActiveContent(LayoutContent? currentValue, LayoutContent? newActiveContent)
     {
         RaisePropertyChanging(nameof(ActiveContent));

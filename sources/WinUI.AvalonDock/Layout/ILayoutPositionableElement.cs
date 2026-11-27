@@ -5,9 +5,6 @@ using Microsoft.UI.Xaml;
 
 namespace AvalonDock.Layout;
 
-/// <summary>
-/// Interface for layout positionable element.
-/// </summary>
 internal interface ILayoutPositionableElement : ILayoutElement, ILayoutElementForFloatingWindow
 {
     /// <summary>
@@ -90,22 +87,11 @@ internal interface ILayoutPositionableElement : ILayoutElement, ILayoutElementFo
         get;
     }
 
-    /// <summary>
-    /// Executes the calculated dock min width operation.
-    /// </summary>
-    /// <returns>The resulting value.</returns>
     double CalculatedDockMinWidth();
 
-    /// <summary>
-    /// Executes the calculated dock min height operation.
-    /// </summary>
-    /// <returns>The resulting value.</returns>
     double CalculatedDockMinHeight();
 }
 
-/// <summary>
-/// Interface for layout positionable element with actual size.
-/// </summary>
 internal interface ILayoutPositionableElementWithActualSize : ILayoutPositionableElement
 {
     /// <summary>
@@ -125,9 +111,6 @@ internal interface ILayoutPositionableElementWithActualSize : ILayoutPositionabl
     }
 }
 
-/// <summary>
-/// Interface for layout element for floating window.
-/// </summary>
 internal interface ILayoutElementForFloatingWindow
 {
     /// <summary>

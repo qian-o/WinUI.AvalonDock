@@ -9,9 +9,6 @@ using Microsoft.UI.Xaml.Markup;
 
 namespace AvalonDock.Layout;
 
-/// <summary>
-/// Represents a layout panel.
-/// </summary>
 [ContentProperty(Name = nameof(Children))]
 [Serializable]
 public class LayoutPanel : LayoutPositionableGroup<ILayoutPanelElement>, ILayoutPanelElement, ILayoutOrientableGroup
@@ -23,17 +20,10 @@ public class LayoutPanel : LayoutPositionableGroup<ILayoutPanelElement>, ILayout
     // WPF Horizontal is zero; WinUI Vertical is zero. Preserve the upstream default explicitly.
     private Orientation panelOrientation = Orientation.Horizontal;
 
-    /// <summary>
-    /// Initializes a new instance of the <see cref="LayoutPanel"/> class.
-    /// </summary>
     public LayoutPanel()
     {
     }
 
-    /// <summary>
-    /// Initializes a new instance of the <see cref="LayoutPanel"/> class.
-    /// </summary>
-    /// <param name="firstChild">The first child.</param>
     public LayoutPanel(ILayoutPanelElement firstChild)
     {
         Children.Add(firstChild);

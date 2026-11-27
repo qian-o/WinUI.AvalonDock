@@ -5,7 +5,7 @@ using Windows.UI.Core;
 
 namespace AvalonDock.Platforms.Windows;
 
-internal sealed class WindowsKeyboardInputService : IKeyboardInputService
+internal sealed class WindowsKeyboardInputService
 {
     public bool IsKeyDown(VirtualKey key) => (InputKeyboardSource.GetKeyStateForCurrentThread(key) & CoreVirtualKeyStates.Down) != 0;
 

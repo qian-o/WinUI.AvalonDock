@@ -10,17 +10,11 @@ using BindableAttribute = System.ComponentModel.BindableAttribute;
 
 namespace AvalonDock.Controls;
 
-/// <summary>
-/// Represents the layout item.
-/// </summary>
 [Microsoft.UI.Xaml.Data.Bindable]
 public abstract partial class LayoutItem : FrameworkElement
 {
     private readonly ReentrantFlag isSelectedReentrantFlag = new();
     private readonly ReentrantFlag isActiveReentrantFlag = new();
-    /// <summary>
-    /// Initializes a new instance of the <see cref="LayoutItem"/> class.
-    /// </summary>
     internal LayoutItem()
     {
         RegisterPropertyChangedCallback(VisibilityProperty, (_, _) => OnVisibilityChanged());

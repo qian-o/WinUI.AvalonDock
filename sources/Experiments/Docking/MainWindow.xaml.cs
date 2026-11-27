@@ -34,14 +34,14 @@ public sealed partial class MainWindow : Window
         {
             Id = "classic-editor",
             Title = "Editor",
-            Text = "This document was imported through DocumentsSource. Mark it as modified from Edit to try cancelable closing.",
+            Text = "Mark this document as modified to try cancelable closing.",
             IsModified = false
         });
         documents.Add(new WorkspaceDocument
         {
             Id = "classic-readme",
             Title = "Notes",
-            Text = "Drag the tab onto a docking guide, or use the document menu to create a new tab group.",
+            Text = "Drag this tab to a docking guide.",
             IsModified = false
         });
         tools.Add(new WorkspaceTool
@@ -49,19 +49,16 @@ public sealed partial class MainWindow : Window
             Id = "classic-solution",
             Title = "Solution Explorer",
             Zone = DockZone.LeftTop,
-            Text = "Tool panes support hiding, auto hide, floating, and detached windows."
+            Text = "Solution items"
         });
         tools.Add(new WorkspaceTool
         {
             Id = "classic-properties",
             Title = "Properties",
             Zone = DockZone.LeftBottom,
-            Text = "A single AnchorablesSource can provide multiple tool models."
+            Text = "Selection properties"
         });
         Manager.Loaded += InitializeSampleAutoHideSizes;
-#if DOCKING_VERIFICATION
-        Verification.BoundarySmokeTests.StartIfRequested(this, Manager);
-#endif
     }
 
     private void InitializeSampleAutoHideSizes(object sender, RoutedEventArgs e)
@@ -87,8 +84,6 @@ public sealed partial class MainWindow : Window
         {
             Id = $"classic-document-{number}",
             Title = $"Document {number}",
-            Text = "A document added at runtime immediately appears in DocumentsSource and the layout tree.",
-            IsModified = false
         };
         documents.Add(document);
         Manager.ActiveContent = document;
@@ -107,12 +102,10 @@ public sealed partial class MainWindow : Window
         {
             Id = $"classic-document-{nextDocumentNumber++}",
             Title = "Replacement Document",
-            Text = "This document entered the layout source through ObservableCollection.Replace.",
-            IsModified = false
         };
         documents[0] = replacement;
         Manager.ActiveContent = replacement;
-        StatusText.Text = "Replaced the first document in DocumentsSource.";
+        StatusText.Text = "First document replaced.";
     }
 
     private void ResetDocuments_Click(object sender, RoutedEventArgs e)
@@ -122,19 +115,16 @@ public sealed partial class MainWindow : Window
         {
             Id = "classic-reset-document",
             Title = "Reset Document",
-            Text = "This document was reimported through DocumentsSource.Reset.",
-            IsModified = false
         };
         documents.Add(resetDocument);
         Manager.ActiveContent = resetDocument;
-        StatusText.Text = "Reset DocumentsSource and reimported the document.";
+        StatusText.Text = "Documents reset.";
     }
 
     private void CloseActive_Click(object sender, RoutedEventArgs e)
     {
-        LayoutContent? content = ActiveLayoutContent;
-        content?.Close();
-        StatusText.Text = content is null ? "No active item." : $"Requested closing {content.Title}.";
+        if (ActiveLayoutContent is { } content) content.Close();
+        else StatusText.Text = "No active item.";
     }
 
     private void MarkActiveDocumentModified_Click(object sender, RoutedEventArgs e)
@@ -151,16 +141,14 @@ public sealed partial class MainWindow : Window
 
     private void FloatActive_Click(object sender, RoutedEventArgs e)
     {
-        LayoutContent? content = ActiveLayoutContent;
-        content?.Float();
-        StatusText.Text = content is null ? "No active item." : $"Requested floating {content.Title}.";
+        if (ActiveLayoutContent is { } content) content.Float();
+        else StatusText.Text = "No active item.";
     }
 
     private void DockActive_Click(object sender, RoutedEventArgs e)
     {
-        LayoutContent? content = ActiveLayoutContent;
-        content?.Dock();
-        StatusText.Text = content is null ? "No active item." : $"Docked {content.Title}.";
+        if (ActiveLayoutContent is { } content) content.Dock();
+        else StatusText.Text = "No active item.";
     }
 
     private void AutoHideTool_Click(object sender, RoutedEventArgs e)
@@ -278,7 +266,7 @@ public sealed partial class MainWindow : Window
         if (e.Document.Content is WorkspaceDocument document && document.IsModified && !AllowCloseModifiedMenuItem.IsChecked)
         {
             e.Cancel = true;
-            StatusText.Text = $"Closing modified {document.Title} was canceled. Enable Allow Closing Modified Items under Edit to retry.";
+            StatusText.Text = $"{document.Title} has unsaved changes. See Edit to allow closing.";
         }
     }
 
@@ -287,6 +275,7 @@ public sealed partial class MainWindow : Window
         if (e.Document.Content is WorkspaceDocument document)
         {
             documents.Remove(document);
+            StatusText.Text = $"Closed {e.Document.Title}.";
         }
     }
 

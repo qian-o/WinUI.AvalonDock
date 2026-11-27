@@ -6,9 +6,6 @@ using Microsoft.UI.Dispatching;
 
 namespace AvalonDock.Controls;
 
-/// <summary>
-/// Represents the auto Hide Window Manager.
-/// </summary>
 internal class AutoHideWindowManager : IDisposable
 {
     private readonly DockingManager manager;
@@ -17,10 +14,6 @@ internal class AutoHideWindowManager : IDisposable
     private bool disposed;
     private bool hidingWindow;
 
-    /// <summary>
-    /// Initializes a new instance of the <see cref="AutoHideWindowManager"/> class.
-    /// </summary>
-    /// <param name="manager">The manager.</param>
     internal AutoHideWindowManager(DockingManager manager)
     {
         this.manager = manager;
@@ -28,10 +21,6 @@ internal class AutoHideWindowManager : IDisposable
         SetupCloseTimer();
     }
 
-    /// <summary>
-    /// Executes the show Auto Hide Window operation.
-    /// </summary>
-    /// <param name="anchor">The anchor.</param>
     public void ShowAutoHideWindow(LayoutAnchorControl anchor)
     {
         if (disposed || manager.IsDisposed || hidingWindow || manager.AutoHideWindow is not { } autoHideWindow)
@@ -48,10 +37,6 @@ internal class AutoHideWindowManager : IDisposable
         }
     }
 
-    /// <summary>
-    /// Executes the hide Auto Window operation.
-    /// </summary>
-    /// <param name="anchor">The anchor.</param>
     public void HideAutoWindow(LayoutAnchorControl? anchor = null)
     {
         if (disposed || hidingWindow)

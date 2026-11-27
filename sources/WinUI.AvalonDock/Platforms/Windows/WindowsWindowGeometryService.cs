@@ -5,7 +5,7 @@ using Windows.Graphics;
 
 namespace AvalonDock.Platforms.Windows;
 
-internal sealed class WindowsWindowGeometryService : IWindowGeometryService
+internal sealed class WindowsWindowGeometryService
 {
     internal static readonly double DesktopScale = ReadDesktopScale();
 

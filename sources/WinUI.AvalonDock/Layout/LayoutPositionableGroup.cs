@@ -207,10 +207,6 @@ public abstract class LayoutPositionableGroup<T> : LayoutGroup<T>, ILayoutPositi
         }
     }
 
-    /// <summary>
-    /// Executes the calculated dock min width operation.
-    /// </summary>
-    /// <returns>The resulting value.</returns>
     public double CalculatedDockMinWidth()
     {
         double childrenDockMinWidth = 0.0;
@@ -245,10 +241,6 @@ public abstract class LayoutPositionableGroup<T> : LayoutGroup<T>, ILayoutPositi
         }
     }
 
-    /// <summary>
-    /// Executes the calculated dock min height operation.
-    /// </summary>
-    /// <returns>The resulting value.</returns>
     public double CalculatedDockMinHeight()
     {
         double childrenDockMinHeight = 0.0;
@@ -394,16 +386,10 @@ public abstract class LayoutPositionableGroup<T> : LayoutGroup<T>, ILayoutPositi
     /// <inheritdoc/>
     void ILayoutElementForFloatingWindow.RaiseFloatingPropertiesUpdated() => FloatingPropertiesUpdated?.Invoke(this, EventArgs.Empty);
 
-    /// <summary>
-    /// Executes the on dock width changed operation.
-    /// </summary>
     protected virtual void OnDockWidthChanged()
     {
     }
 
-    /// <summary>
-    /// Executes the on dock height changed operation.
-    /// </summary>
     protected virtual void OnDockHeightChanged()
     {
     }
