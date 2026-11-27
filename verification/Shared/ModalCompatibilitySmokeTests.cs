@@ -5,7 +5,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Windows.Foundation;
 
-namespace WinUI.AvalonDock.Experiments.Shared;
+namespace WinUI.AvalonDock.Verification;
 
 /// <summary>Checks the pinned upstream ShowDialog thread-window semantics on native WinUI windows.</summary>
 internal static class ModalCompatibilitySmokeTests

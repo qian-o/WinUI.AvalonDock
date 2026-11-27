@@ -344,7 +344,6 @@ internal sealed class LayoutPanePresenter : IDisposable
     private void OnChildrenChanged(object? sender, EventArgs e)
     {
         Rebuild();
-        tabs.UpdatePaneActiveState();
     }
 
     private void OnLayoutItemCreated(LayoutContent content)
@@ -364,9 +363,10 @@ internal sealed class LayoutPanePresenter : IDisposable
             SynchronizeSelection();
         }
 
-        if (e.PropertyName is nameof(LayoutAnchorablePane.IsDirectlyHostedInFloatingWindow) or nameof(LayoutElement.Parent) or nameof(LayoutElement.Root))
+        if (e.PropertyName is nameof(LayoutAnchorablePane.IsDirectlyHostedInFloatingWindow) or nameof(LayoutDocumentPane.ShowHeader)
+            or nameof(LayoutElement.Parent) or nameof(LayoutElement.Root))
         {
-            tabs.UpdatePaneActiveState();
+            tabs.UpdatePanePresentation();
         }
     }
 
@@ -384,7 +384,7 @@ internal sealed class LayoutPanePresenter : IDisposable
 
         if (e.PropertyName == nameof(LayoutContent.IsActive))
         {
-            tabs.UpdatePaneActiveState();
+            tabs.UpdatePanePresentation();
         }
 
         if (e.PropertyName == nameof(LayoutContent.IsEnabled))
@@ -421,15 +421,7 @@ internal sealed class LayoutPanePresenter : IDisposable
             }
 
             tabs.SynchronizeNativeSelection(previousTab);
-            if (pane is LayoutAnchorablePane)
-            {
-                foreach ((LayoutContent Model, TabViewItem Tab, Control Header, Control Content) entry in items)
-                {
-                    UpdateToolTabPlacement(entry.Tab, ReferenceEquals(entry.Model, selected));
-                }
-            }
-
-            tabs.UpdatePaneActiveState();
+            tabs.UpdatePanePresentation();
         }
         finally { synchronizing = previous; }
     }
@@ -488,15 +480,6 @@ internal sealed class LayoutPanePresenter : IDisposable
             UpdateHeaderEnabledState(entry);
         }
 
-        if (pane is LayoutAnchorablePane)
-        {
-            UpdateToolTabPlacement(tab, ReferenceEquals(tab.Tag, (pane as ILayoutContentSelector)?.SelectedContent));
-        }
-        else
-        {
-            VisualStateManager.GoToState(tab, "DocumentTab", false);
-        }
-
         UpdateTabClosePolicy(tab);
     }
 
@@ -522,9 +505,6 @@ internal sealed class LayoutPanePresenter : IDisposable
 
         header.BeginDragFromTab(tab, args);
     }
-
-    private static void UpdateToolTabPlacement(TabViewItem tab, bool selected) =>
-        VisualStateManager.GoToState(tab, selected ? "ToolTabSelected" : "ToolTab", false);
 
     private static void UpdateHeaderEnabledState((LayoutContent Model, TabViewItem Tab, Control Header, Control Content) entry)
     {

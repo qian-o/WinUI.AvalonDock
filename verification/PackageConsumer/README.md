@@ -2,7 +2,7 @@
 
 This independent WinUI desktop application consumes `WinUI.AvalonDock` **0.1.0-alpha** from the repository's local Release `.nupkg`. It has no product `ProjectReference`, does not join the root solution, and does not import the root build or central package version settings. This verifies the package that a consumer would install, including packaged templates, resources, upstream MVVM models, and XML serialization.
 
-The only shared source files are verification code and content models from `sources/Experiments/Shared`. The product assembly and resources come exclusively from the package. Source mapping restricts `WinUI.AvalonDock` to the local candidate source; dependencies use nuget.org. Packages restore into `artifacts/local-package-cache`, separate from the user's global cache. The runner verifies the actual restore source, absence of project dependencies, package SHA256, and matching restored/output product assembly SHA256.
+The host shares [verification code](../Shared/) with the sample verification builds and uses the [sample content models](../../sources/Experiments/Shared/WorkspaceContent.cs). Source mapping directs the product package to the local Release directory and dependencies to nuget.org. The runner checks the restore source, package and assembly hashes, and project references in an isolated cache under `artifacts/local-package-cache`.
 
 ## Run
 
@@ -37,31 +37,7 @@ The host binds `LayoutItem.Title` and `LayoutItem.ContentId` to its own models t
 
 `--boundary-smoke <absolute-log-path>` runs the shared boundary regression against the package assembly on the real WinUI UI thread and native windows. It additionally inspects some internal behavior via reflection. This separate check validates the same consumer binding, style, template, resource, and cleanup invariants as the examples, followed by the same-dispatcher workspace lifecycle and pinned upstream modal-window compatibility checks. Close synchronization and same-URI theme removal are checked against the pinned upstream behavior.
 
-`--overlay-lifetime <absolute-log-path>` starts the shared opt-in overlay lifecycle check through the consumer window. It is separate from normal startup and the 130-check boundary run. `Run-Checks.ps1` now runs package smoke, boundary smoke, and this independent overlay lifetime check in sequence for each configuration; overlay success is checked through its `RESULT: PASS` line. Rebuild and refresh the package candidate before comparing product changes so this host does not test a stale package assembly. The runner checks candidate, cache, and loaded-output assembly hashes before the runs and again at the end to detect a changed candidate during validation.
-
-These are controlled single-thread, local candidate checks. They do not establish upgrade compatibility with an older release, long-duration resource stability, multi-monitor/DPI support, or the safety of every possible embedded user control. The host adds no product features or public product APIs and does not publish the candidate.
-
-## Verified local candidate, 2026-10-08
-
-Both Debug and Release consumer builds completed with zero warnings and zero errors. Both configurations passed **27 public package integration checks** (14 consumer integration assertions plus 13 pinned upstream MVVM behavior assertions), **130 shared boundary/compatibility checks**, and a separate **20-cycle overlay lifetime regression** (`RESULT: PASS`). These are repeated configuration runs, not hundreds of independent usage scenarios.
-
-The candidate package version is `0.1.0-alpha`, with SHA256 `19CA9B0C42CF0A38CBA7B74D5082CF82818676DFA941E216C5169693AE3929CE`. The package restored from the local Release directory into this host's isolated cache; assets identify it as a package and contain zero project dependencies. The restored package hash matches the candidate, and the restored/output product DLL hashes match (`E01CDB73951646DD3CFFE73660631E8AB811FA254AF49D86CB830CE06B2F0714`). The runner confirmed these identities remained unchanged at the end of each full three-stage run.
-
-Each configuration ran 102 document create/float/dock/menu/close cycles, sampled after 12, 42, 72, and 102 cycles:
-
-| Measurement | Debug samples | Release samples |
-| --- | --- | --- |
-| GDI objects | 20, 20, 20, 20 | 20, 20, 20, 20 |
-| USER objects | 49, 49, 50, 50 | 48, 49, 50, 50 |
-| Process handles | 1184, 1371, 1553, 1733 | 1181, 1368, 1549, 1729 |
-| Private memory, MiB | 119.38, 149.05, 161.59, 163.51 | 121.80, 152.11, 161.49, 169.36 |
-| Managed memory, MiB | 2.19, 3.56, 4.11, 4.68 | 2.20, 3.54, 4.11, 4.68 |
-
-All observed document, content, layout-item, presenter, floating-control, and menu weak references were released at every sample; their observer lists retained zero weak-reference entries. Surviving floating window, host, native-window, owner-hook, subclass, and native GCHandle observations were all zero. The 102-cycle loops took 29.91 seconds in Debug and 29.90 seconds in Release. GDI/USER and released-object limits passed; process handle and memory growth remains an observation requiring longer-duration investigation, rather than a claim that every resource has reached a stable plateau.
-
-The independent overlay regression sampled after 4, 12, and 20 closed overlay/destination pairs. Debug GDI was 54, 54, 50 with USER 39, 40, 40; Release GDI was 64, 64, 64 with USER 39, 39, 40. All overlay, template-view, surface, destination grid, destination window, and editor weak references were released at each sample. Overlay registry counts and surviving retired native HWND counts were zero. The tests completed in 8.98 and 8.62 seconds respectively.
-
-Evidence is in `artifacts/package-consumer/{Debug,Release}-{package-identity,package-smoke,boundary-smoke,overlay-lifetime}.log`. The separate runtime baseline logs in that directory showed stable GDI after warm-up for plain windows, XAML islands, menus, and direct owned-HWND caption style changes. They also reproduced native GDI growth using only Windows App SDK custom-title-bar configuration APIs; this identifies a runtime interaction without asserting that all custom templates are covered by the product's default-path result.
+`--overlay-lifetime <absolute-log-path>` checks focus, cancellation, rendering and release over 20 overlay cycles. The runner executes all three checks serially and writes the results and package identity to `artifacts/package-consumer`. Each run checks the package and assembly hashes again at exit.
 
 ## Windows App SDK runtime baseline
 

@@ -56,8 +56,7 @@ public class LayoutDocumentFloatingWindow : LayoutFloatingWindow, ILayoutElement
             }
 
             RaisePropertyChanged(nameof(RootPanel));
-            RaisePropertyChanged(nameof(IsSinglePane));
-            RaisePropertyChanged(nameof(SinglePane));
+            NotifyPaneChanges();
             RaisePropertyChanged(nameof(Children));
             RaisePropertyChanged(nameof(ChildrenCount));
             ((ILayoutElementWithVisibility)this).ComputeVisibility();
@@ -69,7 +68,9 @@ public class LayoutDocumentFloatingWindow : LayoutFloatingWindow, ILayoutElement
     /// </summary>
     /// <param name="sender">The sender.</param>
     /// <param name="e">The e.</param>
-    private void OnRootPanelChildrenTreeChanged(object? sender, ChildrenTreeChangedEventArgs e)
+    private void OnRootPanelChildrenTreeChanged(object? sender, ChildrenTreeChangedEventArgs e) => NotifyPaneChanges();
+
+    private void NotifyPaneChanges()
     {
         RaisePropertyChanged(nameof(IsSinglePane));
         RaisePropertyChanged(nameof(SinglePane));
@@ -78,7 +79,7 @@ public class LayoutDocumentFloatingWindow : LayoutFloatingWindow, ILayoutElement
     /// <summary>
     /// Gets a value indicating whether this instance is single pane.
     /// </summary>
-    public bool IsSinglePane => RootPanel?.Descendents().OfType<LayoutDocumentPane>().Count(p => p.IsVisible) == 1;
+    public bool IsSinglePane => SinglePane != null;
 
     /// <summary>
     /// Gets the single pane.
@@ -87,13 +88,17 @@ public class LayoutDocumentFloatingWindow : LayoutFloatingWindow, ILayoutElement
     {
         get
         {
-            if (!IsSinglePane)
+            if (RootPanel == null)
             {
                 return null;
             }
-
-            LayoutDocumentPane singlePane = RootPanel.Descendents().OfType<LayoutDocumentPane>().Single(p => p.IsVisible);
-            return singlePane;
+            using IEnumerator<LayoutDocumentPane> visible = RootPanel.Descendents().OfType<LayoutDocumentPane>().Where(pane => pane.IsVisible).GetEnumerator();
+            if (!visible.MoveNext())
+            {
+                return null;
+            }
+            LayoutDocumentPane first = visible.Current;
+            return visible.MoveNext() ? null : first;
         }
     }
 

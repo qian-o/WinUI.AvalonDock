@@ -5,7 +5,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Data;
 
-namespace WinUI.AvalonDock.Experiments.Shared;
+namespace WinUI.AvalonDock.Verification;
 
 /// <summary>Checks the WPF generator's local-style precedence on native menu containers.</summary>
 internal static class ContainerStyleCompatibilitySmokeTests

@@ -31,7 +31,7 @@
 | MVVM 工具关闭 | 同一上游 bridge 未订阅 `AnchorableClosed`；实际工具关闭移除 native 布局节点，但 bridge 来源及 `ToolDock.VisibleDockables` 模型保留。重连布局会再次导入模型。 | 撤回上一轮新增的工具模型同步移除，验收现有上游行为，不将重新导入模型标为已修复。隐藏与取消关闭继续保留模型。 |
 | 原生 subclass 和 managed callback | WinUI 的 native host 需自己管理 HWND subclass 和 managed 引用。 | 保留回调指针位宽及卸载失败时不提前释放 `GCHandle` 的修复；这属于实现安全性，不改变停靠或用户命令语义。 |
 | 鼠标主键 | WPF 交互按逻辑主键处理；`GetAsyncKeyState` 针对物理键。 | 保留读取 `SM_SWAPBUTTON` 的适配，遵循系统现有主键设置，不改变系统配置。 |
-| 默认自绘浮窗 | 上游 WindowChrome 配合模板提供自绘 caption、按钮、拖动及 resize。 | 默认路径仅更新库 HWND 的 caption 样式，避免当前 SDK 标题栏配置的 GDI 增长；实测保留窗口交互。SDK 按钮回退模板保留，尚无相同资源保证。平台 API 及边缘命中宽度不声明逐项相同，见 [资源记录](RESOURCE_LIFETIME.zh-CN.md)。 |
+| 默认自绘浮窗 | 上游 WindowChrome 配合模板提供标题、按钮、拖动和缩放。 | 默认模板使用库窗口自身的非客户区。单文档浮窗在标题行提供文档菜单和窗口命令，多文档及分栏布局显示页签。自定义模板仍可使用 SDK 的标题栏按钮。 |
 | 文档浮窗关闭事件 | 关闭后的窗口不应由适配层事件注册持续保活；owner 激活仍在原有关闭时机执行。 | 命名 native `Closed` 处理器在关闭时自解除，保留原激活及模型语义。 |
 
 ## 关键源码对照
@@ -100,16 +100,10 @@ WPF [ItemsControl.cs 的 ApplyItemContainerStyle](https://github.com/dotnet/wpf/
 
 上一轮新增的 `AnchorableClosed` 同步确实修复了模型保留问题，但也改变了固定上游的可观察结果。依据本轮约束已撤回此新增分支。需要永久移除工具模型的消费者应操作自己持有的模型集合；库不在此次优化中额外增加默认同步语义。
 
-`sources/Experiments/Shared/LayoutSyncSmokeTests.cs` 现在验证：取消关闭不删除、隐藏不删除、实际关闭移除 native 节点且保留模型及来源、仅重建模型树时来源保留、布局重新连接后再次导入。模型树替换不保证立即重建已经关闭的 native 节点，因为 bridge 来源集合可能没有变化。它是兼容性验收，不是工具关闭缺陷已经修复的证明。
+[布局同步检查](../verification/Shared/LayoutSyncSmokeTests.cs) 覆盖取消关闭、隐藏、关闭工具后保留来源，以及重新连接布局后的导入行为。
 
-## 验收与成熟度的表述
+## 回归验证
 
-本轮新增同 UI 线程工作区生命周期、模态窗口和实际 NuGet 消费宿主检查。构建及执行结果应以本轮产物和日志为准，之前的“60 项全部通过”不能替代本轮调整后的验收。
+[示例验证脚本](../verification/Run-BoundaryChecks.ps1) 在实际窗口中检查页签和标题栏布局、停靠、焦点、模态窗口和资源释放。[独立包消费项目](../verification/PackageConsumer/README.md) 从本地 NuGet 包运行相同检查，并核对程序集哈希。
 
-最终解决方案 Debug、Release 构建均为 **0 警告、0 错误**；Docking、ToggleDocking、Mvvm 在两个配置下各完成 **130 项检查**。运行环境为 Windows 11 专业版 build 26200、.NET SDK 10.0.401、Windows App SDK 2.5.1，同 UI 线程；具体资源样本及实际交互见 [资源生命周期记录](RESOURCE_LIFETIME.zh-CN.md)。仓库根目录 `.\verification\Run-BoundaryChecks.ps1` 可串行重现六套检查。独立 NuGet 宿主在两个配置下分别通过 **27 项公开 API 集成检查与 130 项边界检查**，通过候选包及程序集 hash、实际来源和 `project.assets.json` 类型证明消费的是本地包，详见 [消费项目](../verification/PackageConsumer/README.md)。
-
-这些检查可以支持在已覆盖的 Windows/WinUI、单 UI 线程和明确输入路径下的可用性结论；不能保证所有未知宿主控件、多个 UI 线程或长期高负载环境。此次基线核对也不是法律合规意见，不从“公开系统 API”推导所有调用方式均无害。
-
-今后的变更应先写出固定上游对应的命令、事件、状态及属性优先级，再写出 WinUI 上同一结果的验收。若修复必须改变上游可观察行为，应明确记录为上游差异；在本次授权范围内不直接引入该行为改变。
-
-2026-10-08 的覆盖窗口后续修复仍保留取消关闭、显示隐藏和焦点规则，仅在实际关闭后解除库自己的事件及 callback，并清空仍属于库私有 view 的窗口内容，不操作借入的目标控件。独立源码和实际包后验、新候选身份与剩余资源限制见 [资源后续调查](RESOURCE_FOLLOWUP.zh-CN.md)。
+资源检查分别记录已关闭窗口的弱引用、原生窗口、GDI、USER、进程句柄和内存。以往的重复浮动测试曾观察到进程总句柄增长。需要调查长期趋势时，可用[资源诊断脚本](../verification/diagnostics/README.md) 对比相同轮次的 WinUI 原生宿主和停靠宿主。

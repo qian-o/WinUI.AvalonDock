@@ -425,18 +425,18 @@ internal sealed class NativeTabHeaderLayout : IDisposable
         };
         if (header is Control)
         {
-            properties.AddRange([Control.FontSizeProperty, Control.FontFamilyProperty, Control.FontWeightProperty,
-                Control.PaddingProperty, Control.TemplateProperty]);
+            properties.AddRange(new[] { Control.FontSizeProperty, Control.FontFamilyProperty, Control.FontWeightProperty,
+                Control.PaddingProperty, Control.TemplateProperty });
         }
 
         if (header is ContentControl)
         {
-            properties.AddRange([ContentControl.ContentProperty, ContentControl.ContentTemplateProperty, ContentControl.ContentTemplateSelectorProperty]);
+            properties.AddRange(new[] { ContentControl.ContentProperty, ContentControl.ContentTemplateProperty, ContentControl.ContentTemplateSelectorProperty });
         }
 
         if (header is TextBlock)
         {
-            properties.AddRange([TextBlock.TextProperty, TextBlock.FontSizeProperty, TextBlock.FontFamilyProperty, TextBlock.FontWeightProperty]);
+            properties.AddRange(new[] { TextBlock.TextProperty, TextBlock.FontSizeProperty, TextBlock.FontFamilyProperty, TextBlock.FontWeightProperty });
         }
 
         foreach (DependencyProperty property in properties)

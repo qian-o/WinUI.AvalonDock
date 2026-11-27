@@ -1,6 +1,5 @@
 // Adapted from Dirkster.AvalonDock v5.0.0 (MS-PL), Controls/DropDownButton.cs.
 using System.ComponentModel;
-using AvalonDock.Layout;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
@@ -41,8 +40,7 @@ public class DropDownButton : ToggleButton
     }
     protected virtual void OnClick()
     {
-        MenuFlyout? menu = ReadLocalValue(DropDownContextMenuProperty) != DependencyProperty.UnsetValue ? DropDownContextMenu
-            : Equals(Tag, "AvalonDock.DefaultContextMenu") && DropDownContextMenuDataContext is LayoutItem { LayoutElement: LayoutAnchorable tool } ? tool.Root?.Manager?.AnchorableContextMenu : DropDownContextMenu;
+        MenuFlyout? menu = MenuFlyoutContext.Resolve(this, DropDownContextMenuProperty, DropDownContextMenuDataContext);
         if (menu == null || XamlRoot == null)
         {
             return;

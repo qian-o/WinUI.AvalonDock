@@ -13,7 +13,6 @@ public partial class LayoutAnchorableFloatingWindowControl : LayoutFloatingWindo
 {
     private readonly LayoutAnchorableFloatingWindow model;
     private DockingManager? ownerAtInitialization;
-    private LayoutAnchorablePane? observedPane;
     private bool observingModel;
     internal LayoutAnchorableFloatingWindowControl(LayoutAnchorableFloatingWindow model) : this(model, false) { }
     internal LayoutAnchorableFloatingWindowControl(LayoutAnchorableFloatingWindow model, bool isContentImmutable) : base(model, isContentImmutable)
@@ -55,7 +54,6 @@ public partial class LayoutAnchorableFloatingWindowControl : LayoutFloatingWindo
     {
         ObserveModel(false);
         SetModelBindings(false);
-        ObservePane(null);
         base.DisableBindings();
     }
     protected override void OnInitialized(EventArgs e)
@@ -90,7 +88,6 @@ public partial class LayoutAnchorableFloatingWindowControl : LayoutFloatingWindo
         ObserveModel(false);
         model.IsVisibleChanged -= OnModelIsVisibleChanged;
         SingleContentLayoutItem = null;
-        ObservePane(null);
         base.OnClosed(e);
         if (!CloseInitiatedByUser && root?.Manager is { } manager && ReferenceEquals(manager, ownerAtInitialization))
         {
@@ -139,45 +136,6 @@ public partial class LayoutAnchorableFloatingWindowControl : LayoutFloatingWindo
         if (model.IsVisible && WindowHost?.IsVisible == false && Manager?.IsLoaded == true)
         {
             Show();
-        }
-    }
-    internal override void UpdateModelPresentation()
-    {
-        base.UpdateModelPresentation();
-        if (!AreBindingsEnabled)
-        {
-            return;
-        }
-
-        ObservePane(model?.IsSinglePane == true ? model.SinglePane as LayoutAnchorablePane : null);
-        if (model?.Root != null)
-        {
-            SingleContentLayoutItem = model.IsSinglePane && observedPane?.SelectedContent is { } content ? Manager?.GetLayoutItemFromModel(content) : null;
-        }
-    }
-    private void ObservePane(LayoutAnchorablePane? pane)
-    {
-        if (ReferenceEquals(observedPane, pane))
-        {
-            return;
-        }
-
-        if (observedPane != null)
-        {
-            observedPane.PropertyChanged -= OnPaneChanged;
-        }
-
-        observedPane = pane;
-        if (observedPane != null)
-        {
-            observedPane.PropertyChanged += OnPaneChanged;
-        }
-    }
-    private void OnPaneChanged(object? sender, PropertyChangedEventArgs e)
-    {
-        if (e.PropertyName is nameof(LayoutAnchorablePane.SelectedContent) or nameof(LayoutAnchorablePane.SelectedContentIndex))
-        {
-            UpdateModelPresentation();
         }
     }
     internal override void ExecuteNativeClose(CancelEventArgs args)

@@ -1,8 +1,7 @@
 # Resource investigation
 
 These opt-in tools inspect processes launched from the verification hosts. They
-are not compiled into or packaged with WinUI.AvalonDock. Build the selected host
-first, then run from the repository root on Windows x64:
+are separate from the library. Build the Docking host with the [sample verification runner](../Run-BoundaryChecks.ps1) and the other hosts with the [package consumer runner](../PackageConsumer/Run-Checks.ps1). Run from the repository root on Windows x64.
 
 ```powershell
 .\verification\diagnostics\Run-ResourceInvestigation.ps1 -Scenarios Window,XamlSource,Menu,Composite,Docking -Configuration Debug -Cycles 312 -Batch 100 -IdleSeconds 30 -ResultsDirectory .\artifacts\resource-investigation-rerun
@@ -51,8 +50,7 @@ native Composition/Event handles to their allocation sites. A separate test-only
 `dotnet-dump` Heap capture and `gcroot` analysis can investigate retained managed
 objects when the type comparison warrants it.
 
-Results from the recorded runs and their limits are in
-[RESOURCE_FOLLOWUP.zh-CN.md](../../docs/RESOURCE_FOLLOWUP.zh-CN.md). API contracts:
+The diagnostic tools use these Windows and .NET APIs.
 [Process Snapshotting](https://learn.microsoft.com/en-us/windows/win32/api/_processsnapshot/),
 [PssCaptureSnapshot](https://learn.microsoft.com/en-us/windows/win32/api/processsnapshot/nf-processsnapshot-psscapturesnapshot),
 [PSS_HANDLE_ENTRY](https://learn.microsoft.com/en-us/windows/win32/api/processsnapshot/ns-processsnapshot-pss_handle_entry),

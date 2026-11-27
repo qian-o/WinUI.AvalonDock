@@ -44,6 +44,13 @@
                         <VisualStateManager.VisualStateGroups>
                             <VisualStateGroup x:Name="CaptionKind">
                                 <VisualState x:Name="DocumentCaption" />
+                                <VisualState x:Name="SingleDocumentCaption">
+                                    <VisualState.Setters>
+                                        <Setter Target="PART_CaptionMenu.Visibility" Value="Visible" />
+                                        <Setter Target="PART_CaptionMenu.(AutomationProperties.Name)" Value="{properties:LocalizedString Key=Document_CxMenu_Hint}" />
+                                        <Setter Target="PART_CaptionMenu.(ToolTipService.ToolTip)" Value="{properties:LocalizedString Key=Document_CxMenu_Hint}" />
+                                    </VisualState.Setters>
+                                </VisualState>
                                 <VisualState x:Name="ToolCaption">
                                     <VisualState.Setters>
                                         <Setter Target="PART_CaptionMenu.Visibility" Value="Visible" />

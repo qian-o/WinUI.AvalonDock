@@ -12,6 +12,7 @@
     <Style x:Key="AvalonDockReferenceTabItemStyle"
            TargetType="TabViewItem">
         <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderBrush" Value="{ThemeResource CardStrokeColorDefaultBrush}" />
         <Setter Property="FontFamily" Value="{ThemeResource DockFontFamily}" />
         <Setter Property="FontSize" Value="12" />
         <Setter Property="FontWeight" Value="Normal" />
@@ -27,7 +28,6 @@
             <Setter.Value>
                 <ControlTemplate TargetType="TabViewItem">
                     <Grid x:Name="LayoutRoot"
-                          Height="28"
                           Background="Transparent"
                           ToolTipService.ToolTip="{Binding Tag.Title, RelativeSource={RelativeSource TemplatedParent}}"
                           UseLayoutRounding="True">
@@ -51,7 +51,6 @@
                                 <VisualState x:Name="Selected">
                                     <VisualState.Setters>
                                         <Setter Target="Surface.Background" Value="Transparent" />
-                                        <Setter Target="Surface.Margin" Value="0" />
                                         <Setter Target="ContentPresenter.Foreground" Value="{ThemeResource TextFillColorPrimaryBrush}" />
                                         <Setter Target="TabSeparator.Opacity" Value="0" />
                                     </VisualState.Setters>
@@ -59,7 +58,6 @@
                                 <VisualState x:Name="PointerOverSelected">
                                     <VisualState.Setters>
                                         <Setter Target="Surface.Background" Value="Transparent" />
-                                        <Setter Target="Surface.Margin" Value="0" />
                                         <Setter Target="ContentPresenter.Foreground" Value="{ThemeResource TextFillColorPrimaryBrush}" />
                                         <Setter Target="TabSeparator.Opacity" Value="0" />
                                     </VisualState.Setters>
@@ -67,7 +65,6 @@
                                 <VisualState x:Name="PressedSelected">
                                     <VisualState.Setters>
                                         <Setter Target="Surface.Background" Value="Transparent" />
-                                        <Setter Target="Surface.Margin" Value="0" />
                                         <Setter Target="ContentPresenter.Foreground" Value="{ThemeResource TextFillColorPrimaryBrush}" />
                                         <Setter Target="TabSeparator.Opacity" Value="0" />
                                     </VisualState.Setters>
@@ -94,24 +91,8 @@
                                 <VisualState x:Name="ForegroundSet" />
                                 <VisualState x:Name="ForegroundNotSet" />
                             </VisualStateGroup>
-                            <VisualStateGroup x:Name="TabPlacementStates">
-                                <VisualState x:Name="DocumentTab" />
-                                <VisualState x:Name="ToolTab">
-                                    <VisualState.Setters>
-                                        <Setter Target="Surface.Margin" Value="0,3,0,0" />
-                                        <Setter Target="TabSeparator.Visibility" Value="Collapsed" />
-                                    </VisualState.Setters>
-                                </VisualState>
-                                <VisualState x:Name="ToolTabSelected">
-                                    <VisualState.Setters>
-                                        <Setter Target="Surface.Margin" Value="0" />
-                                        <Setter Target="TabSeparator.Visibility" Value="Collapsed" />
-                                    </VisualState.Setters>
-                                </VisualState>
-                            </VisualStateGroup>
                         </VisualStateManager.VisualStateGroups>
                         <Border x:Name="Surface"
-                                Margin="0,0,0,3"
                                 Background="{TemplateBinding Background}"
                                 BorderThickness="0"
                                 CornerRadius="4" />
@@ -119,7 +100,7 @@
                                 Width="1"
                                 Margin="0,8,0,8"
                                 HorizontalAlignment="Right"
-                                Background="{ThemeResource CardStrokeColorDefaultBrush}"
+                                Background="{TemplateBinding BorderBrush}"
                                 IsHitTestVisible="False" />
                         <Grid x:Name="TabContainer"
                               Margin="{TemplateBinding Padding}"
@@ -163,6 +144,7 @@
     <Style x:Key="AvalonDockReferenceToolTabItemStyle"
            BasedOn="{StaticResource AvalonDockReferenceTabItemStyle}"
            TargetType="TabViewItem">
+        <Setter Property="BorderBrush" Value="Transparent" />
         <Setter Property="MinWidth" Value="0" />
         <Setter Property="Padding" Value="12,0" />
     </Style>

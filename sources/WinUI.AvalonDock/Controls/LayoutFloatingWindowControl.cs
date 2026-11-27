@@ -26,6 +26,7 @@ public abstract partial class LayoutFloatingWindowControl : Window, ILayoutContr
     private bool closed;
     private bool bindingsEnabled = true;
     private LayoutRoot? observedRoot;
+    private ILayoutContentSelector? observedPane;
     private readonly HashSet<LayoutContent> observedContents = [];
     private bool applyingGeometry;
     private bool activationHookReady;
@@ -330,7 +331,6 @@ public abstract partial class LayoutFloatingWindowControl : Window, ILayoutContr
     internal IDockingWindowHost? WindowHost => host;
     internal DockingManager? Manager => (Model ?? constructorModel)?.Root?.Manager;
     internal bool IsClosed => closed;
-    internal bool AreBindingsEnabled => bindingsEnabled;
     internal void AttachHost(IDockingWindowHost windowHost)
     {
         host = windowHost;
@@ -406,6 +406,7 @@ public abstract partial class LayoutFloatingWindowControl : Window, ILayoutContr
     internal void SetModelBindings(bool enabled)
     {
         bindingsEnabled = enabled;
+        ObservePane(null);
         if (observedRoot != null)
         {
             observedRoot.Updated -= OnRootUpdated;
@@ -445,8 +446,24 @@ public abstract partial class LayoutFloatingWindowControl : Window, ILayoutContr
             }
         }
 
-        LayoutContent? content = model?.Descendents().OfType<LayoutContent>().FirstOrDefault(item => item.IsActive)
-            ?? model?.Descendents().OfType<LayoutContent>().FirstOrDefault();
+        ObservePane(model switch
+        {
+            LayoutDocumentFloatingWindow documents => documents.SinglePane,
+            LayoutAnchorableFloatingWindow toolModel => toolModel.SinglePane as ILayoutContentSelector,
+            _ => null
+        });
+        LayoutContent? selected = observedPane?.SelectedContent;
+        LayoutItem? item = selected == null ? null : Manager?.GetLayoutItemFromModel(selected);
+        if (this is LayoutDocumentFloatingWindowControl documentWindow && !ReferenceEquals(documentWindow.SingleContentLayoutItem, item))
+        {
+            documentWindow.SingleContentLayoutItem = item;
+        }
+        else if (this is LayoutAnchorableFloatingWindowControl toolWindow && !ReferenceEquals(toolWindow.SingleContentLayoutItem, item))
+        {
+            toolWindow.SingleContentLayoutItem = item;
+        }
+
+        LayoutContent? content = selected ?? contents.FirstOrDefault(item => item.IsActive) ?? contents.FirstOrDefault();
         if (content != null)
         {
             string title = content.Title ?? string.Empty;
@@ -466,6 +483,29 @@ public abstract partial class LayoutFloatingWindowControl : Window, ILayoutContr
         {
             ContentMinWidth = Math.Max(initialContentMinWidth, tools.CalculatedDockMinWidth());
             ContentMinHeight = Math.Max(initialContentMinHeight, tools.CalculatedDockMinHeight());
+        }
+    }
+    private void ObservePane(ILayoutContentSelector? pane)
+    {
+        if (ReferenceEquals(observedPane, pane))
+        {
+            return;
+        }
+        if (observedPane is INotifyPropertyChanged previous)
+        {
+            previous.PropertyChanged -= OnPaneChanged;
+        }
+        observedPane = pane;
+        if (pane is INotifyPropertyChanged current)
+        {
+            current.PropertyChanged += OnPaneChanged;
+        }
+    }
+    private void OnPaneChanged(object? sender, PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(ILayoutContentSelector.SelectedContent))
+        {
+            UpdateModelPresentation();
         }
     }
     internal virtual void ExecuteNativeClose(CancelEventArgs args)
@@ -509,6 +549,7 @@ public abstract partial class LayoutFloatingWindowControl : Window, ILayoutContr
         closed = true;
         SetKeyInputRoot(null);
         SetModelBindings(false);
+        SetCaptionedDocumentPane(null);
         if (host is { } windowHost)
         {
             windowHost.Closing -= OnHostClosing;

@@ -5,7 +5,9 @@ using AvalonDock.Core;
 using AvalonDock.Layout;
 using AvalonDock.Mvvm;
 
-namespace WinUI.AvalonDock.Experiments.Shared;
+using WinUI.AvalonDock.Experiments.Shared;
+
+namespace WinUI.AvalonDock.Verification;
 
 /// <summary>Verifies pinned upstream MVVM model behavior through real close and hide commands.</summary>
 internal static class LayoutSyncSmokeTests

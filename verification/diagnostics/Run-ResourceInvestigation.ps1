@@ -28,7 +28,7 @@ foreach ($scenario in $Scenarios) {
         if (Test-Path -LiteralPath $oldOutput) { Remove-Item -LiteralPath $oldOutput }
     }
     if ($scenario -eq 'Docking') {
-        $executable = Join-Path $repoRoot "sources\Experiments\Docking\bin\$Configuration\net10.0-windows10.0.19041.0\win-x64\Docking.exe"
+        $executable = Join-Path $repoRoot "sources\Experiments\Docking\bin\verification\$Configuration\net10.0-windows10.0.19041.0\win-x64\Docking.exe"
         $runSwitch = 'boundary-smoke'
     } else {
         $executable = Join-Path $repoRoot "verification\PackageConsumer\bin\$Configuration\net10.0-windows10.0.19041.0\win-x64\PackageConsumer.exe"

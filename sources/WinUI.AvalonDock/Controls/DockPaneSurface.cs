@@ -133,78 +133,49 @@ internal sealed class DockPaneSurface : Grid
         double tabLeft = tab.IsEmpty ? 0 : Math.Max(body.Left, tab.Left + 0.5);
         double tabRight = tab.IsEmpty ? 0 : Math.Min(body.Right - radius * 2, tab.Right - 0.5);
         double tabTop = tab.IsEmpty ? 0 : tab.Top + 0.5;
-        if (tab.IsEmpty || tabRight - tabLeft < radius * 2 || body.Top - tabTop < radius * 2)
-        {
-            PathFigure rounded = new()
-            {
-                StartPoint = new Point(body.Left + radius, body.Top),
-                IsClosed = true,
-                IsFilled = true
-            };
-            rounded.Segments.Add(new LineSegment { Point = new Point(body.Right - radius, body.Top) });
-            rounded.Segments.Add(new QuadraticBezierSegment { Point1 = new Point(body.Right, body.Top), Point2 = new Point(body.Right, body.Top + radius) });
-            rounded.Segments.Add(new LineSegment { Point = new Point(body.Right, body.Bottom - radius) });
-            rounded.Segments.Add(new QuadraticBezierSegment { Point1 = new Point(body.Right, body.Bottom), Point2 = new Point(body.Right - radius, body.Bottom) });
-            rounded.Segments.Add(new LineSegment { Point = new Point(body.Left + radius, body.Bottom) });
-            rounded.Segments.Add(new QuadraticBezierSegment { Point1 = new Point(body.Left, body.Bottom), Point2 = new Point(body.Left, body.Bottom - radius) });
-            rounded.Segments.Add(new LineSegment { Point = new Point(body.Left, body.Top + radius) });
-            rounded.Segments.Add(new QuadraticBezierSegment { Point1 = new Point(body.Left, body.Top), Point2 = rounded.StartPoint });
-            return new PathGeometry { Figures = { rounded } };
-        }
-
-        bool touchesLeftEdge = tabLeft - body.Left < radius * 2;
+        bool hasTab = !tab.IsEmpty && tabRight - tabLeft >= radius * 2 && body.Top - tabTop >= radius * 2;
+        bool touchesLeftEdge = hasTab && tabLeft - body.Left < radius * 2;
         PathFigure figure = new()
         {
+            StartPoint = touchesLeftEdge ? new Point(tabLeft + radius, tabTop) : new Point(body.Left + radius, body.Top),
             IsFilled = true,
             IsClosed = true
         };
-        PathGeometry geometry = new()
+        void LineTo(double x, double y) => figure.Segments.Add(new LineSegment { Point = new Point(x, y) });
+        void CurveTo(double cx, double cy, double x, double y) => figure.Segments.Add(new QuadraticBezierSegment
         {
-            Figures = { figure }
-        };
-        void BeginFigure(Point point, bool filled, bool closed) => figure.StartPoint = point;
-        void LineTo(Point point, bool stroked, bool smooth) => figure.Segments.Add(new LineSegment { Point = point });
-        void QuadraticBezierTo(Point control, Point point, bool stroked, bool smooth) => figure.Segments.Add(new QuadraticBezierSegment { Point1 = control, Point2 = point });
-        // WinUI PathGeometry segments replace WPF StreamGeometryContext; the outline steps are unchanged.
+            Point1 = new Point(cx, cy), Point2 = new Point(x, y)
+        });
 
+        if (hasTab)
         {
-            if (touchesLeftEdge)
+            if (!touchesLeftEdge)
             {
-                BeginFigure(new Point(tabLeft + radius, tabTop), true, true);
+                LineTo(tabLeft - radius, body.Top);
+                CurveTo(tabLeft, body.Top, tabLeft, body.Top - radius);
+                LineTo(tabLeft, tabTop + radius);
+                CurveTo(tabLeft, tabTop, tabLeft + radius, tabTop);
             }
-            else
-            {
-                BeginFigure(new Point(body.Left + radius, body.Top), true, true);
-                LineTo(new Point(tabLeft - radius, body.Top), true, false);
-                QuadraticBezierTo(new Point(tabLeft, body.Top), new Point(tabLeft, body.Top - radius), true, false);
-                LineTo(new Point(tabLeft, tabTop + radius), true, false);
-                QuadraticBezierTo(new Point(tabLeft, tabTop), new Point(tabLeft + radius, tabTop), true, false);
-            }
-            LineTo(new Point(tabRight - radius, tabTop), true, false);
-            QuadraticBezierTo(new Point(tabRight, tabTop), new Point(tabRight, tabTop + radius), true, false);
-            LineTo(new Point(tabRight, body.Top - radius), true, false);
-            QuadraticBezierTo(new Point(tabRight, body.Top), new Point(tabRight + radius, body.Top), true, false);
-            LineTo(new Point(body.Right - radius, body.Top), true, false);
-            QuadraticBezierTo(new Point(body.Right, body.Top), new Point(body.Right, body.Top + radius), true, false);
-            LineTo(new Point(body.Right, body.Bottom - radius), true, false);
-            QuadraticBezierTo(new Point(body.Right, body.Bottom), new Point(body.Right - radius, body.Bottom), true, false);
-            LineTo(new Point(body.Left + radius, body.Bottom), true, false);
-            QuadraticBezierTo(new Point(body.Left, body.Bottom), new Point(body.Left, body.Bottom - radius), true, false);
-            if (touchesLeftEdge)
-            {
-                double leftRadius = Math.Min(radius, tabLeft - body.Left);
-                LineTo(new Point(body.Left, body.Top + leftRadius), true, false);
-                QuadraticBezierTo(new Point(body.Left, body.Top), new Point(body.Left + leftRadius, body.Top), true, false);
-                LineTo(new Point(tabLeft, body.Top), true, false);
-                LineTo(new Point(tabLeft, tabTop + radius), true, false);
-                QuadraticBezierTo(new Point(tabLeft, tabTop), new Point(tabLeft + radius, tabTop), true, false);
-            }
-            else
-            {
-                LineTo(new Point(body.Left, body.Top + radius), true, false);
-                QuadraticBezierTo(new Point(body.Left, body.Top), new Point(body.Left + radius, body.Top), true, false);
-            }
+            LineTo(tabRight - radius, tabTop);
+            CurveTo(tabRight, tabTop, tabRight, tabTop + radius);
+            LineTo(tabRight, body.Top - radius);
+            CurveTo(tabRight, body.Top, tabRight + radius, body.Top);
         }
-        return geometry;
+        LineTo(body.Right - radius, body.Top);
+        CurveTo(body.Right, body.Top, body.Right, body.Top + radius);
+        LineTo(body.Right, body.Bottom - radius);
+        CurveTo(body.Right, body.Bottom, body.Right - radius, body.Bottom);
+        LineTo(body.Left + radius, body.Bottom);
+        CurveTo(body.Left, body.Bottom, body.Left, body.Bottom - radius);
+        double leftRadius = touchesLeftEdge ? Math.Min(radius, tabLeft - body.Left) : radius;
+        LineTo(body.Left, body.Top + leftRadius);
+        CurveTo(body.Left, body.Top, body.Left + leftRadius, body.Top);
+        if (touchesLeftEdge)
+        {
+            LineTo(tabLeft, body.Top);
+            LineTo(tabLeft, tabTop + radius);
+            CurveTo(tabLeft, tabTop, tabLeft + radius, tabTop);
+        }
+        return new PathGeometry { Figures = { figure } };
     }
 }

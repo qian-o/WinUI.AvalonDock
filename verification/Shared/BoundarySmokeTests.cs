@@ -1,5 +1,6 @@
 using System.ComponentModel;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using AvalonDock;
 using AvalonDock.Controls;
 using AvalonDock.Layout;
@@ -9,8 +10,10 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Data;
 using Microsoft.UI.Xaml.Markup;
 using Microsoft.UI.Xaml.Media;
+using Windows.Foundation;
+using DropDownButton = AvalonDock.Controls.DropDownButton;
 
-namespace WinUI.AvalonDock.Experiments.Shared;
+namespace WinUI.AvalonDock.Verification;
 
 /// <summary>Runs opt-in boundary checks on the real WinUI dispatcher and native window roots.</summary>
 internal static class BoundarySmokeTests
@@ -90,13 +93,78 @@ internal static class BoundarySmokeTests
                 AssertContent("initial docking");
                 Check(ReferenceEquals(manager.GetLayoutItemFromModel(first)!.View.DataContext, manager.DataContext),
                     "manager context reaches owned presenter");
+                LayoutDocumentPaneControl dockedPane = FindChild<LayoutDocumentPaneControl>(manager)!;
+                Check(HeadersAlign(dockedPane), "selected outline, inactive hover surface, labels and close buttons align");
+                if (manager is not ToggleDockingManager)
+                {
+                    LayoutAnchorable otherTool = new() { Title = "Another tool" };
+                    tools.Children.Add(otherTool);
+                    await Settle();
+                    Check(HeadersAlign(FindChild<LayoutAnchorablePaneControl>(manager)!), "bottom tool tabs align with their hover surfaces and content edge");
+                    otherTool.Close();
+                }
                 second.Float();
                 await Settle();
                 Check(second.IsFloating, "document floats into a native window");
                 AssertContent("floating");
+                LayoutDocumentFloatingWindowControl floating = manager.FloatingWindows.OfType<LayoutDocumentFloatingWindowControl>().Single();
+                LayoutDocumentPaneControl floatingPane = FindAncestor<LayoutDocumentPaneControl>(bound)!;
+                LayoutDocumentPane floatingModel = (LayoutDocumentPane)floatingPane.Model;
+                FrameworkElement windowRoot = (FrameworkElement)((Window)floating).Content;
+                double topInset = windowRoot.XamlRoot.CoordinateConverter.ConvertLocalToScreen(new Point()).Y - floating.AppWindow.Position.Y;
+                Check(topInset >= 0 && topInset <= Math.Ceiling(windowRoot.XamlRoot.RasterizationScale),
+                    $"custom caption meets the restored window edge (top inset {topInset}px)");
+                nint hwnd = WinRT.Interop.WindowNative.GetWindowHandle(floating);
+                var top = floating.AppWindow.Position;
+                int center = top.X + floating.AppWindow.Size.Width / 2;
+                Check(HitTest(hwnd, center, top.Y + 1) == 12 && HitTest(hwnd, center, top.Y + (int)(18 * windowRoot.XamlRoot.RasterizationScale)) == 2,
+                    "the restored top edge resizes and the caption below it drags");
+                Check(HeaderMatches(floatingPane, false) && floatingModel.ShowHeader,
+                    "a single floating document uses only its caption and preserves its saved header preference");
+                Check(ReferenceEquals(floating.SingleContentLayoutItem, manager.GetLayoutItemFromModel(second)),
+                    "floating caption commands target the visible document");
+                DropDownButton menuButton = FindChild<DropDownButton>(windowRoot, "PART_CaptionMenu")!;
+                Check(menuButton.Visibility == Visibility.Visible && ReferenceEquals(menuButton.DropDownContextMenuDataContext, floating.SingleContentLayoutItem),
+                    "the single caption exposes the document menu to keyboard and pointer input");
+                ControlTemplate defaultCaption = floating.Template!;
+                floating.Template = (ControlTemplate)XamlReader.Load("""
+                    <ControlTemplate xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" TargetType="ContentControl">
+                        <ContentPresenter Content="{TemplateBinding Content}" />
+                    </ControlTemplate>
+                    """);
+                floating.ApplyTemplate();
+                await Settle();
+                floatingPane = FindAncestor<LayoutDocumentPaneControl>(bound)!;
+                Check(HeaderMatches(floatingPane, true), "a window template without document commands keeps the tab accessible");
+                floating.Template = defaultCaption;
+                floating.ApplyTemplate();
+                await Settle();
+                floatingPane = FindAncestor<LayoutDocumentPaneControl>(bound)!;
+                Check(HeaderMatches(floatingPane, false), "restoring the default caption removes the redundant tab again");
+                LayoutDocument extra = new() { Title = "Second floating tab" };
+                floatingModel.Children.Add(extra);
+                extra.IsSelected = true;
+                await Settle();
+                Check(HeaderMatches(floatingPane, true) && ReferenceEquals(floating.SingleContentLayoutItem, manager.GetLayoutItemFromModel(extra)),
+                    "adding and selecting a floating document restores its strip and updates caption commands");
+                floatingModel.ShowHeader = false;
+                await Settle();
+                Check(HeaderMatches(floatingPane, false), "a hidden header stays hidden with multiple floating documents");
+                floatingModel.ShowHeader = true;
+                extra.Close();
+                await Settle();
+                Check(HeaderMatches(floatingPane, false), "removing the second floating tab collapses the redundant strip");
+                LayoutDocument split = new() { Title = "Split document" };
+                ((LayoutDocumentFloatingWindow)floating.Model).RootPanel!.Children.Add(new LayoutDocumentPane(split));
+                await Settle();
+                Check(HeaderMatches(floatingPane, true) && floating.SingleContentLayoutItem == null,
+                    "split floating panes keep their headers and clear the single-pane command target");
+                split.Close();
                 second.Dock();
                 await Settle();
                 AssertContent("redocking");
+                Check(HeaderMatches(FindAncestor<LayoutDocumentPaneControl>(bound)!, true),
+                    "redocking restores the document strip");
                 tool.Hide();
                 await Settle();
                 tool.Show();
@@ -308,16 +376,55 @@ internal static class BoundarySmokeTests
 
     private static async Task Settle() => await Task.Delay(150);
 
-    private static T? FindChild<T>(DependencyObject owner) where T : DependencyObject
+    private static nint HitTest(nint hwnd, int x, int y) => SendMessageW(hwnd, 0x0084, 0, (y << 16) | (x & 0xffff));
+    [DllImport("user32.dll", ExactSpelling = true)]
+    private static extern nint SendMessageW(nint hwnd, uint message, nint wParam, nint lParam);
+
+    private static bool HeaderMatches(TabControlEx pane, bool visible)
+    {
+        FrameworkElement strip = FindChild<FrameworkElement>(pane, "TabContainerGrid")!;
+        FrameworkElement body = FindChild<FrameworkElement>(pane, "ContentPanel")!;
+        double bodyTop = body.TransformToVisual(pane).TransformPoint(new Point()).Y;
+        return visible ? strip.Visibility == Visibility.Visible && bodyTop > 0 && Math.Abs(bodyTop - strip.ActualHeight) < 0.1
+            : strip.Visibility == Visibility.Collapsed && Math.Abs(bodyTop) < 0.1;
+    }
+
+    private static bool HeadersAlign(TabControlEx pane)
+    {
+        TabViewItem selected = (TabViewItem)pane.SelectedItem;
+        TabViewItem other = pane.TabItems.Cast<TabViewItem>().First(tab => tab != selected);
+        VisualStateManager.GoToState(other, "PointerOver", false);
+        pane.UpdateLayout();
+        Rect Bounds(FrameworkElement element) => element.TransformToVisual(pane).TransformBounds(new Rect(0, 0, element.ActualWidth, element.ActualHeight));
+        Rect active = Bounds(selected);
+        Rect hover = Bounds(FindChild<Border>(other, "Surface")!);
+        Rect label = Bounds((FrameworkElement)selected.Header);
+        Rect otherLabel = Bounds((FrameworkElement)other.Header);
+        Rect body = Bounds(FindChild<FrameworkElement>(pane, "ContentPanel")!);
+        VisualStateManager.GoToState(other, "Normal", false);
+        if (Math.Abs(active.Top - hover.Top) >= 0.1 || Math.Abs(active.Bottom - hover.Bottom) >= 0.1 || Math.Abs(label.Top - otherLabel.Top) >= 0.1)
+        {
+            return false;
+        }
+        if (pane is LayoutAnchorablePaneControl)
+        {
+            return body.Bottom <= active.Top + 0.1;
+        }
+        Rect close = Bounds(FindChild<Button>(selected, "CloseButton")!);
+        Rect otherClose = Bounds(FindChild<Button>(other, "CloseButton")!);
+        return Math.Abs(body.Top - active.Bottom) < 0.1 && Math.Abs(close.Top - otherClose.Top) < 0.1;
+    }
+
+    private static T? FindChild<T>(DependencyObject owner, string? name = null) where T : DependencyObject
     {
         for (int i = 0; i < VisualTreeHelper.GetChildrenCount(owner); i++)
         {
             DependencyObject child = VisualTreeHelper.GetChild(owner, i);
-            if (child is T result)
+            if (child is T result && (name == null || child is FrameworkElement element && element.Name == name))
             {
                 return result;
             }
-            T? descendant = FindChild<T>(child);
+            T? descendant = FindChild<T>(child, name);
             if (descendant != null)
             {
                 return descendant;

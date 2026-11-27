@@ -1,6 +1,5 @@
 // Adapted from Dirkster.AvalonDock v5.0.0 (MS-PL), Controls/DropDownControlArea.cs.
 using System.ComponentModel;
-using AvalonDock.Layout;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
@@ -49,7 +48,5 @@ public class DropDownControlArea : ContentControl
             }
         });
     }
-    private MenuFlyout? ResolveMenu() => ReadLocalValue(DropDownContextMenuProperty) != DependencyProperty.UnsetValue ? DropDownContextMenu
-        : Equals(Tag, "AvalonDock.DefaultContextMenu") && DropDownContextMenuDataContext is LayoutItem { LayoutElement: LayoutContent model } ? model is LayoutAnchorable
-            ? model.Root?.Manager?.AnchorableContextMenu : model.Root?.Manager?.DocumentContextMenu : DropDownContextMenu;
+    private MenuFlyout? ResolveMenu() => MenuFlyoutContext.Resolve(this, DropDownContextMenuProperty, DropDownContextMenuDataContext);
 }

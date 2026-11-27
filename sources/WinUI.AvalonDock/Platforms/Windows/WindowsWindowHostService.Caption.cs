@@ -18,6 +18,7 @@ internal sealed partial class WindowsWindowHostService
         private int? nativeBorderColor;
         private bool captionColorsApplied;
         private nint? originalCaptionStyle;
+        private int topResizeFrame;
 
         public WindowCaptionMetrics GetCaptionMetrics()
         {
@@ -92,6 +93,12 @@ internal sealed partial class WindowsWindowHostService
             Rect drag = layout.DragRegion;
             drag.X += metrics.LeftInset;
             drag.Width = Math.Max(0, drag.Width - metrics.LeftInset - metrics.RightInset);
+            if (clientCaptionButtons && appWindow.Presenter is OverlappedPresenter { State: OverlappedPresenterState.Restored, IsResizable: true })
+            {
+                double top = Math.Clamp(Math.Max(topResizeFrame / scale, resizeBorder.Top), drag.Top, drag.Bottom);
+                drag.Height = drag.Bottom - top;
+                drag.Y = top;
+            }
             bool highContrast = new global::Windows.UI.ViewManagement.AccessibilitySettings().HighContrast;
             if (clientCaptionButtons || highContrast)
             {

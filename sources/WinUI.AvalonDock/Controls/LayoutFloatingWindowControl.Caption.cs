@@ -14,6 +14,8 @@ public abstract partial class LayoutFloatingWindowControl
     private FrameworkElement? caption;
     private ContentPresenter? captionTitle;
     private DropDownControlArea? captionContext;
+    private DropDownButton? captionMenu;
+    internal LayoutDocumentPane? CaptionedDocumentPane { get; private set; }
     private DockingManager? captionManager;
     private readonly List<(DependencyProperty Property, long Token)> captionTokens = [];
     private WindowCaptionLayout? captionLayout;
@@ -30,6 +32,7 @@ public abstract partial class LayoutFloatingWindowControl
         captionTitle = templateView.Part("PART_CaptionTitle") as ContentPresenter;
         referenceCaptionFont = false;
         captionContext = templateView.Part("PART_CaptionContext") as DropDownControlArea;
+        captionMenu = templateView.Part("PART_CaptionMenu") as DropDownButton;
         captionModel = null;
         captionDataTemplate = null;
         captionSelector = null;
@@ -62,6 +65,7 @@ public abstract partial class LayoutFloatingWindowControl
             }
             if (caption == null)
             {
+                SetCaptionedDocumentPane(null);
                 QueueCaptionLayout();
                 return;
             }
@@ -73,15 +77,10 @@ public abstract partial class LayoutFloatingWindowControl
                 captionTitle.FlowDirection = captionManager?.FlowDirection ?? FlowDirection.LeftToRight;
             }
 
-            LayoutContent? model = (Model ?? constructorModel) switch
-            {
-                LayoutDocumentFloatingWindow { IsSinglePane: true } documents => documents.SinglePane?.SelectedContent,
-                LayoutAnchorableFloatingWindow { IsSinglePane: true } tools => (tools.SinglePane as ILayoutContentSelector)?.SelectedContent,
-                _ => null
-            };
+            LayoutContent? model = observedPane?.SelectedContent;
             DataTemplate? template = Model is LayoutDocumentFloatingWindow ? captionManager?.DocumentTitleTemplate : captionManager?.AnchorableTitleTemplate;
             DataTemplateSelector? selector = Model is LayoutDocumentFloatingWindow ? captionManager?.DocumentTitleTemplateSelector : captionManager?.AnchorableTitleTemplateSelector;
-            bool referenceDefaultTitle = Equals(templateView.Part("PART_CaptionTitle") is ContentPresenter part ? part.Tag : null, "AvalonDock.ReferenceTitle")
+            bool referenceDefaultTitle = Equals(captionTitle?.Tag, "AvalonDock.ReferenceTitle")
                 && selector == null && FontSize == 12 && Model is LayoutDocumentFloatingWindow
                 && captionManager?.ReadLocalValue(DockingManager.DocumentTitleTemplateProperty) == DependencyProperty.UnsetValue;
             if (captionTitle != null)
@@ -145,7 +144,15 @@ public abstract partial class LayoutFloatingWindowControl
 
                 captionContext.Visibility = model == null ? Visibility.Collapsed : Visibility.Visible;
             }
-            VisualStateManager.GoToState(templateView, Model is LayoutAnchorableFloatingWindow { IsSinglePane: true } ? "ToolCaption" : "DocumentCaption", false);
+            string kind = observedPane switch
+            {
+                LayoutAnchorablePane => "ToolCaption",
+                LayoutDocumentPane { ChildrenCount: 1, SelectedContent: LayoutDocument } => "SingleDocumentCaption",
+                _ => "DocumentCaption"
+            };
+            bool applied = VisualStateManager.GoToState(templateView, kind, false);
+            SetCaptionedDocumentPane(applied && kind == "SingleDocumentCaption" && captionTitle != null && captionMenu?.Visibility == Visibility.Visible
+                ? observedPane as LayoutDocumentPane : null);
             VisualStateManager.GoToState(templateView, IsMaximized ? "Maximized" : "Restored", false);
             VisualStateManager.GoToState(templateView, Model is LayoutAnchorableFloatingWindow && model is not LayoutAnchorable { CanClose: true } ? "HideTool" : "CloseWindow", false);
             if (host == null || !caption.IsLoaded || caption.XamlRoot == null)
@@ -184,6 +191,18 @@ public abstract partial class LayoutFloatingWindowControl
             QueueCaptionLayout();
         }
         finally { updatingCaption = false; }
+    }
+
+    private void SetCaptionedDocumentPane(LayoutDocumentPane? pane)
+    {
+        if (ReferenceEquals(CaptionedDocumentPane, pane))
+        {
+            return;
+        }
+        LayoutDocumentPane? previous = CaptionedDocumentPane;
+        CaptionedDocumentPane = pane;
+        previous?.UpdateIsDirectlyHostedInFloatingWindow();
+        pane?.UpdateIsDirectlyHostedInFloatingWindow();
     }
 
     private void QueueCaptionLayout()

@@ -161,6 +161,19 @@ internal sealed partial class WindowsWindowHostService
                         return result;
                     }
 
+                    if (message == 0x0083 /* WM_NCCALCSIZE */ && lParam != 0 && target.customCaption && target.clientCaptionButtons && !IsZoomed(hwnd))
+                    {
+                        // Both forms start with the proposed RECT. Keep Windows' side and bottom
+                        // insets, but let the restored caption paint through the top resize frame.
+                        NativeRect proposed = Marshal.PtrToStructure<NativeRect>(lParam);
+                        DefSubclassProc(hwnd, message, wParam, lParam);
+                        NativeRect client = Marshal.PtrToStructure<NativeRect>(lParam);
+                        target.topResizeFrame = Math.Max(0, client.Top - proposed.Top);
+                        client.Top = Math.Min(client.Bottom, proposed.Top);
+                        Marshal.StructureToPtr(client, lParam, false);
+                        return 0;
+                    }
+
                     if (message == 0x0084 && target.HitTestResizeBorder(lParam) is { } hit)
                     {
                         return hit;
@@ -333,6 +346,7 @@ internal sealed partial class WindowsWindowHostService
         }
 
         [DllImport("user32.dll", ExactSpelling = true)][return: MarshalAs(UnmanagedType.Bool)] private static extern bool IsWindowVisible(nint window);
+        [DllImport("user32.dll", ExactSpelling = true)][return: MarshalAs(UnmanagedType.Bool)] private static extern bool IsZoomed(nint window);
 
         [StructLayout(LayoutKind.Sequential)]
         private struct NativeMinMaxInfo

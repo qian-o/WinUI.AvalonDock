@@ -199,7 +199,8 @@ internal sealed partial class WindowsWindowHostService
 
         private nint? HitTestResizeBorder(nint coordinates)
         {
-            if (resizeBorder == default || window.AppWindow.Presenter is not OverlappedPresenter { State: OverlappedPresenterState.Restored, IsResizable: true }
+            int nativeTop = clientCaptionButtons ? topResizeFrame : 0;
+            if ((resizeBorder == default && nativeTop == 0) || window.AppWindow.Presenter is not OverlappedPresenter { State: OverlappedPresenterState.Restored, IsResizable: true }
                 || !GetWindowRect(handle, out NativeRect rectangle))
             {
                 return null;
@@ -213,9 +214,9 @@ internal sealed partial class WindowsWindowHostService
             }
 
             double scale = GetWindowScale(handle);
-            bool left = x < rectangle.Left + resizeBorder.Left * scale;
-            bool right = x >= rectangle.Right - resizeBorder.Right * scale;
-            bool top = y < rectangle.Top + resizeBorder.Top * scale;
+            bool top = y < rectangle.Top + Math.Max(resizeBorder.Top * scale, nativeTop);
+            bool left = x < rectangle.Left + Math.Max(resizeBorder.Left * scale, top ? nativeTop : 0);
+            bool right = x >= rectangle.Right - Math.Max(resizeBorder.Right * scale, top ? nativeTop : 0);
             bool bottom = y >= rectangle.Bottom - resizeBorder.Bottom * scale;
             if (top && left)
             {

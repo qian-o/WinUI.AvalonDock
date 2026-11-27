@@ -9,7 +9,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 
-namespace WinUI.AvalonDock.Experiments.Shared;
+namespace WinUI.AvalonDock.Verification;
 
 /// <summary>Opt-in real-window overlay show/hide/render/close lifetime regression.</summary>
 internal static class OverlayLifetimeSmokeTests
@@ -193,7 +193,7 @@ internal static class OverlayLifetimeSmokeTests
             await WaitUntil(() => !IsWindow(ownerHandle) && !destination.IsLoaded && !editor.IsLoaded,
                 $"cycle {cycle}: independent destination window closes and unloads");
             report($"PASS: overlay cycle {cycle} Show/Hide/Show renders without failure, preserves editor focus, and closes both owned HWNDs");
-            return new CycleResult(references, [overlayHandle, ownerHandle]);
+            return new CycleResult(references, new[] { overlayHandle, ownerHandle });
 
             void CheckFocus(string operation)
             {

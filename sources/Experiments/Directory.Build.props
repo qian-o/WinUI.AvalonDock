@@ -12,8 +12,15 @@
         <DefineConstants>$(DefineConstants);DISABLE_XAML_GENERATED_MAIN</DefineConstants>
     </PropertyGroup>
 
+    <PropertyGroup Condition="'$(DockingVerification)' == 'true'">
+        <DefineConstants>$(DefineConstants);DOCKING_VERIFICATION</DefineConstants>
+        <OutputPath>bin\verification\$(Configuration)\</OutputPath>
+        <IntermediateOutputPath>obj\verification\$(Configuration)\</IntermediateOutputPath>
+    </PropertyGroup>
+
     <ItemGroup>
         <ProjectReference Include="$(MSBuildThisFileDirectory)..\WinUI.AvalonDock\WinUI.AvalonDock.csproj" />
         <Compile Include="$(MSBuildThisFileDirectory)Shared\*.cs" Link="Shared/%(Filename)%(Extension)" />
+        <Compile Condition="'$(DockingVerification)' == 'true'" Include="$(MSBuildThisFileDirectory)..\..\verification\Shared\*.cs" Link="Checks/%(Filename)%(Extension)" />
     </ItemGroup>
 </Project>

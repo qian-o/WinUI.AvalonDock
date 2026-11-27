@@ -11,7 +11,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 
-namespace WinUI.AvalonDock.Experiments.Shared;
+namespace WinUI.AvalonDock.Verification;
 
 /// <summary>Opt-in same-dispatcher workspace and native-window lifetime checks.</summary>
 internal static class WorkspaceLifecycleSmokeTests

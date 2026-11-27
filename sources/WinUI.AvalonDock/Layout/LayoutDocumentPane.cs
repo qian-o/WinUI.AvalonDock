@@ -207,7 +207,7 @@ public class LayoutDocumentPane : LayoutPositionableGroup<LayoutContent>, ILayou
         get
         {
             LayoutDocumentFloatingWindow? parentFloatingWindow = this.FindParent<LayoutDocumentFloatingWindow>();
-            return parentFloatingWindow != null && parentFloatingWindow.IsSinglePane;
+            return ReferenceEquals(parentFloatingWindow?.SinglePane, this);
         }
     }
 

@@ -13,11 +13,11 @@ New-Item -ItemType Directory -Path $results -Force | Out-Null
 # These checks use actual focus and modal windows. Run them serially.
 foreach ($buildConfiguration in $Configuration) {
     if (!$NoBuild) {
-        & dotnet build (Join-Path $repoRoot 'WinUI.AvalonDock.slnx') -c $buildConfiguration --no-restore -v minimal
+        & dotnet build (Join-Path $repoRoot 'WinUI.AvalonDock.slnx') -c $buildConfiguration -p:DockingVerification=true --no-restore -v minimal
         if ($LASTEXITCODE -ne 0) { throw "Solution build failed: $LASTEXITCODE" }
     }
     foreach ($sample in @('Docking', 'ToggleDocking', 'Mvvm')) {
-        $executable = Join-Path $repoRoot "sources\Experiments\$sample\bin\$buildConfiguration\net10.0-windows10.0.19041.0\win-x64\$sample.exe"
+        $executable = Join-Path $repoRoot "sources\Experiments\$sample\bin\verification\$buildConfiguration\net10.0-windows10.0.19041.0\win-x64\$sample.exe"
         $log = Join-Path $results "$sample-$buildConfiguration-final.log"
         if (!(Test-Path -LiteralPath $executable -PathType Leaf)) { throw "Missing sample: $executable" }
         if (Test-Path -LiteralPath $log) { Remove-Item -LiteralPath $log }
@@ -37,7 +37,7 @@ foreach ($buildConfiguration in $Configuration) {
         }
         Write-Output "$sample ${buildConfiguration}: $($lines[-1]) ($log)"
     }
-    $overlayExecutable = Join-Path $repoRoot "sources\Experiments\Docking\bin\$buildConfiguration\net10.0-windows10.0.19041.0\win-x64\Docking.exe"
+    $overlayExecutable = Join-Path $repoRoot "sources\Experiments\Docking\bin\verification\$buildConfiguration\net10.0-windows10.0.19041.0\win-x64\Docking.exe"
     $overlayLog = Join-Path $results "Overlay-$buildConfiguration-final.log"
     if (Test-Path -LiteralPath $overlayLog) { Remove-Item -LiteralPath $overlayLog }
     $overlayRun = Start-Process -FilePath $overlayExecutable -ArgumentList @('--overlay-lifetime', ('"' + $overlayLog + '"')) -WindowStyle Hidden -PassThru

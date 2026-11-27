@@ -161,10 +161,6 @@ public class TabControlEx : TabView
             nativeList.ContainerContentChanging -= OnContainerContentChanging;
         }
         base.OnApplyTemplate();
-        if (GetTemplateChild("PaneFill") is DockPaneSurface fill)
-        {
-            fill.Attach(this, GetTemplateChild("ContentPanel") as FrameworkElement);
-        }
         if (GetTemplateChild("PaneBorder") is DockPaneSurface surface)
         {
             surface.Attach(this, GetTemplateChild("ContentPanel") as FrameworkElement);
@@ -183,25 +179,32 @@ public class TabControlEx : TabView
         AttachHeaderLayout();
         UpdateSelectedItem();
         AttachDocumentMenu();
-        UpdatePaneActiveState();
+        UpdatePanePresentation();
     }
-    internal void UpdatePaneActiveState()
+    internal void UpdatePanePresentation()
     {
-        LayoutAnchorablePane? tool = (this as LayoutAnchorablePaneControl)?.Model as LayoutAnchorablePane;
-        LayoutDocumentPane? document = (this as LayoutDocumentPaneControl)?.Model as LayoutDocumentPane;
-        bool singleFloatingTool = tool?.IsDirectlyHostedInFloatingWindow == true && tool.ChildrenCount == 1;
-        bool showActiveOutline = SelectedItem is TabViewItem { Tag: LayoutContent { IsActive: true } }
-            && !singleFloatingTool && document?.IsDirectlyHostedInFloatingWindow != true;
-        VisualStateManager.GoToState(this, showActiveOutline ? "PaneActive" : "PaneInactive", false);
-        VisualStateManager.GoToState(this, tool?.ChildrenCount == 0 ? "EmptyTool"
-            : tool?.ChildrenCount == 1 ? "SingleTool" : "MultipleTools", false);
-        if (GetTemplateChild("PaneFrame") is not null)
+        bool showActiveOutline = SelectedItem is TabViewItem { Tag: LayoutContent { IsActive: true } };
+        if (this is LayoutDocumentPaneControl { Model: LayoutDocumentPane document })
         {
-            VisualStateManager.GoToState(this, tool?.IsDirectlyHostedInFloatingWindow == true ? "FloatingTool" : "DockedTool", false);
+            bool floating = document.IsDirectlyHostedInFloatingWindow;
+            bool hasCaption = floating && document.Root?.Manager?.FloatingWindows.Any(window => ReferenceEquals(window.CaptionedDocumentPane, document)) == true;
+            bool showStrip = document.ShowHeader && !hasCaption;
+            VisualStateManager.GoToState(this, showStrip ? "DocumentHeaderVisible" : "DocumentHeaderHidden", false);
+            showActiveOutline &= !floating;
         }
-        VisualStateManager.GoToState(this, singleFloatingTool ? "SingleFloatingToolPane" : "OutlinedToolPane", false);
+        else if (this is LayoutAnchorablePaneControl { Model: LayoutAnchorablePane tool })
+        {
+            bool floating = tool.IsDirectlyHostedInFloatingWindow;
+            bool singleFloatingTool = floating && tool.ChildrenCount == 1;
+            VisualStateManager.GoToState(this, "BottomTabs", false);
+            VisualStateManager.GoToState(this, tool.ChildrenCount switch { 0 => "EmptyTool", 1 => "SingleTool", _ => "MultipleTools" }, false);
+            VisualStateManager.GoToState(this, floating ? "FloatingTool" : "DockedTool", false);
+            VisualStateManager.GoToState(this, singleFloatingTool ? "SingleFloatingToolPane" : "OutlinedToolPane", false);
+            showActiveOutline &= !singleFloatingTool;
+        }
+        VisualStateManager.GoToState(this, showActiveOutline ? "PaneActive" : "PaneInactive", false);
     }
-    internal bool IsTabStripCollapsed => GetTemplateChild("TabContainerGrid") is FrameworkElement { Visibility: Visibility.Collapsed };
+    internal bool IsTabStripCollapsed => (GetTemplateChild("TabContainerGrid") ?? GetTemplateChild("TabStrip")) is FrameworkElement { Visibility: Visibility.Collapsed };
     private void AttachDocumentMenu()
     {
         if (documentMenu == null && this is LayoutDocumentPaneControl { Model: LayoutDocumentPane pane }

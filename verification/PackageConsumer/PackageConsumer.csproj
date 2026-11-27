@@ -10,12 +10,7 @@
     </ItemGroup>
     <ItemGroup>
         <!-- Test code is shared; the product is consumed exclusively as a package. -->
-        <Compile Include="..\..\sources\Experiments\Shared\BoundarySmokeTests.cs" Link="Checks\BoundarySmokeTests.cs" />
-        <Compile Include="..\..\sources\Experiments\Shared\LayoutSyncSmokeTests.cs" Link="Checks\LayoutSyncSmokeTests.cs" />
-        <Compile Include="..\..\sources\Experiments\Shared\WorkspaceLifecycleSmokeTests.cs" Link="Checks\WorkspaceLifecycleSmokeTests.cs" />
-        <Compile Include="..\..\sources\Experiments\Shared\ModalCompatibilitySmokeTests.cs" Link="Checks\ModalCompatibilitySmokeTests.cs" />
-        <Compile Include="..\..\sources\Experiments\Shared\ContainerStyleCompatibilitySmokeTests.cs" Link="Checks\ContainerStyleCompatibilitySmokeTests.cs" />
-        <Compile Include="..\..\sources\Experiments\Shared\OverlayLifetimeSmokeTests.cs" Link="Checks\OverlayLifetimeSmokeTests.cs" />
+        <Compile Include="..\Shared\*.cs" Link="Checks/%(Filename)%(Extension)" />
         <Compile Include="..\..\sources\Experiments\Shared\WorkspaceContent.cs" Link="Checks\WorkspaceContent.cs" />
     </ItemGroup>
 </Project>

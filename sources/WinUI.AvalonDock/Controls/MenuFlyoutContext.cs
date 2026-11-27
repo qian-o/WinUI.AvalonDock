@@ -1,5 +1,6 @@
 using System.Runtime.CompilerServices;
 using AvalonDock.Converters;
+using AvalonDock.Layout;
 using AvalonDock.Platforms;
 using AvalonDock.Themes;
 using Microsoft.UI.Xaml;
@@ -16,6 +17,16 @@ internal static class MenuFlyoutContext
 {
     private static readonly ConditionalWeakTable<MenuFlyout, State> States = new();
     private static readonly ConditionalWeakTable<MenuFlyout, ResourceScope> ResourceScopes = new();
+
+    internal static MenuFlyout? Resolve(FrameworkElement owner, DependencyProperty property, object? context)
+    {
+        if (owner.ReadLocalValue(property) == DependencyProperty.UnsetValue && Equals(owner.Tag, "AvalonDock.DefaultContextMenu")
+            && context is LayoutItem { LayoutElement: { } model })
+        {
+            return model is LayoutAnchorable ? model.Root?.Manager?.AnchorableContextMenu : model.Root?.Manager?.DocumentContextMenu;
+        }
+        return (MenuFlyout?)owner.GetValue(property);
+    }
 
     internal static void AttachResources(MenuFlyout menu, ResourceDictionary resources)
         => ResourceScopes.GetValue(menu, static value => new ResourceScope(value)).Source = resources;

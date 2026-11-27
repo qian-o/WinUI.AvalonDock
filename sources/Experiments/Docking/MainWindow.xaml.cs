@@ -59,7 +59,9 @@ public sealed partial class MainWindow : Window
             Text = "A single AnchorablesSource can provide multiple tool models."
         });
         Manager.Loaded += InitializeSampleAutoHideSizes;
-        BoundarySmokeTests.StartIfRequested(this, Manager);
+#if DOCKING_VERIFICATION
+        Verification.BoundarySmokeTests.StartIfRequested(this, Manager);
+#endif
     }
 
     private void InitializeSampleAutoHideSizes(object sender, RoutedEventArgs e)
